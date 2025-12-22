@@ -14,7 +14,7 @@ geoalchemy2==0.14.3
 
 # Validation & Serialization
 pydantic==2.5.3
-pydantic-settings==2.1.0
+pydantic-settings==2.12.0
 email-validator==2.1.0
 
 # Authentication
