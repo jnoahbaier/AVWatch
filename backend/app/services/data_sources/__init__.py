@@ -17,7 +17,7 @@ from .sync_service import DataSyncService
 
 __all__ = [
     "DataSourceBase",
-    "DataSourceConfig", 
+    "DataSourceConfig",
     "NHTSASGODataSource",
     "NHTSAComplaintsAPI",
     "NHTSARecallsAPI",
@@ -26,4 +26,3 @@ __all__ = [
     "CPUCDataSource",
     "DataSyncService",
 ]
-

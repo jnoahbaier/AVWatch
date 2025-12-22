@@ -79,8 +79,8 @@ export function IncidentTrendChart({
           <>
             <Legend
               wrapperStyle={{ paddingTop: '20px' }}
-              formatter={(value) =>
-                value.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+              formatter={(value: string) =>
+                value.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
               }
             />
             <Line

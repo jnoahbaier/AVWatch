@@ -19,7 +19,7 @@ export default function Home() {
             </p>
             <p className="mt-6 text-lg leading-8 text-slate-400">
               Report incidents. Track data. Hold AV companies accountable.
-              Together, we're building a safer future for everyone on our
+              Together, we&apos;re building a safer future for everyone on our
               streets.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
@@ -48,7 +48,7 @@ export default function Home() {
               Empowering Communities
             </h2>
             <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-              Whether you're a pedestrian, cyclist, or driver, your voice
+              Whether you&apos;re a pedestrian, cyclist, or driver, your voice
               matters.
             </p>
           </div>

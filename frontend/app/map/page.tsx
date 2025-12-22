@@ -173,7 +173,7 @@ export default function MapPage() {
             return;
           }
           
-          if (feature.layer.id === 'unclustered-point') {
+          if (feature.layer?.id === 'unclustered-point') {
             const incident = incidents.find(
               (inc) => inc.id === feature.properties?.id
             );
@@ -181,7 +181,7 @@ export default function MapPage() {
               setSelectedIncident(incident);
               setHoveredCluster(null);
             }
-          } else if (feature.layer.id === 'clusters') {
+          } else if (feature.layer?.id === 'clusters') {
             const coordinates = (feature.geometry as GeoJSON.Point).coordinates;
             const pointCount = feature.properties?.point_count || 0;
             setHoveredCluster({

@@ -88,4 +88,3 @@ class Incident(Base):
 
     def __repr__(self) -> str:
         return f"<Incident {self.id}: {self.incident_type} by {self.av_company}>"
-

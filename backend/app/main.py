@@ -55,4 +55,3 @@ async def root():
         "description": "A transparent platform for autonomous vehicle accountability",
         "docs": "/docs",
     }
-

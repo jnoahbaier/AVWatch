@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://avwatch:avwatch_dev_password@localhost:5432/avwatch"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://avwatch:avwatch_dev_password@localhost:5432/avwatch"
+    )
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -53,4 +55,3 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
-

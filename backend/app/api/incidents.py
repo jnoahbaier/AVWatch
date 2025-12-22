@@ -217,4 +217,3 @@ async def get_incident(
     """Get a single incident by ID."""
     # TODO: Implement database lookup
     raise HTTPException(status_code=404, detail="Incident not found")
-

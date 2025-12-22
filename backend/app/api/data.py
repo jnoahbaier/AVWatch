@@ -128,8 +128,6 @@ async def export_csv(
     For researchers and policymakers.
     """
     # TODO: Implement CSV export
-    from fastapi.responses import StreamingResponse
-
     return {"message": "CSV export not yet implemented"}
 
 
@@ -163,4 +161,3 @@ async def get_data_sources(db: AsyncSession = Depends(get_db)):
             },
         ]
     }
-

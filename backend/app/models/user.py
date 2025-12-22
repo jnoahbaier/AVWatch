@@ -3,7 +3,7 @@ User database model.
 """
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from uuid import uuid4
 
 from sqlalchemy import String, Text, Integer, DateTime, func
@@ -11,6 +11,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.incident import Incident
 
 
 class User(Base):
@@ -44,4 +47,3 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User {self.id}: {self.display_name or self.email}>"
-

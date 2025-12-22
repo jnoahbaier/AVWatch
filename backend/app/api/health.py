@@ -24,4 +24,3 @@ async def readiness_check():
             "redis": "ok",
         },
     }
-
