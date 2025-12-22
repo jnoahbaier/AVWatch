@@ -1,0 +1,46 @@
+name: NHTSA Data Sync
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC (backup to pg_cron)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+    inputs:
+      force:
+        description: 'Force full sync'
+        required: false
+        default: 'false'
+
+jobs:
+  sync-nhtsa-data:
+    name: Sync NHTSA SGO Data
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger NHTSA ingestion Edge Function
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            "${{ secrets.SUPABASE_URL }}/functions/v1/ingest-nhtsa" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"force": ${{ github.event.inputs.force || false }}}')
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          
+          echo "Response: $body"
+          echo "HTTP Code: $http_code"
+          
+          if [ "$http_code" -ge 400 ]; then
+            echo "❌ NHTSA sync failed with HTTP $http_code"
+            exit 1
+          fi
+          
+          echo "✅ NHTSA sync completed successfully"
+
+      - name: Log sync completion
+        run: |
+          echo "NHTSA data sync completed at $(date -u)"
+          echo "Triggered by: ${{ github.event_name }}"
+
