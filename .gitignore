@@ -69,6 +69,7 @@ data/
 !package.json
 !package-lock.json
 !tsconfig.json
+!.eslintrc.json
 
 # Media uploads (local dev)
 uploads/
