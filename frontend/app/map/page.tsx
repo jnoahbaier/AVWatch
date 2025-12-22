@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+
+// Force dynamic rendering to skip static generation (requires env vars)
+export const dynamic = 'force-dynamic';
 import Map, { Marker, Popup, NavigationControl, Source, Layer } from 'react-map-gl';
 import { Filter, Layers, X, RefreshCw, Loader2 } from 'lucide-react';
 import {

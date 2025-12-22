@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
+// Force dynamic rendering to skip static generation (requires env vars)
+export const dynamic = 'force-dynamic';
 import {
   BarChart3,
   TrendingUp,
