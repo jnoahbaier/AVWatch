@@ -50,7 +50,7 @@ httpx==0.26.0
 
 # Development
 black==23.12.1
-ruff==0.1.11
+ruff==0.14.10
 mypy==1.8.0
 pre-commit==3.6.0
 
