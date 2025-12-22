@@ -160,13 +160,17 @@ jobs:
           fail_ci_if_error: false
 
   # ============================================
-  # Deploy (only on main branch)
+  # Deploy (only on main branch when secrets are configured)
   # ============================================
   deploy-frontend:
     name: Deploy Frontend to Vercel
     runs-on: ubuntu-latest
     needs: [frontend-build, backend-test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Only deploy on main branch push when Vercel secrets are configured
+    if: |
+      github.ref == 'refs/heads/main' && 
+      github.event_name == 'push' && 
+      secrets.VERCEL_TOKEN != ''
     
     steps:
       - uses: actions/checkout@v4
@@ -184,7 +188,11 @@ jobs:
     name: Deploy Supabase Edge Functions
     runs-on: ubuntu-latest
     needs: [frontend-build, backend-test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Only deploy on main branch push when Supabase secrets are configured
+    if: |
+      github.ref == 'refs/heads/main' && 
+      github.event_name == 'push' && 
+      secrets.SUPABASE_ACCESS_TOKEN != ''
 
     steps:
       - uses: actions/checkout@v4
@@ -210,12 +218,13 @@ jobs:
   notify-success:
     name: Notify on Success
     runs-on: ubuntu-latest
-    needs: [deploy-frontend, deploy-edge-functions]
+    needs: [frontend-build, backend-test]
+    # Run after CI passes (deployment is optional)
     if: success() && github.ref == 'refs/heads/main'
 
     steps:
       - name: Success notification
-        run: echo "✅ Deployment successful!"
+        run: echo "✅ CI passed! Deployment will run if secrets are configured."
 
   notify-failure:
     name: Notify on Failure
