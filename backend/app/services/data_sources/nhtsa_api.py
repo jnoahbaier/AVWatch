@@ -106,12 +106,12 @@ class NHTSAComplaintsAPI(DataSourceBase):
 
         # Filter by date if specified
         if since:
-            av_complaints = [
-                c
-                for c in av_complaints
-                if self._parse_complaint_date(c)
-                and self._parse_complaint_date(c) >= since
-            ]
+            filtered = []
+            for c in av_complaints:
+                parsed_date = self._parse_complaint_date(c)
+                if parsed_date is not None and parsed_date >= since:
+                    filtered.append(c)
+            av_complaints = filtered
 
         self.logger.info(f"Found {len(av_complaints)} AV-related complaints")
         return av_complaints
@@ -120,7 +120,7 @@ class NHTSAComplaintsAPI(DataSourceBase):
         self, client: httpx.AsyncClient, make: str, year: int
     ) -> list[dict[str, Any]]:
         """Fetch complaints for a specific make/year."""
-        params = {
+        params: dict[str, str | int] = {
             "make": make,
             "modelYear": year,
         }
@@ -302,7 +302,7 @@ class NHTSARecallsAPI(DataSourceBase):
         self, client: httpx.AsyncClient, make: str, year: int
     ) -> list[dict[str, Any]]:
         """Fetch recalls for a specific make/year."""
-        params = {
+        params: dict[str, str | int] = {
             "make": make,
             "modelYear": year,
         }
@@ -458,7 +458,7 @@ class NHTSAFarsAPI(DataSourceBase):
     ) -> list[dict[str, Any]]:
         """Fetch crashes for a specific state and year."""
         url = f"{self.BASE_URL}/crashes/GetCaseList"
-        params = {
+        params: dict[str, str | int] = {
             "states": state,
             "fromYear": year,
             "toYear": year,
@@ -578,4 +578,6 @@ class NHTSAFarsAPI(DataSourceBase):
             55: "WI",
             56: "WY",
         }
+        if code is None:
+            return ""
         return state_codes.get(code, "")

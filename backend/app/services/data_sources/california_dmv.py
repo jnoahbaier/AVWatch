@@ -244,6 +244,10 @@ class CaliforniaDMVDataSource(DataSourceBase):
         if not all([company, date, url]):
             return None
 
+        # Type narrowing for mypy
+        if date is None or company is None or url is None:
+            return None
+
         # Generate external ID from company and date
         date_str = date.strftime("%Y%m%d")
         external_id = f"ca_dmv_{company.lower().replace(' ', '_')}_{date_str}"
