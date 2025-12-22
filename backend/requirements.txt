@@ -43,7 +43,7 @@ redis==5.0.1
 celery==5.3.6
 
 # Monitoring & Logging
-sentry-sdk[fastapi]==1.39.1
+sentry-sdk[fastapi]==2.48.0
 structlog==24.1.0
 
 # Testing
