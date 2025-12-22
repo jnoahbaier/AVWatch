@@ -1,0 +1,31 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Emerald gradient background -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="18" fill="url(#bgGrad)"/>
+  
+  <!-- Modern geometric eye -->
+  <path d="M 15,50 Q 50,20 85,50 Q 50,80 15,50 Z" fill="white"/>
+  
+  <!-- Pupil circle -->
+  <circle cx="50" cy="50" r="14" fill="#0f172a"/>
+  
+  <!-- Self-driving car icon in pupil (side view) -->
+  <g transform="translate(50, 50)">
+    <!-- Car body -->
+    <path d="M -9,-2 L -7,-6 L 3,-6 L 7,-2 L 7,2 L -9,2 Z" fill="#10b981"/>
+    <!-- Windows -->
+    <path d="M -5,-5 L -3,-5 L -3,-2 L -6,-2 Z" fill="#0f172a" opacity="0.4"/>
+    <path d="M -1,-5 L 2,-5 L 4,-2 L -1,-2 Z" fill="#0f172a" opacity="0.4"/>
+    <!-- Wheels -->
+    <circle cx="-5" cy="3" r="2" fill="#0f172a"/>
+    <circle cx="4" cy="3" r="2" fill="#0f172a"/>
+    <!-- Lidar on roof -->
+    <rect x="-2" y="-7" width="4" height="2" rx="1" fill="white"/>
+  </g>
+</svg>
+

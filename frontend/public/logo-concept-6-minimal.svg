@@ -1,0 +1,20 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean emerald background -->
+  <rect width="100" height="100" rx="20" fill="#059669"/>
+  
+  <!-- Minimal eye - just curves -->
+  <path 
+    d="M 12,50 C 30,25 70,25 88,50 C 70,75 30,75 12,50 Z" 
+    fill="white"
+  />
+  
+  <!-- Pupil -->
+  <circle cx="50" cy="50" r="14" fill="#0f172a"/>
+  
+  <!-- Inner ring - suggests scanning/tech -->
+  <circle cx="50" cy="50" r="10" fill="none" stroke="#059669" stroke-width="2"/>
+  
+  <!-- Center dot -->
+  <circle cx="50" cy="50" r="4" fill="#059669"/>
+</svg>
+

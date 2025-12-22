@@ -29,6 +29,10 @@ aiohttp==3.9.1
 pandas==2.1.4
 numpy==1.26.3
 
+# HTML/Web Scraping
+beautifulsoup4==4.12.3
+lxml==5.1.0
+
 # Cloud Storage
 boto3==1.34.14
 

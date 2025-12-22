@@ -34,6 +34,7 @@ const reportSchema = z.object({
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
   address: z.string().optional(),
+  city: z.string().optional(),
   occurred_at: z.string(),
   reporter_type: z
     .enum(['pedestrian', 'cyclist', 'driver', 'rider', 'other'])
@@ -86,7 +87,7 @@ export default function ReportPage() {
         setValue('latitude', position.coords.latitude);
         setValue('longitude', position.coords.longitude);
 
-        // Reverse geocode for address
+        // Reverse geocode for address and city
         try {
           const response = await fetch(
             `https://api.mapbox.com/geocoding/v5/mapbox.places/${position.coords.longitude},${position.coords.latitude}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}`
@@ -94,6 +95,20 @@ export default function ReportPage() {
           const data = await response.json();
           if (data.features?.[0]) {
             setValue('address', data.features[0].place_name);
+            // Extract city from context - look for 'place' type (city/town)
+            const context = data.features[0].context || [];
+            const cityContext = context.find((c: { id: string }) => c.id.startsWith('place.'));
+            if (cityContext) {
+              setValue('city', cityContext.text);
+            } else {
+              // Fallback: try to get from the feature itself if it's a place type
+              const placeFeature = data.features.find((f: { place_type: string[] }) => 
+                f.place_type?.includes('place')
+              );
+              if (placeFeature) {
+                setValue('city', placeFeature.text);
+              }
+            }
           }
         } catch (e) {
           console.error('Geocoding failed:', e);
@@ -126,6 +141,7 @@ export default function ReportPage() {
         latitude: data.latitude,
         longitude: data.longitude,
         address: data.address,
+        city: data.city,
         occurred_at: new Date(data.occurred_at).toISOString(),
         reporter_type: data.reporter_type,
       });
@@ -366,6 +382,10 @@ export default function ReportPage() {
                   <input
                     type="hidden"
                     {...register('longitude', { valueAsNumber: true })}
+                  />
+                  <input
+                    type="hidden"
+                    {...register('city')}
                   />
                 </div>
 

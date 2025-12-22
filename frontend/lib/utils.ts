@@ -65,6 +65,11 @@ export const AV_COMPANY_LABELS: Record<string, string> = {
   cruise: 'Cruise',
   zoox: 'Zoox',
   tesla: 'Tesla',
+  nuro: 'Nuro',
+  aurora: 'Aurora',
+  motional: 'Motional',
+  mercedes: 'Mercedes-Benz',
+  apple: 'Apple',
   other: 'Other',
   unknown: 'Unknown',
 };
@@ -99,7 +104,29 @@ export const AV_COMPANY_COLORS: Record<string, string> = {
   cruise: '#ff6b35',
   zoox: '#00d4aa',
   tesla: '#cc0000',
+  nuro: '#6366f1',
+  aurora: '#8b5cf6',
+  motional: '#0ea5e9',
+  mercedes: '#00adef',
+  apple: '#a3a3a3',
   other: '#94a3b8',
   unknown: '#94a3b8',
+};
+
+/**
+ * Data source display names and colors
+ */
+export const DATA_SOURCE_LABELS: Record<string, string> = {
+  nhtsa: 'NHTSA',
+  dmv: 'CA DMV',
+  cpuc: 'CPUC',
+  user_report: 'Community',
+};
+
+export const DATA_SOURCE_COLORS: Record<string, string> = {
+  nhtsa: '#1e40af',
+  dmv: '#7c3aed',
+  cpuc: '#0891b2',
+  user_report: '#16a34a',
 };
 

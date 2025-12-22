@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import incidents, data, health
+from app.api import incidents, data, health, data_sync
 from app.core.config import settings
 
 
@@ -43,6 +43,7 @@ app.add_middleware(
 app.include_router(health.router, tags=["Health"])
 app.include_router(incidents.router, prefix="/api/incidents", tags=["Incidents"])
 app.include_router(data.router, prefix="/api/data", tags=["Data & Analytics"])
+app.include_router(data_sync.router, prefix="/api", tags=["Data Sync"])
 
 
 @app.get("/")

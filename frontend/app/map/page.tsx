@@ -7,6 +7,8 @@ import {
   INCIDENT_TYPE_LABELS,
   AV_COMPANY_LABELS,
   INCIDENT_TYPE_COLORS,
+  DATA_SOURCE_LABELS,
+  DATA_SOURCE_COLORS,
   formatRelativeTime,
 } from '@/lib/utils';
 import { getIncidents, type Incident } from '@/lib/supabase';
@@ -25,10 +27,16 @@ export default function MapPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [hoveredCluster, setHoveredCluster] = useState<{
+    longitude: number;
+    latitude: number;
+    pointCount: number;
+  } | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     incident_types: Object.keys(INCIDENT_TYPE_LABELS),
     companies: Object.keys(AV_COMPANY_LABELS),
+    sources: Object.keys(DATA_SOURCE_LABELS),
   });
 
   const loadIncidents = useCallback(async () => {
@@ -50,10 +58,11 @@ export default function MapPage() {
   const filteredIncidents = incidents.filter(
     (incident) =>
       filters.incident_types.includes(incident.incident_type) &&
-      filters.companies.includes(incident.av_company || 'unknown')
+      filters.companies.includes(incident.av_company || 'unknown') &&
+      filters.sources.includes(incident.source || 'user_report')
   );
 
-  const toggleFilter = (type: 'incident_types' | 'companies', value: string) => {
+  const toggleFilter = (type: 'incident_types' | 'companies' | 'sources', value: string) => {
     setFilters((prev) => {
       const current = prev[type];
       const updated = current.includes(value)
@@ -139,7 +148,7 @@ export default function MapPage() {
         INCIDENT_TYPE_COLORS.blockage,
         INCIDENT_TYPE_COLORS.other,
       ],
-      'circle-radius': 8,
+      'circle-radius': 10,
       'circle-stroke-width': 2,
       'circle-stroke-color': '#ffffff',
     },
@@ -155,16 +164,37 @@ export default function MapPage() {
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         style={{ width: '100%', height: '100%' }}
         interactiveLayerIds={['unclustered-point', 'clusters']}
-        onClick={(e) => {
+        cursor="pointer"
+        onMouseMove={(e) => {
           const feature = e.features?.[0];
-          if (feature?.layer.id === 'unclustered-point') {
+          if (!feature) {
+            setSelectedIncident(null);
+            setHoveredCluster(null);
+            return;
+          }
+          
+          if (feature.layer.id === 'unclustered-point') {
             const incident = incidents.find(
               (inc) => inc.id === feature.properties?.id
             );
             if (incident) {
               setSelectedIncident(incident);
+              setHoveredCluster(null);
             }
+          } else if (feature.layer.id === 'clusters') {
+            const coordinates = (feature.geometry as GeoJSON.Point).coordinates;
+            const pointCount = feature.properties?.point_count || 0;
+            setHoveredCluster({
+              longitude: coordinates[0],
+              latitude: coordinates[1],
+              pointCount,
+            });
+            setSelectedIncident(null);
           }
+        }}
+        onMouseLeave={() => {
+          setSelectedIncident(null);
+          setHoveredCluster(null);
         }}
       >
         <NavigationControl position="top-right" />
@@ -182,7 +212,7 @@ export default function MapPage() {
           <Layer {...unclusteredPointLayer} />
         </Source>
 
-        {/* Selected Incident Popup */}
+        {/* Selected Incident Popup (on hover) */}
         {selectedIncident && (
           <Popup
             latitude={selectedIncident.latitude}
@@ -190,11 +220,11 @@ export default function MapPage() {
             anchor="bottom"
             onClose={() => setSelectedIncident(null)}
             closeButton={false}
-            className="!max-w-sm"
+            className="!max-w-sm pointer-events-none"
             offset={15}
           >
             <div className="p-4 min-w-[280px]">
-              <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="flex items-start gap-2 mb-3">
                 <span
                   className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium"
                   style={{
@@ -204,12 +234,6 @@ export default function MapPage() {
                 >
                   {INCIDENT_TYPE_LABELS[selectedIncident.incident_type]}
                 </span>
-                <button
-                  onClick={() => setSelectedIncident(null)}
-                  className="text-slate-400 hover:text-slate-600 p-1"
-                >
-                  <X className="w-4 h-4" />
-                </button>
               </div>
 
               {selectedIncident.description && (
@@ -222,10 +246,14 @@ export default function MapPage() {
                 <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-400">
                   {AV_COMPANY_LABELS[selectedIncident.av_company || 'unknown']}
                 </span>
-                <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-400">
-                  {selectedIncident.source === 'user_report'
-                    ? 'Community Report'
-                    : selectedIncident.source.toUpperCase()}
+                <span 
+                  className="px-2 py-1 rounded"
+                  style={{
+                    backgroundColor: `${DATA_SOURCE_COLORS[selectedIncident.source] || '#94a3b8'}20`,
+                    color: DATA_SOURCE_COLORS[selectedIncident.source] || '#94a3b8',
+                  }}
+                >
+                  {DATA_SOURCE_LABELS[selectedIncident.source] || selectedIncident.source}
                 </span>
                 <span
                   className={`px-2 py-1 rounded ${
@@ -262,6 +290,31 @@ export default function MapPage() {
             </div>
           </Popup>
         )}
+
+        {/* Cluster Popup (on hover) */}
+        {hoveredCluster && (
+          <Popup
+            latitude={hoveredCluster.latitude}
+            longitude={hoveredCluster.longitude}
+            anchor="bottom"
+            onClose={() => setHoveredCluster(null)}
+            closeButton={false}
+            className="!max-w-xs pointer-events-none"
+            offset={25}
+          >
+            <div className="p-3 text-center">
+              <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+                {hoveredCluster.pointCount}
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">
+                incidents in this area
+              </div>
+              <div className="mt-2 text-xs text-slate-500">
+                Zoom in to see details
+              </div>
+            </div>
+          </Popup>
+        )}
       </Map>
 
       {/* Filter Toggle Button */}
@@ -272,7 +325,8 @@ export default function MapPage() {
         <Filter className="w-4 h-4" />
         Filters
         {(filters.incident_types.length < Object.keys(INCIDENT_TYPE_LABELS).length ||
-          filters.companies.length < Object.keys(AV_COMPANY_LABELS).length) && (
+          filters.companies.length < Object.keys(AV_COMPANY_LABELS).length ||
+          filters.sources.length < Object.keys(DATA_SOURCE_LABELS).length) && (
           <span className="w-2 h-2 bg-green-500 rounded-full" />
         )}
       </button>
@@ -377,12 +431,52 @@ export default function MapPage() {
             </div>
           </div>
 
+          {/* Data Sources */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Data Source
+              </p>
+              <button
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    sources: Object.keys(DATA_SOURCE_LABELS),
+                  }))
+                }
+                className="text-xs text-green-600 hover:text-green-500"
+              >
+                Select all
+              </button>
+            </div>
+            <div className="space-y-2">
+              {Object.entries(DATA_SOURCE_LABELS).map(([value, label]) => (
+                <label key={value} className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={filters.sources.includes(value)}
+                    onChange={() => toggleFilter('sources', value)}
+                    className="w-4 h-4 rounded border-slate-300 text-green-500 focus:ring-green-500"
+                  />
+                  <span
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: DATA_SOURCE_COLORS[value] }}
+                  />
+                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition">
+                    {label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           {/* Clear Filters */}
           <button
             onClick={() =>
               setFilters({
                 incident_types: [],
                 companies: [],
+                sources: [],
               })
             }
             className="mt-4 w-full py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg transition"

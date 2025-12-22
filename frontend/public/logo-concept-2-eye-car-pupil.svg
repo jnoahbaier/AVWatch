@@ -1,0 +1,22 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green background -->
+  <rect width="100" height="100" rx="18" fill="#059669"/>
+  
+  <!-- Eye shape -->
+  <ellipse cx="58" cy="50" rx="32" ry="26" fill="white"/>
+  <polygon points="18,50 58,24 58,76" fill="white"/>
+  
+  <!-- Pupil with car silhouette -->
+  <circle cx="62" cy="50" r="15" fill="#0f172a"/>
+  
+  <!-- Simplified self-driving car (top-down view) -->
+  <g transform="translate(62, 50)">
+    <!-- Car body -->
+    <rect x="-8" y="-5" width="16" height="10" rx="3" fill="#059669"/>
+    <!-- Windshield -->
+    <rect x="-5" y="-3" width="6" height="6" rx="1" fill="#0f172a" opacity="0.5"/>
+    <!-- Roof sensor/lidar dome -->
+    <circle cx="0" cy="0" r="2" fill="white"/>
+  </g>
+</svg>
+

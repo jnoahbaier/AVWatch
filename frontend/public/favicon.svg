@@ -1,0 +1,9 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Transparent background - just the eye -->
+  
+  <!-- Eye shape - teardrop pointing left, matching reference -->
+  <path d="M 10,50 Q 10,30 40,25 Q 75,20 88,50 Q 75,80 40,75 Q 10,70 10,50 Z" fill="white"/>
+  
+  <!-- Large black pupil - positioned right of center like reference -->
+  <circle cx="62" cy="50" r="18" fill="black"/>
+</svg>

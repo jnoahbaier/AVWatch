@@ -10,10 +10,13 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
+import { DATA_SOURCE_LABELS, DATA_SOURCE_COLORS } from '@/lib/utils';
 
 interface SourceData {
   source: string;
   count: number;
+  label?: string;
+  color?: string;
 }
 
 interface SourceBreakdownChartProps {
@@ -21,28 +24,14 @@ interface SourceBreakdownChartProps {
   height?: number;
 }
 
-const SOURCE_COLORS: Record<string, string> = {
-  user_report: '#22c55e',
-  nhtsa: '#3b82f6',
-  cpuc: '#8b5cf6',
-  dmv: '#f59e0b',
-};
-
-const SOURCE_LABELS: Record<string, string> = {
-  user_report: 'Community Reports',
-  nhtsa: 'NHTSA SGO',
-  cpuc: 'CPUC',
-  dmv: 'CA DMV',
-};
-
 export function SourceBreakdownChart({
   data,
   height = 200,
 }: SourceBreakdownChartProps) {
   const formattedData = data.map((item) => ({
-    name: SOURCE_LABELS[item.source] || item.source,
+    name: item.label || DATA_SOURCE_LABELS[item.source] || item.source,
     value: item.count,
-    fill: SOURCE_COLORS[item.source] || '#94a3b8',
+    fill: item.color || DATA_SOURCE_COLORS[item.source] || '#94a3b8',
   }));
 
   return (

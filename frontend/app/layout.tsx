@@ -18,6 +18,11 @@ export const metadata: Metadata = {
     'incident reporting',
   ],
   authors: [{ name: 'AV Watch Team' }],
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   openGraph: {
     title: 'AV Watch | Autonomous Vehicle Accountability',
     description:

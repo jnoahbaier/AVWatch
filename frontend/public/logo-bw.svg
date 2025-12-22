@@ -1,0 +1,11 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Black background with rounded corners -->
+  <rect width="100" height="100" rx="16" fill="#0f172a"/>
+  
+  <!-- Eye shape - teardrop pointing left, matching reference -->
+  <path d="M 12,50 Q 12,28 42,22 Q 78,18 90,50 Q 78,82 42,78 Q 12,72 12,50 Z" fill="white"/>
+  
+  <!-- Large black pupil -->
+  <circle cx="64" cy="50" r="17" fill="#0f172a"/>
+</svg>
+

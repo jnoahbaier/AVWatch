@@ -35,6 +35,8 @@ import {
   INCIDENT_TYPE_LABELS,
   AV_COMPANY_LABELS,
   INCIDENT_TYPE_COLORS,
+  DATA_SOURCE_LABELS,
+  DATA_SOURCE_COLORS,
   formatRelativeTime,
 } from '@/lib/utils';
 
@@ -98,10 +100,10 @@ export default function DashboardPage() {
 
   const sourceChartData = stats
     ? [
-        { source: 'user_report', count: stats.user_report_count },
-        { source: 'nhtsa', count: stats.nhtsa_count },
-        { source: 'cpuc', count: stats.cpuc_count },
-        { source: 'dmv', count: stats.dmv_count },
+        { source: 'nhtsa', count: stats.nhtsa_count, label: DATA_SOURCE_LABELS.nhtsa, color: DATA_SOURCE_COLORS.nhtsa },
+        { source: 'dmv', count: stats.dmv_count, label: DATA_SOURCE_LABELS.dmv, color: DATA_SOURCE_COLORS.dmv },
+        { source: 'cpuc', count: stats.cpuc_count, label: DATA_SOURCE_LABELS.cpuc, color: DATA_SOURCE_COLORS.cpuc },
+        { source: 'user_report', count: stats.user_report_count, label: DATA_SOURCE_LABELS.user_report, color: DATA_SOURCE_COLORS.user_report },
       ].filter((d) => d.count > 0)
     : [];
 
@@ -137,10 +139,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Dashboard
+              AV Incident Dashboard
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
-              Real-time insights into AV incidents across the Bay Area
+              Real-time insights from official NHTSA, DMV, CPUC data and community reports
             </p>
           </div>
           <button
@@ -151,6 +153,32 @@ export default function DashboardPage() {
             Refresh
           </button>
         </div>
+
+        {/* Data Sources Banner */}
+        {sourceChartData.length > 0 && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <div className="flex items-center gap-3 mb-3">
+              <Database className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-slate-900 dark:text-white">Official Data Sources</h3>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {sourceChartData.map((source) => (
+                <div 
+                  key={source.source}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium"
+                  style={{ 
+                    backgroundColor: `${source.color}15`,
+                    color: source.color,
+                    border: `1px solid ${source.color}40`
+                  }}
+                >
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: source.color }} />
+                  {source.label}: {source.count.toLocaleString()} incidents
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">

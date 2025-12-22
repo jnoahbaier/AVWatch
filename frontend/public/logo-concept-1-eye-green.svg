@@ -1,0 +1,15 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green background with rounded corners -->
+  <rect width="100" height="100" rx="18" fill="#059669"/>
+  
+  <!-- Eye shape - teardrop/almond pointing left -->
+  <ellipse cx="58" cy="50" rx="32" ry="26" fill="white"/>
+  <polygon points="18,50 58,24 58,76" fill="white"/>
+  
+  <!-- Pupil -->
+  <circle cx="62" cy="50" r="15" fill="#0f172a"/>
+  
+  <!-- Eye highlight -->
+  <circle cx="67" cy="45" r="4" fill="white" opacity="0.6"/>
+</svg>
+
