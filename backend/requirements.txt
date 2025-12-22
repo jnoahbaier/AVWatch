@@ -13,7 +13,7 @@ alembic==1.13.1
 geoalchemy2==0.14.3
 
 # Validation & Serialization
-pydantic==2.5.3
+pydantic==2.12.5
 pydantic-settings==2.1.0
 email-validator==2.1.0
 
