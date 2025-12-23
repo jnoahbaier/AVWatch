@@ -40,18 +40,18 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "@types/node": "20.11.30",
+    "@types/node": "25.0.3",
     "@types/react": "18.2.67",
     "@types/react-dom": "18.2.22",
-    "autoprefixer": "10.4.19",
-    "dotenv": "^16.4.5",
-    "eslint": "8.57.0",
-    "eslint-config-next": "14.2.0",
+    "autoprefixer": "10.4.23",
+    "dotenv": "^17.2.3",
+    "eslint": "9.39.2",
+    "eslint-config-next": "16.1.1",
     "playwright": "^1.57.0",
-    "postcss": "8.4.37",
+    "postcss": "8.5.6",
     "prettier": "^3.2.5",
-    "tailwindcss": "3.4.1",
+    "tailwindcss": "4.1.18",
     "tsx": "^4.7.0",
-    "typescript": "5.4.2"
+    "typescript": "5.9.3"
   }
 }
