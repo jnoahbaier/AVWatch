@@ -166,16 +166,14 @@ jobs:
     name: Deploy Frontend to Vercel
     runs-on: ubuntu-latest
     needs: [frontend-build, backend-test]
-    # Only deploy on main branch push when Vercel secrets are configured
-    if: |
-      github.ref == 'refs/heads/main' && 
-      github.event_name == 'push' && 
-      secrets.VERCEL_TOKEN != ''
+    # Only deploy on main branch push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
       - uses: actions/checkout@v4
 
       - name: Deploy to Vercel
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -188,26 +186,26 @@ jobs:
     name: Deploy Supabase Edge Functions
     runs-on: ubuntu-latest
     needs: [frontend-build, backend-test]
-    # Only deploy on main branch push when Supabase secrets are configured
-    if: |
-      github.ref == 'refs/heads/main' && 
-      github.event_name == 'push' && 
-      secrets.SUPABASE_ACCESS_TOKEN != ''
+    # Only deploy on main branch push
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Supabase CLI
+        if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
       - name: Link Supabase project
+        if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
         run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Deploy Edge Functions
+        if: ${{ secrets.SUPABASE_ACCESS_TOKEN != '' }}
         run: supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
