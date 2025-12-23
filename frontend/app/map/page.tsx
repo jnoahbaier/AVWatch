@@ -45,7 +45,7 @@ export default function MapPage() {
   const loadIncidents = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await getIncidents({ limit: 500 });
+      const { data } = await getIncidents({ limit: 2000 });
       setIncidents(data);
     } catch (error) {
       console.error('Failed to load incidents:', error);
