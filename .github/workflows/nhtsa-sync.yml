@@ -44,3 +44,5 @@ jobs:
           echo "NHTSA data sync completed at $(date -u)"
           echo "Triggered by: ${{ github.event_name }}"
 
+
+
