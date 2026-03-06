@@ -16,9 +16,15 @@ import app.models  # noqa: F401 — ensure all models are registered before crea
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
-    # Create all tables if they don't exist yet (idempotent)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Create all tables if they don't exist yet (idempotent).
+    # Wrapped in try/except so the app can still start even if the DB is
+    # temporarily unreachable (e.g., cold-start race on Railway).
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print(f"Database tables ready.")
+    except Exception as exc:
+        print(f"WARNING: Could not create database tables on startup: {exc}")
     print(f"Starting {settings.APP_NAME} API...")
     yield
     print(f"Shutting down {settings.APP_NAME} API...")
