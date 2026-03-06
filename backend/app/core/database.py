@@ -10,9 +10,9 @@ from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
 
-# Create async engine
+# Create async engine (normalises Railway's postgres:// to postgresql+asyncpg://)
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.async_database_url,
     echo=settings.DEBUG,
     future=True,
 )

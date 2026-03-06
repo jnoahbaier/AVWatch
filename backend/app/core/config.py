@@ -24,9 +24,21 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "change-me-in-production"
 
     # Database
+    # Railway provides DATABASE_URL as "postgresql://...", but asyncpg requires
+    # the "postgresql+asyncpg://" scheme. We fix it up via a validator below.
     DATABASE_URL: str = (
         "postgresql+asyncpg://avwatch:avwatch_dev_password@localhost:5432/avwatch"
     )
+
+    @property
+    def async_database_url(self) -> str:
+        """Return DATABASE_URL with asyncpg driver, normalising Railway's format."""
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
