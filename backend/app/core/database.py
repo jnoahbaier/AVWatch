@@ -10,11 +10,14 @@ from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
 
-# Create async engine (normalises Railway's postgres:// to postgresql+asyncpg://)
+# Create async engine (normalises Railway's postgres:// to postgresql+asyncpg://).
+# statement_cache_size=0 is required when using Supabase's transaction-mode pooler
+# (Supavisor/pgbouncer), which does not support prepared statements.
 engine = create_async_engine(
     settings.async_database_url,
     echo=settings.DEBUG,
     future=True,
+    connect_args={"statement_cache_size": 0},
 )
 
 # Session factory
