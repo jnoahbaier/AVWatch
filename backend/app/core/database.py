@@ -6,20 +6,15 @@ from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.pool import NullPool
-
 from app.core.config import settings
 
 
-# NullPool is required for Supabase's transaction-mode pooler (Supavisor/pgbouncer).
-# Transaction-mode poolers don't support asyncpg's prepared statements, so we use
-# NullPool to get a fresh connection per request — Supabase's pooler handles
-# the real connection pooling on its side.
+# Session-mode pooler (port 5432 on pooler host) supports prepared statements,
+# so no special pool configuration is needed.
 engine = create_async_engine(
     settings.async_database_url,
     echo=settings.DEBUG,
     future=True,
-    poolclass=NullPool,
 )
 
 # Session factory
