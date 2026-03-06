@@ -94,7 +94,7 @@ export async function getIncidents(
   if (filters?.end_date) params.set('end_date', filters.end_date);
 
   const query = params.toString();
-  return fetchJSON(`/api/incidents${query ? `?${query}` : ''}`);
+  return fetchJSON(`/api/incidents/${query ? `?${query}` : ''}`);
 }
 
 export async function getIncidentStats(): Promise<IncidentStats> {
@@ -106,7 +106,7 @@ export async function getMonthlyTrend(): Promise<MonthlyDataPoint[]> {
 }
 
 export async function submitReport(payload: ReportPayload): Promise<SubmitReportResponse> {
-  return fetchJSON('/api/incidents', {
+  return fetchJSON('/api/incidents/', {
     method: 'POST',
     body: JSON.stringify({
       incident_type: payload.incident_type,

@@ -6,8 +6,7 @@ from datetime import datetime
 from typing import Optional, List
 from uuid import uuid4
 
-from geoalchemy2 import Geography
-from sqlalchemy import String, Text, DateTime, ForeignKey, Numeric, func
+from sqlalchemy import String, Text, DateTime, Float, ForeignKey, Numeric, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -35,10 +34,9 @@ class Incident(Base):
 
     description: Mapped[Optional[str]] = mapped_column(Text)
 
-    # Location (PostGIS Geography for accurate distance calculations)
-    location: Mapped[Geography] = mapped_column(
-        Geography(geometry_type="POINT", srid=4326), nullable=False
-    )
+    # Location stored as plain float columns (no PostGIS extension required)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
     address: Mapped[Optional[str]] = mapped_column(Text)
     city: Mapped[str] = mapped_column(String(100), default="San Francisco", index=True)
 

@@ -9,16 +9,19 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import incidents, data, health, data_sync
 from app.core.config import settings
+from app.core.database import engine, Base
+import app.models  # noqa: F401 — ensure all models are registered before create_all
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
-    # Startup
-    print(f"🚗 Starting {settings.APP_NAME} API...")
+    # Create all tables if they don't exist yet (idempotent)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    print(f"Starting {settings.APP_NAME} API...")
     yield
-    # Shutdown
-    print(f"👋 Shutting down {settings.APP_NAME} API...")
+    print(f"Shutting down {settings.APP_NAME} API...")
 
 
 app = FastAPI(
