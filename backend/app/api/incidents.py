@@ -6,6 +6,8 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from geoalchemy2 import WKTElement
 from pydantic import BaseModel, Field
@@ -16,6 +18,16 @@ from app.core.database import get_db
 from app.models.incident import Incident
 
 router = APIRouter()
+
+_POINT_RE = re.compile(r"POINT\(([^\s]+)\s+([^\s]+)\)")
+
+
+def _parse_wkt(wkt: str) -> tuple[float, float]:
+    """Parse 'POINT(lng lat)' → (lat, lng)."""
+    m = _POINT_RE.match(wkt or "")
+    if not m:
+        return 0.0, 0.0
+    return float(m.group(2)), float(m.group(1))
 
 
 # ============================================================================
@@ -125,47 +137,33 @@ async def list_incidents(
     db: AsyncSession = Depends(get_db),
 ):
     """List incidents with filtering and pagination."""
-    # Use ST_Y/ST_X to extract coordinates in SQL — avoids GeoAlchemy2/asyncpg
-    # binary incompatibility with to_shape().
-    lat_col = func.ST_Y(Incident.location).label("lat")
-    lng_col = func.ST_X(Incident.location).label("lng")
+    wkt_col = func.ST_AsText(Incident.location).label("wkt")
 
-    base = select(Incident).where(True)
+    filters = []
     if incident_type:
-        base = base.where(Incident.incident_type == incident_type)
+        filters.append(Incident.incident_type == incident_type)
     if av_company:
-        base = base.where(Incident.av_company == av_company)
+        filters.append(Incident.av_company == av_company)
     if city:
-        base = base.where(Incident.city == city)
+        filters.append(Incident.city == city)
     if start_date:
-        base = base.where(Incident.occurred_at >= start_date)
+        filters.append(Incident.occurred_at >= start_date)
     if end_date:
-        base = base.where(Incident.occurred_at <= end_date)
+        filters.append(Incident.occurred_at <= end_date)
 
-    total = (
-        await db.execute(select(func.count()).select_from(base.subquery()))
-    ).scalar_one()
+    count_stmt = select(func.count(Incident.id))
+    for f in filters:
+        count_stmt = count_stmt.where(f)
+    total = (await db.execute(count_stmt)).scalar_one()
 
-    stmt = (
-        select(Incident, lat_col, lng_col)
-        .where(True)
-    )
-    if incident_type:
-        stmt = stmt.where(Incident.incident_type == incident_type)
-    if av_company:
-        stmt = stmt.where(Incident.av_company == av_company)
-    if city:
-        stmt = stmt.where(Incident.city == city)
-    if start_date:
-        stmt = stmt.where(Incident.occurred_at >= start_date)
-    if end_date:
-        stmt = stmt.where(Incident.occurred_at <= end_date)
+    stmt = select(Incident, wkt_col)
+    for f in filters:
+        stmt = stmt.where(f)
     stmt = (
         stmt.order_by(Incident.occurred_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
-
     rows = (await db.execute(stmt)).all()
 
     items = [
@@ -174,8 +172,8 @@ async def list_incidents(
             "incident_type": inc.incident_type,
             "av_company": inc.av_company or "unknown",
             "description": inc.description,
-            "latitude": lat,
-            "longitude": lng,
+            "latitude": _parse_wkt(wkt)[0],
+            "longitude": _parse_wkt(wkt)[1],
             "address": inc.address,
             "city": inc.city,
             "occurred_at": inc.occurred_at.isoformat(),
@@ -185,7 +183,7 @@ async def list_incidents(
             "source": inc.source,
             "media_urls": inc.media_urls or [],
         }
-        for inc, lat, lng in rows
+        for inc, wkt in rows
     ]
 
     return {
@@ -216,9 +214,8 @@ async def get_incidents_geojson(
     if end_date:
         stmt = stmt.where(Incident.occurred_at <= end_date)
 
-    lat_col = func.ST_Y(Incident.location).label("lat")
-    lng_col = func.ST_X(Incident.location).label("lng")
-    stmt = select(Incident, lat_col, lng_col)
+    wkt_col = func.ST_AsText(Incident.location).label("wkt")
+    stmt = select(Incident, wkt_col)
     if incident_type:
         stmt = stmt.where(Incident.incident_type == incident_type)
     if av_company:
@@ -233,7 +230,10 @@ async def get_incidents_geojson(
     features = [
         {
             "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [lng, lat]},
+            "geometry": {
+                "type": "Point",
+                "coordinates": [_parse_wkt(wkt)[1], _parse_wkt(wkt)[0]],
+            },
             "properties": {
                 "id": str(inc.id),
                 "incident_type": inc.incident_type,
@@ -243,7 +243,7 @@ async def get_incidents_geojson(
                 "status": inc.status,
             },
         }
-        for inc, lat, lng in rows
+        for inc, wkt in rows
     ]
 
     return {"type": "FeatureCollection", "features": features}
@@ -255,16 +255,16 @@ async def get_incident(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single incident by ID."""
-    lat_col = func.ST_Y(Incident.location).label("lat")
-    lng_col = func.ST_X(Incident.location).label("lng")
+    wkt_col = func.ST_AsText(Incident.location).label("wkt")
     result = (
         await db.execute(
-            select(Incident, lat_col, lng_col).where(Incident.id == incident_id)
+            select(Incident, wkt_col).where(Incident.id == incident_id)
         )
     ).first()
     if not result:
         raise HTTPException(status_code=404, detail="Incident not found")
-    row, lat, lng = result
+    row, wkt = result
+    lat, lng = _parse_wkt(wkt)
     return {
         "id": str(row.id),
         "incident_type": row.incident_type,
