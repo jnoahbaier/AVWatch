@@ -7,6 +7,8 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from geoalchemy2 import WKTElement
+from geoalchemy2.shape import to_shape
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -71,12 +73,15 @@ async def create_incident(
     - **location**: GPS coordinates and optional address
     - **occurred_at**: When the incident happened
     """
+    point = WKTElement(
+        f"POINT({incident.location.longitude} {incident.location.latitude})",
+        srid=4326,
+    )
     incident_obj = Incident(
         incident_type=incident.incident_type,
         av_company=incident.av_company,
         description=incident.description,
-        latitude=incident.location.latitude,
-        longitude=incident.location.longitude,
+        location=point,
         address=incident.location.address,
         occurred_at=incident.occurred_at,
         reporter_type=incident.reporter_type,
@@ -132,14 +137,6 @@ async def list_incidents(
         stmt = stmt.where(Incident.occurred_at >= start_date)
     if end_date:
         stmt = stmt.where(Incident.occurred_at <= end_date)
-    if min_lat is not None:
-        stmt = stmt.where(Incident.latitude >= min_lat)
-    if max_lat is not None:
-        stmt = stmt.where(Incident.latitude <= max_lat)
-    if min_lng is not None:
-        stmt = stmt.where(Incident.longitude >= min_lng)
-    if max_lng is not None:
-        stmt = stmt.where(Incident.longitude <= max_lng)
 
     total = (
         await db.execute(select(func.count()).select_from(stmt.subquery()))
@@ -152,25 +149,27 @@ async def list_incidents(
     )
     rows = (await db.execute(stmt)).scalars().all()
 
-    items = [
-        {
-            "id": str(inc.id),
-            "incident_type": inc.incident_type,
-            "av_company": inc.av_company or "unknown",
-            "description": inc.description,
-            "latitude": inc.latitude,
-            "longitude": inc.longitude,
-            "address": inc.address,
-            "city": inc.city,
-            "occurred_at": inc.occurred_at.isoformat(),
-            "reported_at": inc.reported_at.isoformat(),
-            "reporter_type": inc.reporter_type,
-            "status": inc.status,
-            "source": inc.source,
-            "media_urls": inc.media_urls or [],
-        }
-        for inc in rows
-    ]
+    items = []
+    for inc in rows:
+        point = to_shape(inc.location)
+        items.append(
+            {
+                "id": str(inc.id),
+                "incident_type": inc.incident_type,
+                "av_company": inc.av_company or "unknown",
+                "description": inc.description,
+                "latitude": point.y,
+                "longitude": point.x,
+                "address": inc.address,
+                "city": inc.city,
+                "occurred_at": inc.occurred_at.isoformat(),
+                "reported_at": inc.reported_at.isoformat(),
+                "reporter_type": inc.reporter_type,
+                "status": inc.status,
+                "source": inc.source,
+                "media_urls": inc.media_urls or [],
+            }
+        )
 
     return {
         "items": items,
@@ -202,24 +201,26 @@ async def get_incidents_geojson(
 
     rows = (await db.execute(stmt)).scalars().all()
 
-    features = [
-        {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [inc.longitude, inc.latitude],
-            },
-            "properties": {
-                "id": str(inc.id),
-                "incident_type": inc.incident_type,
-                "av_company": inc.av_company or "unknown",
-                "address": inc.address,
-                "occurred_at": inc.occurred_at.isoformat(),
-                "status": inc.status,
-            },
-        }
-        for inc in rows
-    ]
+    features = []
+    for inc in rows:
+        point = to_shape(inc.location)
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [point.x, point.y],
+                },
+                "properties": {
+                    "id": str(inc.id),
+                    "incident_type": inc.incident_type,
+                    "av_company": inc.av_company or "unknown",
+                    "address": inc.address,
+                    "occurred_at": inc.occurred_at.isoformat(),
+                    "status": inc.status,
+                },
+            }
+        )
 
     return {"type": "FeatureCollection", "features": features}
 
@@ -235,13 +236,14 @@ async def get_incident(
     ).scalar_one_or_none()
     if not row:
         raise HTTPException(status_code=404, detail="Incident not found")
+    point = to_shape(row.location)
     return {
         "id": str(row.id),
         "incident_type": row.incident_type,
         "av_company": row.av_company or "unknown",
         "description": row.description,
-        "latitude": row.latitude,
-        "longitude": row.longitude,
+        "latitude": point.y,
+        "longitude": point.x,
         "address": row.address,
         "city": row.city,
         "occurred_at": row.occurred_at.isoformat(),
