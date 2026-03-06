@@ -8,7 +8,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from geoalchemy2 import WKTElement
-from geoalchemy2.shape import to_shape
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -126,7 +125,31 @@ async def list_incidents(
     db: AsyncSession = Depends(get_db),
 ):
     """List incidents with filtering and pagination."""
-    stmt = select(Incident)
+    # Use ST_Y/ST_X to extract coordinates in SQL — avoids GeoAlchemy2/asyncpg
+    # binary incompatibility with to_shape().
+    lat_col = func.ST_Y(Incident.location).label("lat")
+    lng_col = func.ST_X(Incident.location).label("lng")
+
+    base = select(Incident).where(True)
+    if incident_type:
+        base = base.where(Incident.incident_type == incident_type)
+    if av_company:
+        base = base.where(Incident.av_company == av_company)
+    if city:
+        base = base.where(Incident.city == city)
+    if start_date:
+        base = base.where(Incident.occurred_at >= start_date)
+    if end_date:
+        base = base.where(Incident.occurred_at <= end_date)
+
+    total = (
+        await db.execute(select(func.count()).select_from(base.subquery()))
+    ).scalar_one()
+
+    stmt = (
+        select(Incident, lat_col, lng_col)
+        .where(True)
+    )
     if incident_type:
         stmt = stmt.where(Incident.incident_type == incident_type)
     if av_company:
@@ -137,39 +160,33 @@ async def list_incidents(
         stmt = stmt.where(Incident.occurred_at >= start_date)
     if end_date:
         stmt = stmt.where(Incident.occurred_at <= end_date)
-
-    total = (
-        await db.execute(select(func.count()).select_from(stmt.subquery()))
-    ).scalar_one()
-
     stmt = (
         stmt.order_by(Incident.occurred_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
-    rows = (await db.execute(stmt)).scalars().all()
 
-    items = []
-    for inc in rows:
-        point = to_shape(inc.location)
-        items.append(
-            {
-                "id": str(inc.id),
-                "incident_type": inc.incident_type,
-                "av_company": inc.av_company or "unknown",
-                "description": inc.description,
-                "latitude": point.y,
-                "longitude": point.x,
-                "address": inc.address,
-                "city": inc.city,
-                "occurred_at": inc.occurred_at.isoformat(),
-                "reported_at": inc.reported_at.isoformat(),
-                "reporter_type": inc.reporter_type,
-                "status": inc.status,
-                "source": inc.source,
-                "media_urls": inc.media_urls or [],
-            }
-        )
+    rows = (await db.execute(stmt)).all()
+
+    items = [
+        {
+            "id": str(inc.id),
+            "incident_type": inc.incident_type,
+            "av_company": inc.av_company or "unknown",
+            "description": inc.description,
+            "latitude": lat,
+            "longitude": lng,
+            "address": inc.address,
+            "city": inc.city,
+            "occurred_at": inc.occurred_at.isoformat(),
+            "reported_at": inc.reported_at.isoformat(),
+            "reporter_type": inc.reporter_type,
+            "status": inc.status,
+            "source": inc.source,
+            "media_urls": inc.media_urls or [],
+        }
+        for inc, lat, lng in rows
+    ]
 
     return {
         "items": items,
@@ -199,28 +216,35 @@ async def get_incidents_geojson(
     if end_date:
         stmt = stmt.where(Incident.occurred_at <= end_date)
 
-    rows = (await db.execute(stmt)).scalars().all()
+    lat_col = func.ST_Y(Incident.location).label("lat")
+    lng_col = func.ST_X(Incident.location).label("lng")
+    stmt = select(Incident, lat_col, lng_col)
+    if incident_type:
+        stmt = stmt.where(Incident.incident_type == incident_type)
+    if av_company:
+        stmt = stmt.where(Incident.av_company == av_company)
+    if start_date:
+        stmt = stmt.where(Incident.occurred_at >= start_date)
+    if end_date:
+        stmt = stmt.where(Incident.occurred_at <= end_date)
 
-    features = []
-    for inc in rows:
-        point = to_shape(inc.location)
-        features.append(
-            {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [point.x, point.y],
-                },
-                "properties": {
-                    "id": str(inc.id),
-                    "incident_type": inc.incident_type,
-                    "av_company": inc.av_company or "unknown",
-                    "address": inc.address,
-                    "occurred_at": inc.occurred_at.isoformat(),
-                    "status": inc.status,
-                },
-            }
-        )
+    rows = (await db.execute(stmt)).all()
+
+    features = [
+        {
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [lng, lat]},
+            "properties": {
+                "id": str(inc.id),
+                "incident_type": inc.incident_type,
+                "av_company": inc.av_company or "unknown",
+                "address": inc.address,
+                "occurred_at": inc.occurred_at.isoformat(),
+                "status": inc.status,
+            },
+        }
+        for inc, lat, lng in rows
+    ]
 
     return {"type": "FeatureCollection", "features": features}
 
@@ -231,19 +255,23 @@ async def get_incident(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a single incident by ID."""
-    row = (
-        await db.execute(select(Incident).where(Incident.id == incident_id))
-    ).scalar_one_or_none()
-    if not row:
+    lat_col = func.ST_Y(Incident.location).label("lat")
+    lng_col = func.ST_X(Incident.location).label("lng")
+    result = (
+        await db.execute(
+            select(Incident, lat_col, lng_col).where(Incident.id == incident_id)
+        )
+    ).first()
+    if not result:
         raise HTTPException(status_code=404, detail="Incident not found")
-    point = to_shape(row.location)
+    row, lat, lng = result
     return {
         "id": str(row.id),
         "incident_type": row.incident_type,
         "av_company": row.av_company or "unknown",
         "description": row.description,
-        "latitude": point.y,
-        "longitude": point.x,
+        "latitude": lat,
+        "longitude": lng,
         "address": row.address,
         "city": row.city,
         "occurred_at": row.occurred_at.isoformat(),
