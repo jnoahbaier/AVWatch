@@ -4,6 +4,7 @@ AV News Feed Service — fetches and caches headlines from public RSS feeds.
 
 import asyncio
 import logging
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -95,19 +96,50 @@ def _parse_rss_date(date_str: Optional[str]) -> Optional[datetime]:
             return None
 
 
+_IMG_SRC_RE = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']', re.IGNORECASE)
+
+
 def _extract_image(item_el: ET.Element, ns: dict) -> Optional[str]:
     """Try to extract a thumbnail/image URL from various RSS extension tags."""
-    # media:thumbnail or media:content
+    # media:thumbnail or media:content (e.g. Ars Technica, IEEE Spectrum)
     for tag in ("media:thumbnail", "media:content"):
         el = item_el.find(tag, ns)
         if el is not None:
             url = el.get("url")
             if url:
                 return url
-    # enclosure
+
+    # Nested media:content inside media:group
+    group = item_el.find("media:group", ns)
+    if group is not None:
+        for tag in ("media:thumbnail", "media:content"):
+            el = group.find(tag, ns)
+            if el is not None:
+                url = el.get("url")
+                if url:
+                    return url
+
+    # enclosure (direct image attachment)
     enc = item_el.find("enclosure")
     if enc is not None and enc.get("type", "").startswith("image"):
         return enc.get("url")
+
+    # content:encoded or description — pull first <img src="..."> from HTML
+    # (TechCrunch, The Verge, Electrek, The Robot Report all use this)
+    for tag in (
+        "{http://purl.org/rss/1.0/modules/content/}encoded",
+        "content:encoded",
+        "description",
+    ):
+        el = item_el.find(tag, ns) or item_el.find(tag)
+        if el is not None and el.text:
+            match = _IMG_SRC_RE.search(el.text)
+            if match:
+                url = match.group(1)
+                # Skip tiny tracking pixels (often 1x1 or very short URLs)
+                if len(url) > 20 and not url.endswith((".gif",)):
+                    return url
+
     return None
 
 
