@@ -97,6 +97,11 @@ def _parse_rss_date(date_str: Optional[str]) -> Optional[datetime]:
 
 
 _IMG_SRC_RE = re.compile(r'<img[^>]+src=["\']([^"\']+)["\']', re.IGNORECASE)
+_OG_IMAGE_RE = re.compile(
+    r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']'
+    r'|<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']',
+    re.IGNORECASE,
+)
 
 
 def _extract_image(item_el: ET.Element, ns: dict) -> Optional[str]:
@@ -222,6 +227,23 @@ def _parse_feed(xml_text: str, source_name: str) -> list[NewsItem]:
     return items
 
 
+async def _fetch_og_image(client: httpx.AsyncClient, url: str) -> Optional[str]:
+    """Fetch og:image from an article page by streaming just the <head> section."""
+    try:
+        html = ""
+        async with client.stream("GET", url, timeout=6.0) as resp:
+            async for chunk in resp.aiter_text():
+                html += chunk
+                if "</head>" in html or len(html) > 30_000:
+                    break
+        m = _OG_IMAGE_RE.search(html)
+        if m:
+            return m.group(1) or m.group(2)
+    except Exception:
+        pass
+    return None
+
+
 async def _fetch_feed(client: httpx.AsyncClient, feed: dict) -> list[NewsItem]:
     name = feed["name"]
     url = feed["url"]
@@ -250,17 +272,30 @@ async def fetch_news(limit: int = 30) -> list[NewsItem]:
             cached = _cache[cache_key]
             return cached[:limit]
 
-    # Fetch all feeds concurrently
     async with httpx.AsyncClient(
-        headers={"User-Agent": "AVWatch/1.0 (https://avwatch.app)"}
+        headers={"User-Agent": "AVWatch/1.0 (https://avwatch.app)"},
+        follow_redirects=True,
     ) as client:
+        # Fetch all RSS feeds concurrently
         results = await asyncio.gather(
             *[_fetch_feed(client, feed) for feed in RSS_FEEDS]
         )
 
-    all_items: list[NewsItem] = []
-    for batch in results:
-        all_items.extend(batch)
+        all_items: list[NewsItem] = []
+        for batch in results:
+            all_items.extend(batch)
+
+        # For articles still missing an image, fetch og:image from the article page.
+        # Runs in parallel with a per-request timeout so one slow site can't block the rest.
+        no_img = [i for i in all_items if not i.image_url and i.url]
+        if no_img:
+            og_images = await asyncio.gather(
+                *[_fetch_og_image(client, item.url) for item in no_img],
+                return_exceptions=True,
+            )
+            for item, result in zip(no_img, og_images):
+                if isinstance(result, str) and result:
+                    item.image_url = result
 
     # Sort: dated items first (newest → oldest), then undated
     dated = [i for i in all_items if i.published_at is not None]
