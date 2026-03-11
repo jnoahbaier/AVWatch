@@ -92,26 +92,33 @@ async def get_stats(
 
 @router.get("/trend")
 async def get_trend(
-    months: int = Query(7, ge=1, le=24),
+    months: int = Query(12, ge=1, le=60),
     db: AsyncSession = Depends(get_db),
 ):
     """Monthly incident counts for trend chart — used by mobile Home/Analytics."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=31 * months)
+    # Use text-based date_trunc to avoid any driver type issues
+    month_expr = func.date_trunc("month", Incident.occurred_at)
     rows = (await db.execute(
         select(
-            func.date_trunc("month", Incident.occurred_at).label("month"),
+            month_expr.label("month"),
             func.count(Incident.id).label("count"),
         )
         .where(
             Incident.status != "rejected",
-            Incident.occurred_at >= datetime.now(timezone.utc) - timedelta(days=30 * months),
+            Incident.occurred_at >= cutoff,
         )
-        .group_by(func.date_trunc("month", Incident.occurred_at))
-        .order_by(func.date_trunc("month", Incident.occurred_at))
+        .group_by(month_expr)
+        .order_by(month_expr)
     )).all()
-    return [
-        {"month": row.month.strftime("%b"), "count": row.count}
-        for row in rows
-    ]
+    result = []
+    for row in rows:
+        try:
+            month_str = row.month.strftime("%b %Y")
+        except Exception:
+            month_str = str(row.month)[:7]
+        result.append({"month": month_str, "count": row.count})
+    return result
 
 
 @router.get("/stats/overview")
