@@ -58,7 +58,7 @@ export const INCIDENT_TYPE_LABELS: Record<string, string> = {
 };
 
 /**
- * AV company display names
+ * AV company display names (full list — used in dashboard/charts)
  */
 export const AV_COMPANY_LABELS: Record<string, string> = {
   waymo: 'Waymo',
@@ -73,6 +73,16 @@ export const AV_COMPANY_LABELS: Record<string, string> = {
   other: 'Other',
   unknown: 'Unknown',
 };
+
+/**
+ * Simplified company options for the report form
+ */
+export const REPORT_COMPANY_OPTIONS: { value: string; label: string }[] = [
+  { value: 'waymo', label: 'Waymo' },
+  { value: 'zoox', label: 'Zoox' },
+  { value: 'tesla', label: 'Tesla' },
+  { value: 'other', label: 'Other / Not sure' },
+];
 
 /**
  * Reporter type display names
@@ -129,4 +139,3 @@ export const DATA_SOURCE_COLORS: Record<string, string> = {
   cpuc: '#0891b2',
   user_report: '#16a34a',
 };
-
