@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,54 +10,76 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Card, SectionHeader, KPICard } from '@/components/ui';
+import { Card, SectionHeader } from '@/components/ui';
 import { BarChart, LineChart } from '@/components/charts';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing, radius } from '@/theme/spacing';
-import { INCIDENT_TYPE_LABELS, INCIDENT_TYPE_COLORS, AV_COMPANY_LABELS, COMPANY_COLORS } from '@/lib/constants';
+import { INCIDENT_TYPE_COLORS, COMPANY_COLORS } from '@/lib/constants';
+import { fetchIncidentStats, fetchCompanyStats, fetchDailyCounts, type IncidentStats, type CompanyStats, type DailyCount } from '@/lib/supabase';
 
 const screenWidth = Dimensions.get('window').width;
 
 const PERIODS = ['Last 30 days', 'This year', 'All time'] as const;
 
-const MOCK_BY_TYPE = [
-  { label: 'Collision', value: 312, color: INCIDENT_TYPE_COLORS.collision },
-  { label: 'Near Miss', value: 498, color: INCIDENT_TYPE_COLORS.near_miss },
-  { label: 'Sudden Behavior', value: 215, color: INCIDENT_TYPE_COLORS.sudden_behavior },
-  { label: 'Blockage', value: 189, color: INCIDENT_TYPE_COLORS.blockage },
-  { label: 'Other', value: 70, color: INCIDENT_TYPE_COLORS.other },
-];
-
-const MOCK_BY_COMPANY = [
-  { label: 'Waymo', value: 520, color: COMPANY_COLORS.waymo },
-  { label: 'Cruise', value: 380, color: COMPANY_COLORS.cruise },
-  { label: 'Zoox', value: 145, color: COMPANY_COLORS.zoox },
-  { label: 'Tesla', value: 95, color: COMPANY_COLORS.tesla },
-  { label: 'Other', value: 144, color: COMPANY_COLORS.other },
-];
-
-const MOCK_MONTHLY = [
-  { label: 'Jan', value: 85 },
-  { label: 'Feb', value: 92 },
-  { label: 'Mar', value: 110 },
-  { label: 'Apr', value: 98 },
-  { label: 'May', value: 125 },
-  { label: 'Jun', value: 142 },
-  { label: 'Jul', value: 138 },
-];
+function buildMonthlyData(daily: DailyCount[]) {
+  const byMonth: Record<string, number> = {};
+  for (const row of daily) {
+    const m = new Date(row.date).toLocaleString('en-US', { month: 'short' });
+    byMonth[m] = (byMonth[m] || 0) + row.incident_count;
+  }
+  return Object.entries(byMonth).map(([label, value]) => ({ label, value }));
+}
 
 export default function AnalyticsScreen() {
   const [period, setPeriod] = useState<(typeof PERIODS)[number]>('This year');
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<IncidentStats | null>(null);
+  const [companyStats, setCompanyStats] = useState<CompanyStats[]>([]);
+  const [monthly, setMonthly] = useState<{ label: string; value: number }[]>([]);
+
+  const loadData = useCallback(async () => {
+    try {
+      const days = period === 'Last 30 days' ? 30 : period === 'This year' ? 365 : 3650;
+      const [statsData, companyData, dailyData] = await Promise.all([
+        fetchIncidentStats(),
+        fetchCompanyStats(),
+        fetchDailyCounts(days),
+      ]);
+      setStats(statsData);
+      setCompanyStats(companyData);
+      setMonthly(buildMonthlyData(dailyData));
+    } catch (e) {
+      console.warn('[AnalyticsScreen] Failed to load data:', e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [period]);
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setRefreshing(false);
-  }, []);
+    await loadData();
+  }, [loadData]);
 
-  const total = MOCK_BY_TYPE.reduce((s, d) => s + d.value, 0);
+  const byType = stats ? [
+    { label: 'Collision', value: stats.collision_count, color: INCIDENT_TYPE_COLORS.collision },
+    { label: 'Near Miss', value: stats.near_miss_count, color: INCIDENT_TYPE_COLORS.near_miss },
+    { label: 'Sudden Behavior', value: stats.sudden_behavior_count, color: INCIDENT_TYPE_COLORS.sudden_behavior },
+    { label: 'Blockage', value: stats.blockage_count, color: INCIDENT_TYPE_COLORS.blockage },
+    { label: 'Other', value: stats.other_type_count, color: INCIDENT_TYPE_COLORS.other },
+  ].filter((d) => d.value > 0) : [];
+
+  const byCompany = companyStats.map((c) => ({
+    label: c.av_company.charAt(0).toUpperCase() + c.av_company.slice(1),
+    value: c.total_incidents,
+    color: (COMPANY_COLORS as Record<string, string>)[c.av_company] || colors.neutral[400],
+  }));
+
+  const total = stats?.total_incidents ?? 0;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -96,11 +118,7 @@ export default function AnalyticsScreen() {
         <Card style={styles.totalCard}>
           <Text style={styles.totalLabel}>Total Incidents</Text>
           <View style={styles.totalRow}>
-            <Text style={styles.totalValue}>{total.toLocaleString()}</Text>
-            <View style={styles.trendPill}>
-              <Ionicons name="trending-up" size={14} color={colors.green[600]} />
-              <Text style={styles.trendPillText}>+14.5% ↑</Text>
-            </View>
+            <Text style={styles.totalValue}>{loading ? '…' : total.toLocaleString()}</Text>
           </View>
           <Text style={styles.totalSub}>Total reported · {period}</Text>
         </Card>
@@ -108,35 +126,43 @@ export default function AnalyticsScreen() {
         {/* By Type */}
         <SectionHeader title="By Incident Type" />
         <Card style={styles.chartCard}>
-          <BarChart data={MOCK_BY_TYPE} showPercentage />
+          {byType.length > 0 ? (
+            <BarChart data={byType} showPercentage />
+          ) : (
+            <Text style={styles.emptyText}>{loading ? 'Loading…' : 'No data'}</Text>
+          )}
         </Card>
 
         {/* By Company */}
         <SectionHeader title="By Company" />
         <Card style={styles.chartCard}>
-          <BarChart data={MOCK_BY_COMPANY} showPercentage />
+          {byCompany.length > 0 ? (
+            <BarChart data={byCompany} showPercentage />
+          ) : (
+            <Text style={styles.emptyText}>{loading ? 'Loading…' : 'No data'}</Text>
+          )}
         </Card>
 
         {/* Trend over time */}
         <SectionHeader title="Trend Over Time" />
         <Card style={styles.chartCard}>
           <View style={styles.trendHeader}>
-            <Text style={styles.trendTotal}>1.5k</Text>
-            <View style={styles.trendPill}>
-              <Ionicons name="trending-up" size={12} color={colors.green[600]} />
-              <Text style={[styles.trendPillText, { fontSize: 11 }]}>+8.5% ↑</Text>
-            </View>
+            <Text style={styles.trendTotal}>
+              {loading ? '…' : total.toLocaleString()}
+            </Text>
           </View>
           <Text style={styles.trendSub}>Total incidents</Text>
-          <View style={styles.lineChartWrap}>
-            <LineChart
-              data={MOCK_MONTHLY}
-              width={screenWidth - 72}
-              height={180}
-              color={colors.primary[500]}
-              highlightLast
-            />
-          </View>
+          {monthly.length > 0 && (
+            <View style={styles.lineChartWrap}>
+              <LineChart
+                data={monthly}
+                width={screenWidth - 72}
+                height={180}
+                color={colors.primary[500]}
+                highlightLast
+              />
+            </View>
+          )}
         </Card>
       </ScrollView>
     </SafeAreaView>
@@ -245,5 +271,11 @@ const styles = StyleSheet.create({
   },
   lineChartWrap: {
     alignItems: 'center',
+  },
+  emptyText: {
+    ...typography.small,
+    color: colors.neutral[400],
+    textAlign: 'center',
+    paddingVertical: spacing.xl,
   },
 });

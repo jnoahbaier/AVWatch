@@ -9,11 +9,64 @@ from datetime import datetime
 from typing import Any, Optional
 import logging
 
+from geoalchemy2 import WKTElement
+from sqlalchemy import select
+
 from .base import DataSourceBase, IncidentRecord, SyncResult
 from .nhtsa_sgo import NHTSASGODataSource
 from .nhtsa_api import NHTSAComplaintsAPI, NHTSARecallsAPI
 from .california_dmv import CaliforniaDMVDataSource
 from .cpuc import CPUCDataSource
+from app.models.incident import Incident
+
+# Fallback coordinates for known cities and states when lat/lng are absent
+_CITY_COORDS: dict[str, tuple[float, float]] = {
+    "san francisco": (37.7749, -122.4194),
+    "los angeles": (34.0522, -118.2437),
+    "san jose": (37.3382, -121.8863),
+    "fremont": (37.5485, -121.9886),
+    "mountain view": (37.3861, -122.0839),
+    "palo alto": (37.4419, -122.1430),
+    "phoenix": (33.4484, -112.0740),
+    "tempe": (33.4255, -111.9400),
+    "chandler": (33.3062, -111.8413),
+    "scottsdale": (33.4942, -111.9261),
+    "las vegas": (36.1699, -115.1398),
+    "miami": (25.7617, -80.1918),
+    "austin": (30.2672, -97.7431),
+    "seattle": (47.6062, -122.3321),
+    "new york": (40.7128, -74.0060),
+    "chicago": (41.8781, -87.6298),
+    "pittsburgh": (40.4406, -79.9959),
+    "detroit": (42.3314, -83.0458),
+}
+
+_STATE_COORDS: dict[str, tuple[float, float]] = {
+    "CA": (37.7749, -122.4194),
+    "AZ": (33.4484, -112.0740),
+    "TX": (30.2672, -97.7431),
+    "NV": (36.1699, -115.1398),
+    "FL": (25.7617, -80.1918),
+    "WA": (47.6062, -122.3321),
+    "NY": (40.7128, -74.0060),
+    "IL": (41.8781, -87.6298),
+    "PA": (40.4406, -79.9959),
+    "MI": (42.3314, -83.0458),
+}
+
+
+def _resolve_coords(record: IncidentRecord) -> tuple[float, float] | None:
+    """Return (lat, lng) for a record, falling back to city/state lookup."""
+    if record.latitude is not None and record.longitude is not None:
+        return (record.latitude, record.longitude)
+    if record.city:
+        key = record.city.lower().strip()
+        if key in _CITY_COORDS:
+            return _CITY_COORDS[key]
+    if record.state:
+        if record.state in _STATE_COORDS:
+            return _STATE_COORDS[record.state]
+    return None
 
 logger = logging.getLogger(__name__)
 
@@ -165,13 +218,10 @@ class DataSyncService:
         """Find an existing incident by external ID."""
         if not self.db_session:
             return None
-
-        # Query would go here
-        # result = await self.db_session.execute(
-        #     select(Incident).where(Incident.external_id == external_id)
-        # )
-        # return result.scalar_one_or_none()
-        return None
+        result = await self.db_session.execute(
+            select(Incident).where(Incident.external_id == external_id)
+        )
+        return result.scalar_one_or_none()
 
     async def _should_update(self, existing: Any, new: IncidentRecord) -> bool:
         """Determine if existing record should be updated."""
@@ -187,38 +237,39 @@ class DataSyncService:
         if not self.db_session:
             return
 
-        # Create incident record
-        # incident = Incident(
-        #     incident_type=record.incident_type,
-        #     occurred_at=record.occurred_at,
-        #     source=record.source,
-        #     external_id=record.external_id,
-        #     latitude=record.latitude,
-        #     longitude=record.longitude,
-        #     address=record.address,
-        #     city=record.city,
-        #     av_company=record.av_company,
-        #     description=record.description,
-        #     injuries=record.injuries,
-        #     fatalities=record.fatalities,
-        #     confidence_score=record.confidence_score,
-        #     status=record.status,
-        #     raw_data=record.raw_data,
-        #     reported_at=record.reported_at,
-        # )
-        # self.db_session.add(incident)
-        pass
+        coords = _resolve_coords(record)
+        if coords is None:
+            self.logger.debug(f"Skipping record {record.external_id}: no coordinates available")
+            return
+
+        lat, lng = coords
+        point = WKTElement(f"POINT({lng} {lat})", srid=4326)
+        incident = Incident(
+            incident_type=record.incident_type,
+            occurred_at=record.occurred_at,
+            source=record.source,
+            external_id=record.external_id,
+            location=point,
+            address=record.address,
+            city=record.city or "Unknown",
+            av_company=record.av_company,
+            description=record.description,
+            confidence_score=record.confidence_score,
+            status=record.status,
+        )
+        self.db_session.add(incident)
 
     async def _update_incident(self, existing: Any, record: IncidentRecord) -> None:
         """Update an existing incident with new data."""
         if not self.db_session:
             return
 
-        # Update fields
-        # existing.description = record.description or existing.description
-        # existing.injuries = record.injuries or existing.injuries
-        # etc...
-        pass
+        if record.description and not existing.description:
+            existing.description = record.description
+        if record.confidence_score > (existing.confidence_score or 0):
+            existing.confidence_score = record.confidence_score
+        if record.av_company and not existing.av_company:
+            existing.av_company = record.av_company
 
     async def sync_nhtsa_sgo(self, since: Optional[datetime] = None) -> SyncResult:
         """Convenience method to sync only NHTSA SGO data."""

@@ -23,7 +23,7 @@ import {
   AV_COMPANY_LABELS,
   REPORTER_TYPE_LABELS,
 } from '@/lib/constants';
-import { submitReport } from '@/lib/api';
+import { submitReport, uploadPhotos } from '@/lib/api';
 
 type Step = 'type' | 'details' | 'review' | 'success';
 
@@ -104,6 +104,11 @@ export default function ReportScreen() {
         occurred_at: new Date(date).toISOString(),
         reporter_type: reporterType || undefined,
       });
+      if (photos.length > 0) {
+        uploadPhotos(result.id, photos).catch((e) =>
+          console.warn('[ReportScreen] Photo upload failed (non-fatal):', e)
+        );
+      }
       setReportId(result.id);
       setStep('success');
     } catch (err) {

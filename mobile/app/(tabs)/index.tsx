@@ -6,7 +6,6 @@ import {
   StyleSheet,
   RefreshControl,
   Dimensions,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,41 +15,48 @@ import { LineChart } from '@/components/charts';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
+import { fetchIncidentStats, fetchDailyCounts, type IncidentStats, type DailyCount } from '@/lib/supabase';
 
 const screenWidth = Dimensions.get('window').width;
 
-// Placeholder data — wired to live API once backend is running
-const MOCK_STATS = {
-  total: 1284,
-  thisMonth: 142,
-  verified: 891,
-  sources: 3,
-  trend: 5.8,
-};
-
-const MOCK_MONTHLY = [
-  { label: 'Jan', value: 85 },
-  { label: 'Feb', value: 92 },
-  { label: 'Mar', value: 110 },
-  { label: 'Apr', value: 98 },
-  { label: 'May', value: 125 },
-  { label: 'Jun', value: 142 },
-  { label: 'Jul', value: 138 },
-];
+function buildMonthlyData(daily: DailyCount[]) {
+  const byMonth: Record<string, number> = {};
+  for (const row of daily) {
+    const m = new Date(row.date).toLocaleString('en-US', { month: 'short' });
+    byMonth[m] = (byMonth[m] || 0) + row.incident_count;
+  }
+  return Object.entries(byMonth).map(([label, value]) => ({ label, value }));
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState(MOCK_STATS);
-  const [monthly, setMonthly] = useState(MOCK_MONTHLY);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<IncidentStats | null>(null);
+  const [monthly, setMonthly] = useState<{ label: string; value: number }[]>([]);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [statsData, dailyData] = await Promise.all([
+        fetchIncidentStats(),
+        fetchDailyCounts(180),
+      ]);
+      setStats(statsData);
+      setMonthly(buildMonthlyData(dailyData));
+    } catch (e) {
+      console.warn('[HomeScreen] Failed to load stats:', e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    // TODO: fetch from real API
-    await new Promise((r) => setTimeout(r, 800));
-    setRefreshing(false);
-  }, []);
+    await loadData();
+  }, [loadData]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -79,17 +85,13 @@ export default function HomeScreen() {
             icon={<Ionicons name="alert-circle-outline" size={18} color={colors.primary[600]} />}
             iconBg={colors.primary[50]}
             label="Total Incidents"
-            value={stats.total.toLocaleString()}
-            trend={stats.trend}
-            trendLabel="Last 30 days"
+            value={loading ? '…' : (stats?.total_incidents ?? 0).toLocaleString()}
           />
           <KPICard
             icon={<Ionicons name="calendar-outline" size={18} color={colors.green[600]} />}
             iconBg={colors.green[50]}
             label="This Month"
-            value={stats.thisMonth.toLocaleString()}
-            trend={3.2}
-            trendLabel="Last 30 days"
+            value={loading ? '…' : (stats?.incidents_this_month ?? 0).toLocaleString()}
           />
         </View>
         <View style={styles.kpiGrid}>
@@ -97,13 +99,13 @@ export default function HomeScreen() {
             icon={<Ionicons name="shield-checkmark-outline" size={18} color={colors.purple[600]} />}
             iconBg={colors.purple[50]}
             label="Verified"
-            value={stats.verified.toLocaleString()}
+            value={loading ? '…' : (stats?.verified_incidents ?? 0).toLocaleString()}
           />
           <KPICard
             icon={<Ionicons name="server-outline" size={18} color={colors.orange[600]} />}
             iconBg={colors.orange[50]}
             label="Data Sources"
-            value={stats.sources}
+            value="3"
           />
         </View>
 
@@ -129,24 +131,24 @@ export default function HomeScreen() {
         </Card>
 
         {/* Trend chart */}
-        <SectionHeader title="Incident Trend" action="This year" />
+        <SectionHeader title="Incident Trend" action="6 months" />
         <Card style={styles.chartCard}>
           <View style={styles.chartHeader}>
-            <Text style={styles.chartTotal}>{stats.total.toLocaleString()}</Text>
-            <View style={styles.chartTrend}>
-              <Ionicons name="trending-up" size={14} color={colors.green[600]} />
-              <Text style={styles.chartTrendText}>+{stats.trend}% ↑</Text>
-            </View>
+            <Text style={styles.chartTotal}>
+              {loading ? '…' : (stats?.total_incidents ?? 0).toLocaleString()}
+            </Text>
           </View>
           <Text style={styles.chartSubtitle}>total reported</Text>
-          <View style={styles.chartWrap}>
-            <LineChart
-              data={monthly}
-              width={screenWidth - 72}
-              height={180}
-              color={colors.primary[500]}
-            />
-          </View>
+          {monthly.length > 0 && (
+            <View style={styles.chartWrap}>
+              <LineChart
+                data={monthly}
+                width={screenWidth - 72}
+                height={180}
+                color={colors.primary[500]}
+              />
+            </View>
+          )}
         </Card>
       </ScrollView>
     </SafeAreaView>

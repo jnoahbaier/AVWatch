@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import {
   Upload,
   CheckCircle,
   Loader2,
+  X,
 } from 'lucide-react';
 import {
   INCIDENT_TYPE_LABELS,
@@ -51,6 +52,8 @@ export default function ReportPage() {
   const [locationStatus, setLocationStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -461,21 +464,48 @@ export default function ReportPage() {
                     <Upload className="w-4 h-4 inline mr-2" />
                     Photos or videos (optional)
                   </label>
-                  <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center">
+                  <div
+                    className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center cursor-pointer hover:border-green-400 transition"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
                     <Upload className="w-8 h-8 mx-auto text-slate-400 mb-2" />
                     <p className="text-sm text-slate-500">
-                      Drag and drop files here, or click to select
+                      Click to select files
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
-                      PNG, JPG, MP4 up to 10MB
+                      PNG, JPG, MP4 up to 10MB · max 3 files
                     </p>
                     <input
+                      ref={fileInputRef}
                       type="file"
                       multiple
                       accept="image/*,video/*"
                       className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []).slice(0, 3);
+                        setSelectedFiles(files);
+                      }}
                     />
                   </div>
+                  {selectedFiles.length > 0 && (
+                    <ul className="mt-3 space-y-1">
+                      {selectedFiles.map((file, i) => (
+                        <li key={i} className="flex items-center justify-between text-sm bg-slate-50 dark:bg-slate-700/50 rounded-lg px-3 py-2">
+                          <span className="truncate text-slate-700 dark:text-slate-300">{file.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFiles((prev) => prev.filter((_, j) => j !== i))}
+                            className="ml-2 text-slate-400 hover:text-red-500 flex-shrink-0"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="mt-2 text-xs text-slate-400">
+                    Note: Photos are saved with your report. Media hosting coming soon.
+                  </p>
                 </div>
               </div>
             )}

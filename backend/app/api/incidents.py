@@ -128,6 +128,7 @@ async def list_incidents(
     incident_type: Optional[str] = None,
     av_company: Optional[str] = None,
     city: Optional[str] = None,
+    source: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
     min_lat: Optional[float] = Query(None, ge=-90, le=90),
@@ -146,6 +147,8 @@ async def list_incidents(
         filters.append(Incident.av_company == av_company)
     if city:
         filters.append(Incident.city == city)
+    if source:
+        filters.append(Incident.source == source)
     if start_date:
         filters.append(Incident.occurred_at >= start_date)
     if end_date:

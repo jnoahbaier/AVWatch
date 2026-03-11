@@ -29,10 +29,12 @@ import {
   getCompanyStats,
   getDataSources,
   getRecentIncidents,
+  getDailyIncidentCounts,
   type IncidentStats,
   type CompanyStats,
   type DataSource,
   type Incident,
+  type DailyIncidentCount,
 } from '@/lib/supabase';
 import {
   INCIDENT_TYPE_LABELS,
@@ -48,6 +50,7 @@ export default function DashboardPage() {
   const [companyStats, setCompanyStats] = useState<CompanyStats[]>([]);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [recentIncidents, setRecentIncidents] = useState<Incident[]>([]);
+  const [dailyCounts, setDailyCounts] = useState<DailyIncidentCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -59,16 +62,18 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [statsData, companyData, sourcesData, recentData] = await Promise.all([
+      const [statsData, companyData, sourcesData, recentData, dailyData] = await Promise.all([
         getIncidentStats().catch(() => null),
         getCompanyStats().catch(() => []),
         getDataSources().catch(() => []),
         getRecentIncidents(5).catch(() => []),
+        getDailyIncidentCounts({ days: 30 }).catch(() => []),
       ]);
       setStats(statsData);
       setCompanyStats(companyData);
       setDataSources(sourcesData);
       setRecentIncidents(recentData);
+      setDailyCounts(dailyData);
     } catch (err) {
       setError('Failed to load dashboard data');
       console.error(err);
@@ -76,10 +81,6 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-
-  // Calculate trends (mock for now)
-  const monthlyChange = stats ? '+12%' : undefined;
-  const weeklyChange = stats ? '+5%' : undefined;
 
   // Prepare chart data
   const typeChartData = stats
@@ -110,19 +111,25 @@ export default function DashboardPage() {
       ].filter((d) => d.count > 0)
     : [];
 
-  // Mock trend data for line chart
-  const trendData = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    return {
-      date: date.toISOString().split('T')[0],
-      total: Math.floor(Math.random() * 10) + 1,
-      collision: Math.floor(Math.random() * 3),
-      near_miss: Math.floor(Math.random() * 5),
-      sudden_behavior: Math.floor(Math.random() * 4),
-      blockage: Math.floor(Math.random() * 3),
-    };
-  });
+  // Aggregate daily counts into per-date totals for the trend chart
+  const trendData = (() => {
+    const byDate: Record<string, { total: number; collision: number; near_miss: number; sudden_behavior: number; blockage: number }> = {};
+    // Pre-populate last 30 days so empty days still appear
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      byDate[key] = { total: 0, collision: 0, near_miss: 0, sudden_behavior: 0, blockage: 0 };
+    }
+    for (const row of dailyCounts) {
+      const key = row.date;
+      if (!byDate[key]) continue;
+      byDate[key].total += row.incident_count;
+      const t = row.incident_type as keyof typeof byDate[typeof key];
+      if (t in byDate[key]) (byDate[key] as Record<string, number>)[t] += row.incident_count;
+    }
+    return Object.entries(byDate).map(([date, counts]) => ({ date, ...counts }));
+  })();
 
   if (loading) {
     return (
@@ -207,16 +214,12 @@ export default function DashboardPage() {
             icon={<Calendar className="w-6 h-6" />}
             label="This Month"
             value={stats?.incidents_this_month?.toString() || '0'}
-            change={monthlyChange}
-            isPositive={false}
             color="blue"
           />
           <MetricCard
             icon={<Users className="w-6 h-6" />}
             label="This Week"
             value={stats?.incidents_this_week?.toString() || '0'}
-            change={weeklyChange}
-            isPositive={false}
             color="purple"
           />
         </div>

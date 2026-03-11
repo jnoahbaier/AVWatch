@@ -122,3 +122,28 @@ export async function submitReport(payload: ReportPayload): Promise<SubmitReport
     }),
   });
 }
+
+/**
+ * Upload photos for an incident using the incidents media endpoint.
+ * Photos are sent as multipart/form-data.
+ */
+export async function uploadPhotos(incidentId: string, photoUris: string[]): Promise<void> {
+  if (photoUris.length === 0) return;
+  const formData = new FormData();
+  photoUris.forEach((uri, i) => {
+    const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
+    const mimeType = ext === 'mp4' || ext === 'mov' ? 'video/mp4' : 'image/jpeg';
+    formData.append('files', { uri, name: `photo_${i}.${ext}`, type: mimeType } as any);
+  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
+  try {
+    await fetch(`${API_BASE_URL}/api/incidents/${incidentId}/media`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}

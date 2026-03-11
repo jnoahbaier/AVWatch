@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -116,11 +117,16 @@ export default function ProfileScreen() {
             <View style={styles.authForm}>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={18} color={colors.neutral[400]} />
-                <TouchableOpacity style={styles.inputFake}>
-                  <Text style={styles.inputPlaceholder}>
-                    Enter your email address
-                  </Text>
-                </TouchableOpacity>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email address"
+                  placeholderTextColor={colors.neutral[300]}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
               </View>
               <Button
                 title="Continue with Email"
@@ -268,12 +274,10 @@ const styles = StyleSheet.create({
     height: 50,
     gap: spacing.sm,
   },
-  inputFake: {
+  input: {
     flex: 1,
-  },
-  inputPlaceholder: {
     ...typography.body,
-    color: colors.neutral[300],
+    color: colors.neutral[900],
   },
   divider: {
     flexDirection: 'row',

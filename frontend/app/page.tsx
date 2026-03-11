@@ -1,7 +1,20 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { MapPin, Shield, BarChart3, Users } from 'lucide-react';
+import { getIncidentStats, type IncidentStats } from '@/lib/supabase';
+
+function useStats() {
+  const [stats, setStats] = useState<IncidentStats | null>(null);
+  useEffect(() => {
+    getIncidentStats().then(setStats).catch(() => null);
+  }, []);
+  return stats;
+}
 
 export default function Home() {
+  const stats = useStats();
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -86,10 +99,16 @@ export default function Home() {
       <section className="bg-slate-100 dark:bg-slate-800/50 py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <StatCard value="0" label="Reports Submitted" />
-            <StatCard value="0" label="Verified Incidents" />
-            <StatCard value="1" label="Cities Covered" />
-            <StatCard value="3" label="Data Sources" />
+            <StatCard
+              value={stats ? stats.total_incidents.toLocaleString() : '—'}
+              label="Reports Submitted"
+            />
+            <StatCard
+              value={stats ? stats.verified_incidents.toLocaleString() : '—'}
+              label="Verified Incidents"
+            />
+            <StatCard value="5+" label="Cities Covered" />
+            <StatCard value="3" label="Official Data Sources" />
           </div>
         </div>
       </section>
