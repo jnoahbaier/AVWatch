@@ -14,7 +14,7 @@ import app.models  # noqa: F401 — ensure all models are registered before crea
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
     # Create all tables if they don't exist yet (idempotent).
     # Wrapped in try/except so the app can still start even if the DB is
