@@ -387,9 +387,6 @@ export default function Home() {
                       <h2 className="text-lg font-bold text-slate-900">
                         Report an Incident
                       </h2>
-                      <p className="text-sm text-slate-500 mt-0.5">
-                        Takes about 60 seconds · no account required
-                      </p>
                     </div>
 
                     {/* Section 1: What happened */}
