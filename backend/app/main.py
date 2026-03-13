@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     print(f"Shutting down {settings.APP_NAME} API...")
 
 
-app = FastAPI(
+app: FastAPI = FastAPI(
     title=settings.APP_NAME,
     description="A transparent platform for autonomous vehicle accountability",
     version="0.1.0",

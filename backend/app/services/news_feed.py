@@ -316,7 +316,7 @@ async def fetch_news(limit: int = 30) -> list[NewsItem]:
     # Sort: dated items first (newest → oldest), then undated
     dated = [i for i in all_items if i.published_at is not None]
     undated = [i for i in all_items if i.published_at is None]
-    dated.sort(key=lambda x: x.published_at, reverse=True)  # type: ignore[arg-type]
+    dated.sort(key=lambda x: x.published_at or datetime.min, reverse=True)
     all_items = dated + undated
 
     async with _cache_lock:
