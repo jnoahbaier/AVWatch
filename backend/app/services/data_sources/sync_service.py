@@ -68,6 +68,7 @@ def _resolve_coords(record: IncidentRecord) -> tuple[float, float] | None:
             return _STATE_COORDS[record.state]
     return None
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -239,7 +240,9 @@ class DataSyncService:
 
         coords = _resolve_coords(record)
         if coords is None:
-            self.logger.debug(f"Skipping record {record.external_id}: no coordinates available")
+            self.logger.debug(
+                f"Skipping record {record.external_id}: no coordinates available"
+            )
             return
 
         lat, lng = coords

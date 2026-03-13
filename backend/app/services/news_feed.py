@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 # Data model
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class NewsItem:
     title: str
@@ -62,10 +63,25 @@ RSS_FEEDS: list[dict] = [
 
 # Keywords to filter items so we only show AV-relevant articles
 AV_KEYWORDS = {
-    "waymo", "cruise", "robotaxi", "autonomous vehicle", "self-driving",
-    "av ", "adas", "tesla autopilot", "tesla fsd", "zoox", "nuro",
-    "aurora", "motional", "pony.ai", "weride", "driverless",
-    "autonomous driving", "lidar", "robo-taxi",
+    "waymo",
+    "cruise",
+    "robotaxi",
+    "autonomous vehicle",
+    "self-driving",
+    "av ",
+    "adas",
+    "tesla autopilot",
+    "tesla fsd",
+    "zoox",
+    "nuro",
+    "aurora",
+    "motional",
+    "pony.ai",
+    "weride",
+    "driverless",
+    "autonomous driving",
+    "lidar",
+    "robo-taxi",
 }
 
 # ---------------------------------------------------------------------------
@@ -175,6 +191,7 @@ def _parse_feed(xml_text: str, source_name: str) -> list[NewsItem]:
         is_atom = bool(entries)
 
     for entry in entries:
+
         def _text(tag: str) -> Optional[str]:
             el = entry.find(tag)
             return el.text.strip() if el is not None and el.text else None
@@ -306,5 +323,7 @@ async def fetch_news(limit: int = 30) -> list[NewsItem]:
         _cache[cache_key] = all_items
         _cache_time[cache_key] = now
 
-    logger.info("Fetched %d AV news items from %d feeds", len(all_items), len(RSS_FEEDS))
+    logger.info(
+        "Fetched %d AV news items from %d feeds", len(all_items), len(RSS_FEEDS)
+    )
     return all_items[:limit]

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "AV Watch"
     APP_ENV: str = "development"
     DEBUG: bool = True
-    SECRET_KEY: str = "change-me-in-production" # IMPORTANT: Change this to a strong, unique secret in production!
+    SECRET_KEY: str = "change-me-in-production"  # IMPORTANT: Change this to a strong, unique secret in production!
 
     # Database
     # Railway provides DATABASE_URL as "postgresql://...", but asyncpg requires

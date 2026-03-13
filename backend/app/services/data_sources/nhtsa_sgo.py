@@ -372,7 +372,3 @@ class NHTSASGODataSource(DataSourceBase):
             injuries = 1
 
         return injuries, fatalities
-
-
-
-

@@ -398,7 +398,3 @@ class CPUCIncidentParser:
                 continue
 
         return records
-
-
-
-

@@ -34,6 +34,7 @@ async def readiness_check():
     url = settings.async_database_url
     try:
         from urllib.parse import urlparse
+
         parsed = urlparse(url)
         db_url_info = f"{parsed.scheme}://{parsed.hostname}:{parsed.port}{parsed.path}"
     except Exception:

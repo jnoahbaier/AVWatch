@@ -42,8 +42,12 @@ class LocationInput(BaseModel):
 
 
 class IncidentCreate(BaseModel):
-    incident_type: Literal['collision', 'near_miss', 'sudden_behavior', 'blockage', 'other'] = Field(..., description="Type of incident")
-    av_company: Literal['waymo', 'cruise', 'zoox', 'tesla', 'other', 'unknown'] = Field(default="unknown", description="AV company involved")
+    incident_type: Literal[
+        "collision", "near_miss", "sudden_behavior", "blockage", "other"
+    ] = Field(..., description="Type of incident")
+    av_company: Literal["waymo", "cruise", "zoox", "tesla", "other", "unknown"] = Field(
+        default="unknown", description="AV company involved"
+    )
     description: Optional[str] = Field(None, max_length=2000)
     location: LocationInput
     occurred_at: datetime
@@ -262,9 +266,7 @@ async def get_incident(
     """Get a single incident by ID."""
     wkt_col = func.ST_AsText(Incident.location).label("wkt")
     result = (
-        await db.execute(
-            select(Incident, wkt_col).where(Incident.id == incident_id)
-        )
+        await db.execute(select(Incident, wkt_col).where(Incident.id == incident_id))
     ).first()
     if not result:
         raise HTTPException(status_code=404, detail="Incident not found")
