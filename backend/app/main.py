@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        print(f"Database tables ready.")
+        print("Database tables ready.")
     except Exception as exc:
         print(f"WARNING: Could not create database tables on startup: {exc}")
     print(f"Starting {settings.APP_NAME} API...")

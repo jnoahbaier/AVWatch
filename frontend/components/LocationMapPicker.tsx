@@ -38,7 +38,7 @@ export function LocationMapPicker({ onLocationSelect, selectedLat, selectedLng }
 
     (async () => {
       mapboxgl = (await import('mapbox-gl')).default as unknown as typeof import('mapbox-gl');
-      (mapboxgl as { accessToken: string }).accessToken =
+      (mapboxgl as unknown as { accessToken: string }).accessToken =
         process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
 
       map = new mapboxgl.Map({

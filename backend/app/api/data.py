@@ -253,7 +253,6 @@ async def export_csv(
     import csv
     import io
     from fastapi.responses import StreamingResponse
-    from geoalchemy2 import functions as geo_func
 
     filters = [Incident.status != "rejected"]
     if city:
