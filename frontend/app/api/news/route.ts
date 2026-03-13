@@ -82,7 +82,7 @@ async function fetchFeed(name: string, url: string): Promise<NewsItem[]> {
       const combined = `${title} ${summary}`;
       if (!isAVRelevant(combined)) continue;
 
-      const imageUrl = extractImageUrl(entry);
+      const imageUrl = extractImageUrl(entry as unknown as Record<string, unknown>);
 
       items.push({
         title: stripHtml(title),

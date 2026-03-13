@@ -639,12 +639,12 @@ export default function Home() {
               </p>
               <p>
                 Every report is structured, geolocated, and routed to the
-                California DMV's Autonomous Vehicles Program, the agency that
+                California DMV&apos;s Autonomous Vehicles Program, the agency that
                 issues permits and has the authority to suspend them.
               </p>
               <p>
                 AV Watch is built by a team of independent researchers at UC
-                Berkeley's School of Information.
+                Berkeley&apos;s School of Information.
               </p>
             </div>
           </div>
