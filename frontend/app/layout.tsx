@@ -48,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className="min-h-screen font-sans antialiased">
+      <body className="min-h-screen font-sans antialiased bg-[#f0f6ff]">
         <Providers>
           <Navbar />
           <main className="flex-1">{children}</main>

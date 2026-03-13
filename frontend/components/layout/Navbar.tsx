@@ -1,114 +1,90 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, MapPin, BarChart3, FileText, Info } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
-import { clsx } from 'clsx';
 
 const navigation = [
-  { name: 'Map', href: '/map', icon: MapPin },
-  { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-  { name: 'Report', href: '/report', icon: FileText },
-  { name: 'About', href: '/about', icon: Info },
+  { name: 'News', href: '/#news' },
+  { name: 'About', href: '/#about' },
 ];
 
 export function Navbar() {
-  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-700">
+    <header className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AV</span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/25">
+              <span className="text-white font-bold text-xs tracking-tight">AV</span>
             </div>
-            <span className="font-semibold text-slate-900 dark:text-white">
+            <span className="font-bold text-slate-900 tracking-tight">
               AV Watch
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-1">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={clsx(
-                    'flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition',
-                    isActive
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.name}
-                </Link>
-              );
-            })}
+            {navigation.map((item) => (
+              <a
+                key={item.name}
+                href={item.href}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition rounded-lg"
+              >
+                {item.name}
+              </a>
+            ))}
           </div>
 
-          {/* Report Button (Desktop) */}
-          <div className="hidden md:block">
-            <Link
-              href="/report"
-              className="rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-green-400"
+          {/* Report Button */}
+          <div className="hidden md:flex items-center">
+            <a
+              href="/#report"
+              className="rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition"
             >
               Report Incident
-            </Link>
+            </a>
           </div>
 
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+            className="md:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             )}
           </button>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-200 dark:border-slate-700">
-            <div className="flex flex-col gap-2">
-              {navigation.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={clsx(
-                      'flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition',
-                      isActive
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.name}
-                  </Link>
-                );
-              })}
-              <Link
-                href="/report"
+          <div className="md:hidden py-4 border-t border-slate-100">
+            <div className="flex flex-col gap-1">
+              {navigation.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                >
+                  {item.name}
+                </a>
+              ))}
+              <a
+                href="/#report"
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-lg bg-green-500 px-4 py-3 text-center text-base font-semibold text-white"
+                className="mt-2 rounded-xl bg-blue-600 px-4 py-3 text-center text-base font-semibold text-white hover:bg-blue-700 transition"
               >
-                Report Incident
-              </Link>
+                Report Incident →
+              </a>
             </div>
           </div>
         )}
@@ -116,4 +92,3 @@ export function Navbar() {
     </header>
   );
 }
-

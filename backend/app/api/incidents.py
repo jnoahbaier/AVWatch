@@ -3,7 +3,7 @@ Incident reporting and querying endpoints.
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Literal
 from uuid import UUID
 
 import re
@@ -42,8 +42,8 @@ class LocationInput(BaseModel):
 
 
 class IncidentCreate(BaseModel):
-    incident_type: str = Field(..., description="Type of incident")
-    av_company: str = Field(default="unknown", description="AV company involved")
+    incident_type: Literal['collision', 'near_miss', 'sudden_behavior', 'blockage', 'other'] = Field(..., description="Type of incident")
+    av_company: Literal['waymo', 'cruise', 'zoox', 'tesla', 'other', 'unknown'] = Field(default="unknown", description="AV company involved")
     description: Optional[str] = Field(None, max_length=2000)
     location: LocationInput
     occurred_at: datetime
@@ -77,12 +77,14 @@ async def create_incident(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Submit a new incident report.
-
-    - **incident_type**: collision, near_miss, sudden_behavior, blockage, other
-    - **av_company**: waymo, cruise, zoox, tesla, other, unknown
-    - **location**: GPS coordinates and optional address
-    - **occurred_at**: When the incident happened
+    # Submit a new incident report.
+    # TODO: Implement rate limiting to prevent abuse and fraudulent reports.
+    #   Consider using FastAPI-Limiter or a reverse proxy like Nginx for this.
+    #
+    # - **incident_type**: collision, near_miss, sudden_behavior, blockage, other
+    # - **av_company**: waymo, cruise, zoox, tesla, other, unknown
+    # - **location**: GPS coordinates and optional address
+    # - **occurred_at**: When the incident happened
     """
     point = WKTElement(
         f"POINT({incident.location.longitude} {incident.location.latitude})",

@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@avwatch/shared": "file:../packages/shared",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.3",
     "@react-navigation/bottom-tabs": "^7.0.0",

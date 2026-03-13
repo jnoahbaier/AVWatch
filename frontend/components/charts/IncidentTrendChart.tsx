@@ -120,10 +120,10 @@ export function IncidentTrendChart({
           <Line
             type="monotone"
             dataKey="total"
-            stroke="#22c55e"
+            stroke="#4f46e5"
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 6, fill: '#22c55e' }}
+            activeDot={{ r: 6, fill: '#4f46e5' }}
           />
         )}
       </LineChart>

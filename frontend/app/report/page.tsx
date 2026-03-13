@@ -155,13 +155,13 @@ export default function ReportPage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
-            <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
+          <div className="mx-auto w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle className="w-12 h-12 text-blue-400" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
+          <h1 className="text-2xl font-bold text-white mb-3">
             Report Submitted
           </h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-8">
+          <p className="text-slate-400 mb-8">
             Thank you for contributing to AV accountability. Your report has
             been added to our database.
           </p>
@@ -172,15 +172,15 @@ export default function ReportPage() {
                 setLocationStatus('idle');
                 setSelectedFiles([]);
               }}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-400 transition"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition"
             >
               Submit Another
             </button>
             <a
-              href="/map"
-              className="px-6 py-3 border border-slate-300 dark:border-slate-600 rounded-lg font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              href="/"
+              className="px-6 py-3 border border-white/10 bg-white/5 hover:bg-white/10 rounded-xl font-medium text-slate-300 transition"
             >
-              View on Map →
+              Back to Home →
             </a>
           </div>
         </div>

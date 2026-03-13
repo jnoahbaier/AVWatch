@@ -2,155 +2,208 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
-  ScrollView,
+  FlatList,
   StyleSheet,
   RefreshControl,
-  Dimensions,
+  TouchableOpacity,
+  ActivityIndicator,
+  ListRenderItem,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { KPICard, Card, SectionHeader } from '@/components/ui';
-import { LineChart } from '@/components/charts';
+import { LinearGradient } from 'expo-linear-gradient';
+import type { NewsItem } from '@avwatch/shared';
+import { NewsCard } from '@/components/news/NewsCard';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
-import { spacing } from '@/theme/spacing';
-import { fetchIncidentStats, fetchDailyCounts, type IncidentStats, type DailyCount } from '@/lib/supabase';
+import { spacing, radius } from '@/theme/spacing';
 
-const screenWidth = Dimensions.get('window').width;
+// Points at the Next.js /api/news route when no backend URL is configured.
+// Use your machine's LAN IP so a physical device on the same WiFi can reach it.
+const NEWS_URL =
+  process.env.EXPO_PUBLIC_NEWS_URL ||
+  (process.env.EXPO_PUBLIC_API_URL
+    ? `${process.env.EXPO_PUBLIC_API_URL}/api/news/`
+    : 'http://localhost:3000/api/news');
 
-function buildMonthlyData(daily: DailyCount[]) {
-  const byMonth: Record<string, number> = {};
-  for (const row of daily) {
-    const m = new Date(row.date).toLocaleString('en-US', { month: 'short' });
-    byMonth[m] = (byMonth[m] || 0) + row.incident_count;
-  }
-  return Object.entries(byMonth).map(([label, value]) => ({ label, value }));
+async function fetchNews(limit = 30): Promise<NewsItem[]> {
+  const url = `${NEWS_URL}?limit=${limit}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`News fetch failed: ${res.status}`);
+  return res.json();
 }
+
+type ListItem =
+  | { type: 'header' }
+  | { type: 'report_cta' }
+  | { type: 'section_title' }
+  | { type: 'news'; item: NewsItem }
+  | { type: 'empty' }
+  | { type: 'error'; message: string };
 
 export default function HomeScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<IncidentStats | null>(null);
-  const [monthly, setMonthly] = useState<{ label: string; value: number }[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
-      const [statsData, dailyData] = await Promise.all([
-        fetchIncidentStats(),
-        fetchDailyCounts(180),
-      ]);
-      setStats(statsData);
-      setMonthly(buildMonthlyData(dailyData));
-    } catch (e) {
-      console.warn('[HomeScreen] Failed to load stats:', e);
+      setError(null);
+      const items = await fetchNews(30);
+      setNews(items);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      console.warn('[HomeScreen] Failed to load news:', message);
+      setError('Could not load news. Pull down to try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadData();
   }, [loadData]);
 
+  const listData = useCallback((): ListItem[] => {
+    const items: ListItem[] = [
+      { type: 'header' },
+      { type: 'report_cta' },
+      { type: 'section_title' },
+    ];
+    if (loading) {
+      return items;
+    }
+    if (error) {
+      items.push({ type: 'error', message: error });
+      return items;
+    }
+    if (news.length === 0) {
+      items.push({ type: 'empty' });
+      return items;
+    }
+    for (const n of news) {
+      items.push({ type: 'news', item: n });
+    }
+    return items;
+  }, [loading, error, news]);
+
+  const renderItem: ListRenderItem<ListItem> = ({ item }) => {
+    switch (item.type) {
+      case 'header':
+        return (
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.logo}>AV Watch</Text>
+              <Text style={styles.subtitle}>Latest News</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.mapBtn}
+              onPress={() => router.push('/(tabs)/map')}
+            >
+              <Ionicons name="map-outline" size={20} color={colors.neutral[600]} />
+            </TouchableOpacity>
+          </View>
+        );
+
+      case 'report_cta':
+        return (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.push('/(tabs)/report')}
+            style={styles.ctaWrapper}
+          >
+            <LinearGradient
+              colors={['#16a34a', '#059669']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.cta}
+            >
+              <View style={styles.ctaIcon}>
+                <Ionicons name="warning-outline" size={22} color="#fff" />
+              </View>
+              <View style={styles.ctaText}>
+                <Text style={styles.ctaTitle}>Report an Incident</Text>
+                <Text style={styles.ctaBody}>
+                  Witnessed an AV problem? Tap to submit a report.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.8)" />
+            </LinearGradient>
+          </TouchableOpacity>
+        );
+
+      case 'section_title':
+        return (
+          <View style={styles.sectionHeader}>
+            <Ionicons name="newspaper-outline" size={16} color={colors.neutral[500]} />
+            <Text style={styles.sectionTitle}>AV News</Text>
+            <Text style={styles.sectionHint}>updated every 30 min</Text>
+          </View>
+        );
+
+      case 'news':
+        return (
+          <View style={styles.cardWrapper}>
+            <NewsCard item={item.item} />
+          </View>
+        );
+
+      case 'error':
+        return (
+          <View style={styles.stateBox}>
+            <Ionicons name="cloud-offline-outline" size={28} color={colors.neutral[400]} />
+            <Text style={styles.stateText}>{item.message}</Text>
+          </View>
+        );
+
+      case 'empty':
+        return (
+          <View style={styles.stateBox}>
+            <Ionicons name="newspaper-outline" size={28} color={colors.neutral[400]} />
+            <Text style={styles.stateText}>No AV news found right now.</Text>
+          </View>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary[500]} />
-        }
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.logo}>AV Watch</Text>
-            <Text style={styles.greeting}>Incident Dashboard</Text>
-          </View>
-          <View style={styles.headerIcons}>
-            <Ionicons name="notifications-outline" size={22} color={colors.neutral[600]} />
-          </View>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.green[600]} />
+          <Text style={styles.loadingText}>Loading news…</Text>
         </View>
-
-        {/* KPI Grid */}
-        <View style={styles.kpiGrid}>
-          <KPICard
-            icon={<Ionicons name="alert-circle-outline" size={18} color={colors.primary[600]} />}
-            iconBg={colors.primary[50]}
-            label="Total Incidents"
-            value={loading ? '…' : (stats?.total_incidents ?? 0).toLocaleString()}
-          />
-          <KPICard
-            icon={<Ionicons name="calendar-outline" size={18} color={colors.green[600]} />}
-            iconBg={colors.green[50]}
-            label="This Month"
-            value={loading ? '…' : (stats?.incidents_this_month ?? 0).toLocaleString()}
-          />
-        </View>
-        <View style={styles.kpiGrid}>
-          <KPICard
-            icon={<Ionicons name="shield-checkmark-outline" size={18} color={colors.purple[600]} />}
-            iconBg={colors.purple[50]}
-            label="Verified"
-            value={loading ? '…' : (stats?.verified_incidents ?? 0).toLocaleString()}
-          />
-          <KPICard
-            icon={<Ionicons name="server-outline" size={18} color={colors.orange[600]} />}
-            iconBg={colors.orange[50]}
-            label="Data Sources"
-            value="3"
-          />
-        </View>
-
-        {/* Insights card */}
-        <Card style={styles.insightCard}>
-          <View style={styles.insightIcon}>
-            <Ionicons name="sparkles" size={20} color={colors.primary[600]} />
-          </View>
-          <View style={styles.insightText}>
-            <Text style={styles.insightTitle}>Community Insights</Text>
-            <Text style={styles.insightBody}>
-              See how incidents trend across companies and time, powered by NHTSA, CPUC & community reports.
-            </Text>
-          </View>
-          <View style={styles.insightActions}>
-            <Text
-              style={styles.insightLink}
-              onPress={() => router.push('/(tabs)/analytics')}
-            >
-              View Analytics →
-            </Text>
-          </View>
-        </Card>
-
-        {/* Trend chart */}
-        <SectionHeader title="Incident Trend" action="6 months" />
-        <Card style={styles.chartCard}>
-          <View style={styles.chartHeader}>
-            <Text style={styles.chartTotal}>
-              {loading ? '…' : (stats?.total_incidents ?? 0).toLocaleString()}
-            </Text>
-          </View>
-          <Text style={styles.chartSubtitle}>total reported</Text>
-          {monthly.length > 0 && (
-            <View style={styles.chartWrap}>
-              <LineChart
-                data={monthly}
-                width={screenWidth - 72}
-                height={180}
-                color={colors.primary[500]}
-              />
-            </View>
-          )}
-        </Card>
-      </ScrollView>
+      ) : (
+        <FlatList
+          data={listData()}
+          keyExtractor={(item, index) => {
+            if (item.type === 'news') return item.item.url;
+            return `${item.type}-${index}`;
+          }}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.green[600]}
+            />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -160,11 +213,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.neutral[50],
   },
-  scroll: {
+  loadingContainer: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
   },
-  content: {
-    paddingBottom: 32,
+  loadingText: {
+    ...typography.small,
+    color: colors.neutral[500],
+  },
+  listContent: {
+    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',
@@ -172,90 +232,95 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.base,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.base,
   },
   logo: {
     ...typography.h2,
-    color: colors.primary[600],
+    color: colors.green[600],
   },
-  greeting: {
-    ...typography.small,
+  subtitle: {
+    ...typography.caption,
     color: colors.neutral[500],
     marginTop: 2,
   },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  kpiGrid: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.base,
-    gap: spacing.md,
-    marginBottom: spacing.md,
-  },
-  insightCard: {
-    marginHorizontal: spacing.base,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-    flexDirection: 'column',
-    gap: spacing.md,
-  },
-  insightIcon: {
+  mapBtn: {
     width: 36,
     height: 36,
-    borderRadius: 10,
-    backgroundColor: colors.primary[50],
+    borderRadius: radius.full,
+    backgroundColor: colors.neutral[100],
     alignItems: 'center',
     justifyContent: 'center',
   },
-  insightText: {
-    gap: 4,
-  },
-  insightTitle: {
-    ...typography.bodySemibold,
-    color: colors.neutral[900],
-  },
-  insightBody: {
-    ...typography.small,
-    color: colors.neutral[500],
-    lineHeight: 20,
-  },
-  insightActions: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  insightLink: {
-    ...typography.smallMedium,
-    color: colors.primary[600],
-  },
-  chartCard: {
+  ctaWrapper: {
     marginHorizontal: spacing.base,
     marginBottom: spacing.lg,
+    borderRadius: radius.xl,
+    overflow: 'hidden',
+    shadowColor: colors.green[700],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  chartHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 10,
-  },
-  chartTotal: {
-    ...typography.h1,
-    color: colors.neutral[900],
-  },
-  chartTrend: {
+  cta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    padding: spacing.base,
+    gap: spacing.md,
   },
-  chartTrendText: {
-    ...typography.captionMedium,
-    color: colors.green[600],
+  ctaIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.full,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
-  chartSubtitle: {
+  ctaText: {
+    flex: 1,
+    gap: 2,
+  },
+  ctaTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff',
+    lineHeight: 20,
+  },
+  ctaBody: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 18,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.base,
+    marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    ...typography.smallMedium,
+    color: colors.neutral[700],
+  },
+  sectionHint: {
     ...typography.caption,
     color: colors.neutral[400],
-    marginBottom: spacing.base,
+    marginLeft: 'auto',
   },
-  chartWrap: {
+  cardWrapper: {
+    paddingHorizontal: spacing.base,
+  },
+  stateBox: {
     alignItems: 'center',
+    paddingVertical: spacing['3xl'],
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+  },
+  stateText: {
+    ...typography.small,
+    color: colors.neutral[500],
+    textAlign: 'center',
   },
 });

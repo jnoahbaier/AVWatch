@@ -89,3 +89,4 @@ docker-compose.override.yml
 secrets/
 *.key
 
+assets/waymo2.psd
