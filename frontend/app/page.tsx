@@ -15,6 +15,8 @@ import {
   ShieldCheck,
   GraduationCap,
   UserX,
+  Search,
+  Map,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -25,6 +27,11 @@ import {
 
 const NewsGrid = dynamic(
   () => import('@/components/news/NewsGrid').then((m) => m.NewsGrid),
+  { ssr: false }
+);
+
+const LocationMapPicker = dynamic(
+  () => import('@/components/LocationMapPicker').then((m) => m.LocationMapPicker),
   { ssr: false }
 );
 
@@ -72,6 +79,17 @@ export default function Home() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const carRef = useRef<HTMLDivElement>(null);
   const [carInView, setCarInView] = useState(false);
+  const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
+  const [addressQuery, setAddressQuery] = useState('');
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Array<{
+    place_name: string;
+    center: [number, number];
+    context: { id: string; text: string }[];
+  }>>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const el = carRef.current;
@@ -143,9 +161,66 @@ export default function Home() {
     );
   };
 
+  const fetchSuggestions = (query: string) => {
+    if (suggestTimeoutRef.current) clearTimeout(suggestTimeoutRef.current);
+    if (!query.trim()) { setSuggestions([]); setShowSuggestions(false); return; }
+    suggestTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&autocomplete=true&limit=5&country=us`
+        );
+        const data = await res.json();
+        setSuggestions(data.features ?? []);
+        setShowSuggestions(true);
+      } catch { /* silent */ }
+    }, 250);
+  };
+
+  const applySuggestion = (s: { place_name: string; center: [number, number]; context: { id: string; text: string }[] }) => {
+    const [lng, lat] = s.center;
+    setValue('latitude', lat);
+    setValue('longitude', lng);
+    setValue('address', s.place_name);
+    const cityCtx = s.context?.find((c) => c.id.startsWith('place.'));
+    if (cityCtx) setValue('city', cityCtx.text);
+    setAddressQuery(s.place_name);
+    setLocationStatus('success');
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setGeocodeError(null);
+  };
+
+  const geocodeAddress = async () => {
+    if (!addressQuery.trim()) return;
+    setIsGeocoding(true);
+    setGeocodeError(null);
+    try {
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addressQuery)}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN}&limit=1`
+      );
+      const data = await res.json();
+      if (data.features?.[0]) {
+        const [lng, lat] = data.features[0].center;
+        setValue('latitude', lat);
+        setValue('longitude', lng);
+        setValue('address', data.features[0].place_name);
+        const context = data.features[0].context || [];
+        const cityCtx = context.find((c: { id: string }) => c.id.startsWith('place.'));
+        if (cityCtx) setValue('city', cityCtx.text);
+        setLocationStatus('success');
+      } else {
+        setGeocodeError('Address not found. Try a more specific location.');
+      }
+    } catch {
+      setGeocodeError('Could not look up address. Please try again.');
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   const onSubmit = async (data: ReportFormData) => {
     if (!hasLocation) {
-      setSubmitError('Please capture your location before submitting.');
+      setSubmitError('Please provide a location using one of the options above.');
       return;
     }
     setSubmitError(null);
@@ -230,8 +305,8 @@ export default function Home() {
               </h1>
 
               <p className="text-xl text-slate-600 mb-8 max-w-lg leading-relaxed">
-                Report it in under 60 seconds. Help make autonomous vehicles
-                safer for everyone.
+                Help make autonomous vehicles safer for everyone. Report
+                incidents in under 30 seconds.
               </p>
 
               {/* Trust indicators */}
@@ -251,13 +326,13 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* AV car imagery — drives in from left on scroll */}
+              {/* AV car imagery — drives in from left on scroll (desktop only) */}
               <div
                 ref={carRef}
-                className={`relative mt-16 lg:-mr-32 transition-all duration-[1100ms] ease-out ${
+                className={`relative mt-6 lg:mt-16 lg:-mr-32 transition-all duration-[1100ms] ease-out ${
                   carInView
                     ? 'translate-x-0 opacity-100'
-                    : '-translate-x-full opacity-0'
+                    : 'lg:-translate-x-full opacity-0'
                 }`}
               >
                 <img
@@ -396,49 +471,154 @@ export default function Home() {
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Where &amp; when? <span className="text-red-500">*</span>
                       </p>
-                      <button
-                        type="button"
-                        onClick={getLocation}
-                        disabled={locationStatus === 'loading'}
-                        className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 font-medium transition mb-3 text-sm ${
-                          locationStatus === 'success'
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50'
-                        }`}
-                      >
-                        {locationStatus === 'loading' ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : locationStatus === 'success' ? (
-                          <CheckCircle className="w-4 h-4" />
-                        ) : (
-                          <MapPin className="w-4 h-4" />
-                        )}
-                        {locationStatus === 'success'
-                          ? 'Location captured'
-                          : locationStatus === 'loading'
-                          ? 'Getting location…'
-                          : 'Use my current location'}
-                      </button>
-                      {watchedAddress && (
-                        <p className="text-xs text-slate-500 mb-3 truncate">
+
+                      {/* Location method tabs */}
+                      <div className="flex rounded-xl border border-slate-200 overflow-hidden mb-3 text-xs font-medium">
+                        {([
+                          { id: 'gps', icon: MapPin, label: 'My Location' },
+                          { id: 'address', icon: Search, label: 'Street Address' },
+                          { id: 'map', icon: Map, label: 'Pin on Map' },
+                        ] as const).map(({ id, icon: Icon, label }) => (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setLocationMethod(id)}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition ${
+                              locationMethod === id
+                                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+                                : 'text-slate-500 hover:bg-slate-50'
+                            }`}
+                          >
+                            <Icon className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">{label}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* GPS */}
+                      {locationMethod === 'gps' && (
+                        <div className="space-y-2">
+                          <button
+                            type="button"
+                            onClick={getLocation}
+                            disabled={locationStatus === 'loading'}
+                            className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 font-medium transition text-sm ${
+                              locationStatus === 'success'
+                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                : 'border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50'
+                            }`}
+                          >
+                            {locationStatus === 'loading' ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : locationStatus === 'success' ? (
+                              <CheckCircle className="w-4 h-4" />
+                            ) : (
+                              <MapPin className="w-4 h-4" />
+                            )}
+                            {locationStatus === 'success'
+                              ? 'Location captured'
+                              : locationStatus === 'loading'
+                              ? 'Getting location…'
+                              : 'Use my current location'}
+                          </button>
+                          {locationStatus === 'error' && (
+                            <p className="text-xs text-red-500">
+                              Could not get location. Please enable location services or use another method.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Street address search */}
+                      {locationMethod === 'address' && (
+                        <div className="space-y-2">
+                          <div className="relative">
+                            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+                              <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <input
+                                type="text"
+                                value={addressQuery}
+                                onChange={(e) => {
+                                  setAddressQuery(e.target.value);
+                                  fetchSuggestions(e.target.value);
+                                  if (locationStatus === 'success') setLocationStatus('idle');
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    if (suggestions.length > 0) applySuggestion(suggestions[0]);
+                                    else geocodeAddress();
+                                  }
+                                  if (e.key === 'Escape') setShowSuggestions(false);
+                                }}
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                                placeholder="e.g. Market St & 5th, San Francisco"
+                                className="flex-1 bg-transparent text-slate-900 placeholder-slate-400 text-sm outline-none"
+                              />
+                              {isGeocoding && <Loader2 className="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" />}
+                              {locationStatus === 'success' && !isGeocoding && (
+                                <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                              )}
+                            </div>
+
+                            {/* Suggestions dropdown */}
+                            {showSuggestions && suggestions.length > 0 && (
+                              <ul className="absolute z-50 w-full mt-1 bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden">
+                                {suggestions.map((s, i) => (
+                                  <li key={i}>
+                                    <button
+                                      type="button"
+                                      onMouseDown={() => applySuggestion(s)}
+                                      className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-blue-50 transition text-sm border-b border-slate-100 last:border-0"
+                                    >
+                                      <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                                      <span className="text-slate-700 leading-snug">{s.place_name}</span>
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+
+                          {geocodeError && (
+                            <p className="text-xs text-red-500">{geocodeError}</p>
+                          )}
+                          {locationStatus === 'success' && watchedAddress && locationMethod === 'address' && (
+                            <p className="text-xs text-blue-600 flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" /> Location set
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Map pinpoint */}
+                      {locationMethod === 'map' && (
+                        <LocationMapPicker
+                          onLocationSelect={(lat, lng, address, city) => {
+                            setValue('latitude', lat);
+                            setValue('longitude', lng);
+                            setValue('address', address);
+                            setValue('city', city);
+                            setLocationStatus('success');
+                          }}
+                          selectedLat={watchedLat}
+                          selectedLng={watchedLng}
+                        />
+                      )}
+
+                      {/* Confirmed address pill */}
+                      {watchedAddress && locationStatus === 'success' && locationMethod !== 'address' && (
+                        <p className="text-xs text-slate-500 mt-2 truncate">
                           📍 {watchedAddress}
                         </p>
                       )}
-                      {locationStatus === 'error' && (
-                        <p className="text-xs text-red-500 mb-3">
-                          Could not get location. Please enable location services.
-                        </p>
-                      )}
-                      <input
-                        type="hidden"
-                        {...register('latitude', { valueAsNumber: true })}
-                      />
-                      <input
-                        type="hidden"
-                        {...register('longitude', { valueAsNumber: true })}
-                      />
+
+                      <input type="hidden" {...register('latitude', { valueAsNumber: true })} />
+                      <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
                       <input type="hidden" {...register('city')} />
-                      <div className="flex items-center gap-2">
+
+                      <div className="flex items-center gap-2 mt-3">
                         <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
                         <input
                           type="datetime-local"
@@ -611,15 +791,17 @@ export default function Home() {
 
       {/* ─────────────────────── WHY IT MATTERS ─────────────────────── */}
       <section
-        className="relative py-28 border-t border-b border-slate-200 overflow-hidden"
+        className="relative py-16 lg:py-28 border-t border-b border-slate-200 overflow-hidden"
         style={{
           backgroundImage: 'url(/waymo_large_blur.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       >
-        {/* Left-side white fade so text stays readable */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/0 pointer-events-none" />
+        {/* Mobile: near-opaque white overlay so text is always readable */}
+        <div className="absolute inset-0 bg-white/90 pointer-events-none lg:hidden" />
+        {/* Desktop: left-side gradient — image bleeds in on the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/0 pointer-events-none hidden lg:block" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Text occupies left half only */}

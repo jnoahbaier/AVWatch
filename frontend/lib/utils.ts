@@ -52,7 +52,7 @@ export function formatRelativeTime(date: string | Date): string {
 export const INCIDENT_TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
   near_miss: 'Near Miss',
-  sudden_behavior: 'Sudden Behavior',
+  sudden_behavior: 'Reckless Behavior',
   blockage: 'Blockage',
   other: 'Other',
 };
