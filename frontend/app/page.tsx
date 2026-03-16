@@ -1009,17 +1009,9 @@ export default function Home() {
 
       {/* ─────────────────────── FOOTER ─────────────────────── */}
       <footer className="bg-white border-t border-slate-200 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-              <span className="text-white font-bold text-xs">AV</span>
-            </div>
-            <span className="font-semibold text-slate-900 text-sm">AV Watch</span>
-          </div>
-          <p className="text-xs text-slate-400">
+          <p className="text-center text-xs text-slate-400">
             © {new Date().getFullYear()} AV Watch · Built for AV accountability
           </p>
-        </div>
       </footer>
     </div>
   );
