@@ -974,7 +974,7 @@ export default function Home() {
                 deployment of self-driving technology.
               </p>
               <p className="text-blue-100 text-lg leading-relaxed mt-4">
-                Learn more about the project and the team{' '}
+                Learn more about the project and team{' '}
                 <a
                   href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
                   target="_blank"
