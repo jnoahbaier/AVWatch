@@ -9,12 +9,13 @@ from sqlalchemy.orm import DeclarativeBase
 from app.core.config import settings
 
 
-# Session-mode pooler (port 5432 on pooler host) supports prepared statements,
-# so no special pool configuration is needed.
+# Session-mode pooler (port 5432 on pooler host) supports prepared statements.
+# connect_timeout prevents long hangs on Railway cold-start if DB is unreachable.
 engine = create_async_engine(
     settings.async_database_url,
     echo=settings.DEBUG,
     future=True,
+    connect_args={"timeout": 10},
 )
 
 # Session factory
