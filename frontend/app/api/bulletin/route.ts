@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const { data, error, count } = await supabase
     .from('bulletin_items')
     .select('*', { count: 'exact' })
-    .eq('status', 'published')
+    .in('status', ['active', 'published'])
     .order('first_seen_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
