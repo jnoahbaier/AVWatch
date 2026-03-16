@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const navigation = [
+  { name: 'Recent Reports', href: '/#reports' },
   { name: 'News', href: '/#news' },
   { name: 'About', href: '/#about' },
 ];
@@ -30,13 +31,23 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:gap-1">
             {navigation.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition rounded-lg"
-              >
-                {item.name}
-              </a>
+              item.href.startsWith('/') && !item.href.startsWith('/#') ? (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition rounded-lg"
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition rounded-lg"
+                >
+                  {item.name}
+                </a>
+              )
             ))}
           </div>
 
@@ -69,14 +80,25 @@ export function Navbar() {
           <div className="md:hidden py-4 border-t border-slate-100">
             <div className="flex flex-col gap-1">
               {navigation.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                >
-                  {item.name}
-                </a>
+                item.href.startsWith('/') && !item.href.startsWith('/#') ? (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                  >
+                    {item.name}
+                  </Link>
+                ) : (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                  >
+                    {item.name}
+                  </a>
+                )
               ))}
               <a
                 href="/#report"

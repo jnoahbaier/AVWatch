@@ -28,10 +28,14 @@ const nextConfig = {
     ],
   },
   async rewrites() {
+    // In production the Python backend is on Railway; locally it's on port 8000.
+    // If NEXT_PUBLIC_API_URL is not set (e.g. Vercel with no backend), skip the rewrite.
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl || apiUrl === '') return [];
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:8000/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
       },
     ];
   },

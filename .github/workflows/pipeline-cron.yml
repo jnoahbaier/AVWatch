@@ -1,0 +1,42 @@
+name: AV Watch Pipeline (Hourly Cron)
+
+# Runs every hour as a backup — in production the Railway server also
+# runs the scheduler internally via APScheduler. This GitHub Action
+# acts as a health-check trigger and ensures the pipeline fires even
+# if the Railway instance is cold/restarted.
+on:
+  schedule:
+    - cron: '0 * * * *'   # every hour at :00
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+
+jobs:
+  run-pipeline:
+    name: Run Bulletin Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Ping Railway backend to trigger pipeline
+        # Calls the /api/bulletin/run endpoint which fires the pipeline manually.
+        # If RAILWAY_BACKEND_URL is not set, this step is skipped gracefully.
+        env:
+          RAILWAY_BACKEND_URL: ${{ secrets.RAILWAY_BACKEND_URL }}
+          PIPELINE_SECRET: ${{ secrets.PIPELINE_SECRET }}
+        run: |
+          if [ -z "$RAILWAY_BACKEND_URL" ]; then
+            echo "RAILWAY_BACKEND_URL not set — skipping ping"
+            exit 0
+          fi
+          echo "Pinging $RAILWAY_BACKEND_URL/api/bulletin/run ..."
+          STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST "$RAILWAY_BACKEND_URL/api/bulletin/trigger-scan" \
+            -H "Content-Type: application/json" \
+            -H "X-Pipeline-Secret: $PIPELINE_SECRET" \
+            --max-time 300)
+          cat /tmp/response.json
+          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
+            echo "Pipeline triggered successfully (HTTP $STATUS)"
+          else
+            echo "Pipeline trigger failed (HTTP $STATUS)"
+            exit 1
+          fi

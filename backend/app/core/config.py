@@ -56,6 +56,14 @@ class Settings(BaseSettings):
     # External APIs
     MAPBOX_ACCESS_TOKEN: str = ""
 
+    # Gemini AI (used by bulletin board intelligence pipeline)
+    GEMINI_API_KEY: str = ""
+
+    # Reddit API (optional — falls back to public JSON if not set)
+    REDDIT_CLIENT_ID: str = ""
+    REDDIT_CLIENT_SECRET: str = ""
+    REDDIT_USER_AGENT: str = "avwatch:v1.0"
+
     # Sentry
     SENTRY_DSN: str = ""
 

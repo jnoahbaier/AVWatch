@@ -25,15 +25,16 @@ import {
   REPORTER_TYPE_LABELS,
 } from '@/lib/utils';
 
-const NewsGrid = dynamic(
-  () => import('@/components/news/NewsGrid').then((m) => m.NewsGrid),
-  { ssr: false }
-);
+import { BulletinCard, type BulletinItem } from '@/components/bulletin/BulletinCard';
+import { NewsHeadlines } from '@/components/news/NewsHeadlines';
 
 const LocationMapPicker = dynamic(
   () => import('@/components/LocationMapPicker').then((m) => m.LocationMapPicker),
   { ssr: false }
 );
+
+const BULLETIN_API = '/api/bulletin';
+const REPORTS_PAGE = 6;
 
 const INCIDENT_ICONS: Record<string, string> = {
   collision: '💥',
@@ -80,6 +81,13 @@ export default function Home() {
   const carRef = useRef<HTMLDivElement>(null);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
+
+  // Recent reports inline state
+  const [reportItems, setReportItems] = useState<BulletinItem[]>([]);
+  const [reportOffset, setReportOffset] = useState(0);
+  const [reportHasMore, setReportHasMore] = useState(false);
+  const [reportInitialLoading, setReportInitialLoading] = useState(true);
+  const [reportLoadingMore, setReportLoadingMore] = useState(false);
   const [addressQuery, setAddressQuery] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
@@ -101,6 +109,39 @@ export default function Home() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // Fetch initial 6 reports
+  useEffect(() => {
+    async function fetchReports() {
+      try {
+        const res = await fetch(`${BULLETIN_API}?limit=${REPORTS_PAGE}&offset=0`);
+        const data = await res.json();
+        setReportItems(data.items ?? []);
+        setReportHasMore(data.has_more ?? false);
+      } catch {
+        // silent — section just stays empty
+      } finally {
+        setReportInitialLoading(false);
+      }
+    }
+    fetchReports();
+  }, []);
+
+  async function loadMoreReports() {
+    setReportLoadingMore(true);
+    const nextOffset = reportOffset + REPORTS_PAGE;
+    try {
+      const res = await fetch(`${BULLETIN_API}?limit=${REPORTS_PAGE}&offset=${nextOffset}`);
+      const data = await res.json();
+      setReportItems((prev) => [...prev, ...(data.items ?? [])]);
+      setReportOffset(nextOffset);
+      setReportHasMore(data.has_more ?? false);
+    } catch {
+      // silent
+    } finally {
+      setReportLoadingMore(false);
+    }
+  }
 
   const {
     register,
@@ -301,11 +342,11 @@ export default function Home() {
             <div className="pt-4 flex flex-col">
               <h1 className="text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.1] mb-5">
                 Witnessed an<br />
-                <span className="text-blue-600">AV Incident?</span>
+                <span className="text-blue-600">autonomous vehicle incident?</span>
               </h1>
 
               <p className="text-xl text-slate-600 mb-8 max-w-lg leading-relaxed">
-                Help make autonomous vehicles safer for everyone. Report
+                Help make autonomous driving safer for everyone. Report
                 incidents in under 30 seconds.
               </p>
 
@@ -804,47 +845,95 @@ export default function Home() {
           {/* Text occupies left half only */}
           <div className="max-w-xl">
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-8">
-              Autonomous Vehicles<br />
-              <span className="text-blue-600">are expanding fast.</span>
+              Autonomous driving<br />
+              <span className="text-blue-600">is expanding fast.</span>
             </h2>
 
             <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
               <p>
-                Yet there is no simple, reliable way for people to report
-                what they witness on the road.
+                Yet there is no simple, reliable way for people to report what they witness on the road.{' '}
+                <span className="font-semibold text-slate-900">AV Watch changes that.</span>
               </p>
               <p>
-                AV Watch changes that.
+                Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them.
               </p>
               <p>
-                Every report is structured, geolocated, and routed to the
-                California DMV&apos;s Autonomous Vehicles Program, the agency that
-                issues permits and has the authority to suspend them.
-              </p>
-              <p>
-                AV Watch is built by a team of independent researchers at UC
-                Berkeley&apos;s School of Information.
+                AV Watch is built by a team of independent researchers at UC Berkeley&apos;s School of Information.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─────────────────────── NEWS SECTION ─────────────────────── */}
-      <section id="news" className="py-20 bg-white">
+      {/* ─────────────────────── RECENT REPORTS ─────────────────────── */}
+      <section id="reports" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-semibold uppercase tracking-wider mb-4">
+              Community Reports
+            </span>
+            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+              Recent Incidents
+            </h2>
+            <p className="text-slate-500">
+              Autonomous Vehicle incidents from real community reports.
+            </p>
+          </div>
+
+          {reportInitialLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse">
+                  <div className="h-44 bg-slate-200" />
+                  <div className="p-5 space-y-3">
+                    <div className="h-3 w-24 rounded bg-slate-200" />
+                    <div className="h-4 w-full rounded bg-slate-200" />
+                    <div className="h-4 w-3/4 rounded bg-slate-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : reportItems.length === 0 ? (
+            <p className="text-slate-400 text-sm">No reports yet.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {reportItems.map((item) => (
+                  <BulletinCard key={item.id} item={item} />
+                ))}
+              </div>
+
+              {reportHasMore && (
+                <div className="mt-10 flex justify-center">
+                  <button
+                    onClick={loadMoreReports}
+                    disabled={reportLoadingMore}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600 transition disabled:opacity-50"
+                  >
+                    {reportLoadingMore ? 'Loading…' : 'Show more'}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* ─────────────────────── NEWS HEADLINES ─────────────────────── */}
+      <section id="news" className="py-20 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider mb-4">
               Latest Coverage
             </span>
             <h2 className="text-3xl font-bold text-slate-900 mb-2">
-              AV News
+              In the News
             </h2>
             <p className="text-slate-500">
-              Stay informed on autonomous vehicle developments and safety.
+              Recent news on autonomous vehicles.
             </p>
           </div>
-          <NewsGrid limit={12} />
+          <NewsHeadlines />
         </div>
       </section>
 
@@ -883,6 +972,18 @@ export default function Home() {
                 reporting and tracking autonomous vehicle incidents. We believe
                 transparency and public accountability are essential to the safe
                 deployment of self-driving technology.
+              </p>
+              <p className="text-blue-100 text-lg leading-relaxed mt-4">
+                More information on the project can be found{' '}
+                <a
+                  href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2 text-white hover:text-blue-200 transition font-medium"
+                >
+                  here
+                </a>
+                .
               </p>
             </div>
 

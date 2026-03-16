@@ -2,13 +2,14 @@
 Incident reporting and querying endpoints.
 """
 
+import hashlib
 from datetime import datetime
 from typing import List, Optional, Literal
 from uuid import UUID
 
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
 from geoalchemy2 import WKTElement
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
@@ -78,6 +79,7 @@ class IncidentCreate(BaseModel):
 @router.post("/", response_model=dict, status_code=201)
 async def create_incident(
     incident: IncidentCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -90,6 +92,10 @@ async def create_incident(
     # - **location**: GPS coordinates and optional address
     # - **occurred_at**: When the incident happened
     """
+    # Hash the client IP — never store raw IP
+    client_ip = request.client.host if request.client else "unknown"
+    ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
+
     point = WKTElement(
         f"POINT({incident.location.longitude} {incident.location.latitude})",
         srid=4326,
@@ -103,6 +109,7 @@ async def create_incident(
         occurred_at=incident.occurred_at,
         reporter_type=incident.reporter_type,
         source="user_report",
+        reporter_ip_hash=ip_hash,
     )
     db.add(incident_obj)
     await db.flush()

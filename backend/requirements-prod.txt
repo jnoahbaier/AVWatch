@@ -18,6 +18,14 @@ email-validator==2.1.0
 
 # HTTP Client (data ingestion)
 httpx==0.26.0
+aiohttp==3.9.1
+
+# Background Task Scheduling (pipeline runs every hour)
+apscheduler==3.10.4
+
+# HTML parsing (data sources)
+beautifulsoup4==4.12.3
+lxml==5.1.0
 
 # Monitoring
 sentry-sdk[fastapi]==1.39.1

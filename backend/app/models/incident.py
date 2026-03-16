@@ -75,6 +75,14 @@ class Incident(Base):
         String(100), unique=True
     )  # For deduplication with public data
 
+    # Anti-gaming & clustering
+    reporter_ip_hash: Mapped[Optional[str]] = mapped_column(
+        String(64)
+    )  # SHA-256 of submitter IP — never raw IP stored
+    matched_bulletin_item_id: Mapped[Optional[UUID]] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )  # Set once this report is merged into a bulletin item
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

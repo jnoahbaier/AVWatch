@@ -41,6 +41,7 @@ redis==5.0.1
 
 # Background Tasks
 celery==5.3.6
+apscheduler==3.10.4
 
 # Monitoring & Logging
 sentry-sdk[fastapi]==1.39.1

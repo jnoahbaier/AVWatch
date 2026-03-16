@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Parser from 'rss-parser';
+import { createClient } from '@supabase/supabase-js';
 import type { NewsItem } from '@avwatch/shared';
 
+// ---------------------------------------------------------------------------
+// Supabase client (server-side — uses service role key if available, otherwise anon)
+// ---------------------------------------------------------------------------
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// ---------------------------------------------------------------------------
+// RSS parser
+// ---------------------------------------------------------------------------
 const parser = new Parser({
   timeout: 10000,
-  headers: { 'User-Agent': 'AVWatch/1.0 (https://avwatch.app)' },
+  headers: { 'User-Agent': 'AVWatch/1.0 (https://avwatch.org)' },
   customFields: {
     item: [
       ['media:thumbnail', 'mediaThumbnail'],
@@ -30,77 +42,51 @@ const AV_KEYWORDS = [
   'robo-taxi', 'av safety', 'automated driving',
 ];
 
+// How old the DB cache can be before we re-fetch from RSS (1 hour)
+const CACHE_TTL_MS = 60 * 60 * 1000;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 function isAVRelevant(text: string): boolean {
   const lower = text.toLowerCase();
   return AV_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+  return html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
 }
 
 function extractImageUrl(entry: Record<string, unknown>): string | null {
-  // media:thumbnail — rss-parser returns { $: { url } } or { url }
   const thumb = entry.mediaThumbnail as Record<string, unknown> | undefined;
   if (thumb) {
     const attrs = (thumb.$ as Record<string, string> | undefined) ?? thumb;
     if (typeof attrs?.url === 'string' && attrs.url) return attrs.url;
   }
-
-  // media:content — same shape
   const media = entry.mediaContent as Record<string, unknown> | undefined;
   if (media) {
     const attrs = (media.$ as Record<string, string> | undefined) ?? media;
     if (typeof attrs?.url === 'string' && attrs.url) return attrs.url;
   }
-
-  // enclosure (podcasts / direct media links)
   const enc = entry.enclosure as Record<string, string> | undefined;
   if (enc?.url && enc.type?.startsWith('image')) return enc.url;
-
-  // content:encoded — pull first <img src="..."> out of the HTML
   const html = (entry.contentEncoded ?? entry.content) as string | undefined;
   if (html) {
     const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
     if (match?.[1]) return match[1];
   }
-
   return null;
 }
 
-// Simple in-memory cache: { items, fetchedAt }
-let cache: { items: NewsItem[]; fetchedAt: number } | null = null;
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-async function fetchFeed(name: string, url: string): Promise<NewsItem[]> {
-  try {
-    const feed = await parser.parseURL(url);
-    const items: NewsItem[] = [];
-    for (const entry of feed.items ?? []) {
-      const title = entry.title ?? '';
-      const summary = entry.contentSnippet ?? entry.summary ?? entry.content ?? '';
-      const combined = `${title} ${summary}`;
-      if (!isAVRelevant(combined)) continue;
-
-      const imageUrl = extractImageUrl(entry as unknown as Record<string, unknown>);
-
-      items.push({
-        title: stripHtml(title),
-        url: entry.link ?? '',
-        source_name: name,
-        published_at: entry.isoDate ?? entry.pubDate ?? null,
-        summary: summary ? stripHtml(summary).slice(0, 200) : null,
-        image_url: typeof imageUrl === 'string' ? imageUrl : null,
-      });
-    }
-    return items;
-  } catch {
-    // Individual feed failures are non-fatal
-    return [];
-  }
-}
-
-const OG_IMAGE_RE = /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']|<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i;
+const OG_IMAGE_RE =
+  /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']|<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i;
 
 async function fetchOgImage(url: string): Promise<string | null> {
   try {
@@ -108,10 +94,9 @@ async function fetchOgImage(url: string): Promise<string | null> {
     const timer = setTimeout(() => ac.abort(), 6000);
     const res = await fetch(url, {
       signal: ac.signal,
-      headers: { 'User-Agent': 'AVWatch/1.0 (https://avwatch.app)' },
+      headers: { 'User-Agent': 'AVWatch/1.0 (https://avwatch.org)' },
     });
     clearTimeout(timer);
-    // Read just enough HTML to find the og:image in <head>
     const reader = res.body?.getReader();
     if (!reader) return null;
     let html = '';
@@ -131,48 +116,117 @@ async function fetchOgImage(url: string): Promise<string | null> {
   }
 }
 
+async function fetchFeed(name: string, url: string): Promise<NewsItem[]> {
+  try {
+    const feed = await parser.parseURL(url);
+    const items: NewsItem[] = [];
+    for (const entry of feed.items ?? []) {
+      const title = entry.title ?? '';
+      const summary = entry.contentSnippet ?? entry.summary ?? entry.content ?? '';
+      if (!isAVRelevant(`${title} ${summary}`)) continue;
+      const imageUrl = extractImageUrl(entry as unknown as Record<string, unknown>);
+      items.push({
+        title: stripHtml(title),
+        url: entry.link ?? '',
+        source_name: name,
+        published_at: entry.isoDate ?? entry.pubDate ?? null,
+        summary: summary ? stripHtml(summary).slice(0, 200) : null,
+        image_url: typeof imageUrl === 'string' ? imageUrl : null,
+      });
+    }
+    return items;
+  } catch {
+    return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Supabase cache helpers
+// ---------------------------------------------------------------------------
+async function getCachedNews(limit: number): Promise<NewsItem[] | null> {
+  // Check when we last refreshed
+  const { data: latest } = await supabase
+    .from('news_items')
+    .select('fetched_at')
+    .order('fetched_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (!latest) return null;
+
+  const age = Date.now() - new Date(latest.fetched_at).getTime();
+  if (age > CACHE_TTL_MS) return null; // stale
+
+  const { data, error } = await supabase
+    .from('news_items')
+    .select('title, url, source_name, published_at, summary, image_url')
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  if (error || !data) return null;
+  return data as NewsItem[];
+}
+
+async function saveNewsToSupabase(items: NewsItem[]): Promise<void> {
+  if (items.length === 0) return;
+
+  const now = new Date().toISOString();
+  const rows = items.map((i) => ({
+    title: i.title,
+    url: i.url,
+    source_name: i.source_name,
+    published_at: i.published_at ?? null,
+    summary: i.summary ?? null,
+    image_url: i.image_url ?? null,
+    fetched_at: now,
+  }));
+
+  // Upsert by URL — update everything except created_at
+  await supabase.from('news_items').upsert(rows, { onConflict: 'url' });
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
   const limit = Math.min(
     parseInt(req.nextUrl.searchParams.get('limit') ?? '24', 10),
     100
   );
 
-  // Serve from cache if fresh
-  if (cache && Date.now() - cache.fetchedAt < CACHE_TTL_MS) {
-    return NextResponse.json(cache.items.slice(0, limit), {
+  // 1. Try Supabase cache first
+  const cached = await getCachedNews(limit);
+  if (cached) {
+    return NextResponse.json(cached, {
       headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
     });
   }
 
-  // Fetch all feeds in parallel
-  const results = await Promise.allSettled(
-    FEEDS.map((f) => fetchFeed(f.name, f.url))
-  );
-
+  // 2. Cache is stale or empty — fetch fresh from RSS
+  const results = await Promise.allSettled(FEEDS.map((f) => fetchFeed(f.name, f.url)));
   const allItems: NewsItem[] = [];
   for (const r of results) {
     if (r.status === 'fulfilled') allItems.push(...r.value);
   }
 
-  // For articles still missing an image, fetch og:image from the article page
+  // Fill missing images via og:image scraping
   const noImg = allItems.filter((i) => !i.image_url && i.url);
   if (noImg.length > 0) {
     const ogImages = await Promise.allSettled(noImg.map((i) => fetchOgImage(i.url)));
     for (let j = 0; j < noImg.length; j++) {
       const result = ogImages[j];
-      if (result.status === 'fulfilled' && result.value) {
-        noImg[j].image_url = result.value;
-      }
+      if (result.status === 'fulfilled' && result.value) noImg[j].image_url = result.value;
     }
   }
 
-  // Sort newest first; undated items go to the end
+  // Sort newest first
   const dated = allItems.filter((i) => i.published_at);
   const undated = allItems.filter((i) => !i.published_at);
   dated.sort((a, b) => new Date(b.published_at!).getTime() - new Date(a.published_at!).getTime());
   const sorted = [...dated, ...undated];
 
-  cache = { items: sorted, fetchedAt: Date.now() };
+  // 3. Persist to Supabase (non-blocking — don't await so we don't slow down the response)
+  saveNewsToSupabase(sorted).catch(() => {});
 
   return NextResponse.json(sorted.slice(0, limit), {
     headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
