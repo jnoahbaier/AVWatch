@@ -6,7 +6,7 @@ import { Providers } from './providers';
 import { Navbar } from '@/components/layout/Navbar';
 
 export const metadata: Metadata = {
-  title: 'AV Watch | Autonomous Vehicle Accountability',
+  title: 'AV Watch | Autonomous Vehicle Accountability Platform',
   description:
     'A transparent platform for reporting and tracking autonomous vehicle incidents. Empowering communities with data-driven accountability.',
   keywords: [
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     apple: '/favicon.svg',
   },
   openGraph: {
-    title: 'AV Watch | Autonomous Vehicle Accountability',
+    title: 'AV Watch | Autonomous Vehicle Accountability Platform',
     description:
       'Report AV incidents and explore community-driven safety data',
     type: 'website',
