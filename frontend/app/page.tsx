@@ -336,7 +336,7 @@ export default function Home() {
         <div className="absolute top-20 right-1/3 w-64 h-64 rounded-full bg-blue-300/10 blur-2xl pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-6 lg:gap-16 items-start">
 
             {/* ── LEFT: copy + imagery ── */}
             <div className="pt-4 flex flex-col">
@@ -345,13 +345,13 @@ export default function Home() {
                 <span className="text-blue-600">autonomous vehicle incident?</span>
               </h1>
 
-              <p className="text-xl text-slate-600 mb-8 max-w-lg leading-relaxed">
+              <p className="text-xl text-slate-600 mb-4 md:mb-8 max-w-lg leading-relaxed">
                 Help make autonomous driving safer for everyone. Report
                 incidents in under 30 seconds.
               </p>
 
               {/* Trust indicators */}
-              <div className="flex flex-wrap gap-3 mb-10">
+              <div className="hidden md:flex flex-wrap gap-3 mb-10">
                 {[
                   { icon: UserX, label: 'Fully anonymous' },
                   { icon: GraduationCap, label: 'Independent research' },
@@ -370,7 +370,7 @@ export default function Home() {
               {/* AV car imagery — drives in from left on scroll (desktop only) */}
               <div
                 ref={carRef}
-                className={`relative mt-6 lg:mt-16 lg:-mr-32 transition-all duration-[1100ms] ease-out ${
+                className={`hidden md:block relative mt-6 lg:mt-16 lg:-mr-32 transition-all duration-[1100ms] ease-out ${
                   carInView
                     ? 'translate-x-0 opacity-100'
                     : 'lg:-translate-x-full opacity-0'
@@ -831,7 +831,7 @@ export default function Home() {
       <section
         className="relative py-16 lg:py-28 border-t border-b border-slate-200 overflow-hidden"
         style={{
-          backgroundImage: 'url(/waymo_large_blur.png)',
+          backgroundImage: 'url(/waymo_bg.webp)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
