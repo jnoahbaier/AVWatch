@@ -120,8 +120,13 @@ async def create_incident(
     - **location**: GPS coordinates and optional address
     - **occurred_at**: When the incident happened
     """
-    # Hash the client IP — never store raw IP
-    client_ip = request.client.host if request.client else "unknown"
+    # Hash the client IP — never store raw IP.
+    # Behind Railway's proxy the real IP is in X-Forwarded-For; fall back to
+    # request.client.host so local dev still works without the header.
+    forwarded_for = request.headers.get("x-forwarded-for")
+    client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
+        request.client.host if request.client else "unknown"
+    )
     ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
 
     # Reject requests from blocked IPs
