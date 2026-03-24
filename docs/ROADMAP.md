@@ -46,7 +46,7 @@ Shift AVWatch from "accountability watchdog" to "community platform" that helps 
 - [x] **Add "I certify this is accurate" checkbox** — Must be checked before submit. Simple moral nudge, deters false reports.
 - [x] **Update media upload Call To Action** — Change to "Choose photo / video" (instead of choose file) to reflect that both are accepted.
 - [x] **Add optional contact fields** — Name + email, clearly marked optional. Enables follow-up and corroboration between reporters.
-  - ⚠️ UI done. DB migration still needed: add `contact_name` and `contact_email` columns to `incidents` table and wire up `createIncident()`.
+  - ✅ UI + DB migration complete. `contact_name` and `contact_email` columns added to `incidents` table. Visible to admins in report detail modal.
 
 ---
 
@@ -66,14 +66,14 @@ Currently missing entirely. This is the highest-leverage moment to convert a one
 
 A private, internal-only view for the 4 team members to review, validate, and manage submitted reports.
 
-- [ ] **Auth** — Google SSO login. Allowlist of exactly 4 emails (team only). No one else can access: jnoah_baier@berkeley.edu, mppaz@berkeley.edu, joshua.mussman@berkeley.edu, evanhaas@berkeley.edu
-- [ ] **Reports queue** — Table/list of all submitted reports, sortable/filterable by: date, incident type, location, status (pending / validated / discarded).
-- [ ] **Per-report actions:**
+- [x] **Auth** — Google SSO login. Allowlist of exactly 4 emails (team only). No one else can access: jnoah_baier@berkeley.edu, mppaz@berkeley.edu, joshua.mussman@berkeley.edu, evanhaas@berkeley.edu
+- [x] **Reports queue** — Table/list of all submitted reports, sortable/filterable by: date, incident type, location, status (pending / validated / discarded).
+- [x] **Per-report actions:**
   - Validate (marks report as credible, makes it eligible for map display / featured section)
   - Discard (removes from public view, with optional internal note). Ability to block ip addresses or flag addresses that are 'shitposting' or might be 'trolls'
   - Flag for corroboration (links two reports of the same incident, optionally intro-ing reporters if both opted in for contact)
-- [ ] **Settings page** — Manage allowlisted admin emails, toggle feature flags, view basic platform stats (total reports, reports this week, top incident types).
-- [ ] **Route protection** — Admin routes must be completely inaccessible to non-admins at both the UI and API/RLS level.
+- [x] **Settings page** — Manage allowlisted admin emails, toggle feature flags, view basic platform stats (total reports, reports this week, top incident types).
+- [x] **Route protection** — Admin routes must be completely inaccessible to non-admins at both the UI and API/RLS level.
 
 ---
 
@@ -108,4 +108,4 @@ These need more scoping before implementation.
 
 ---
 
-*Last updated: 2026-03-23*
+*Last updated: 2026-03-24*
