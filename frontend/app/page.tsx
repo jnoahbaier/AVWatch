@@ -863,7 +863,7 @@ export default function Home() {
                         Contact <span className="font-normal normal-case">(optional)</span>
                       </p>
                       <p className="text-xs text-slate-400 mb-3">
-                        Provide your contact info if you'd like us to follow up. Never shared publicly.
+                        Provide your contact info if you&apos;d like us to follow up. Never shared publicly.
                       </p>
                       <div className="space-y-2">
                         <input
