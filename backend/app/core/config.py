@@ -3,16 +3,20 @@ Application configuration using Pydantic Settings.
 """
 
 from functools import lru_cache
+from pathlib import Path
 from typing import List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Always resolve .env relative to this file, regardless of working directory
+_ENV_FILE = Path(__file__).resolve().parent.parent.parent / ".env"
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=str(_ENV_FILE),
         env_file_encoding="utf-8",
         case_sensitive=True,
     )
@@ -66,6 +70,10 @@ class Settings(BaseSettings):
 
     # Sentry
     SENTRY_DSN: str = ""
+
+    # Admin dashboard — shared secret between Next.js server and FastAPI
+    # IMPORTANT: Set this to a strong random string in production (e.g. openssl rand -hex 32)
+    ADMIN_API_KEY: str = ""
 
 
 @lru_cache

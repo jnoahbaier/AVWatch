@@ -24,6 +24,7 @@ const reportSchema = z.object({
     'near_miss',
     'sudden_behavior',
     'blockage',
+    'vandalism',
     'other',
   ]),
   av_company: z
@@ -47,7 +48,8 @@ const INCIDENT_ICONS: Record<string, string> = {
   near_miss: '⚠️',
   sudden_behavior: '⚡',
   blockage: '🚧',
-  other: '📋',
+  vandalism: '🚨',
+  other: '',
 };
 
 export default function ReportPage() {
@@ -223,7 +225,7 @@ export default function ReportPage() {
                     key={value}
                     className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
                       watchedType === value
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
@@ -233,20 +235,22 @@ export default function ReportPage() {
                       {...register('incident_type')}
                       className="sr-only"
                     />
-                    <span className="text-lg w-7 text-center select-none">
-                      {INCIDENT_ICONS[value]}
-                    </span>
+                    {INCIDENT_ICONS[value] && (
+                      <span className="text-lg w-7 text-center select-none">
+                        {INCIDENT_ICONS[value]}
+                      </span>
+                    )}
                     <span
                       className={`font-medium ${
                         watchedType === value
-                          ? 'text-green-700 dark:text-green-400'
+                          ? 'text-blue-700 dark:text-blue-400'
                           : 'text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {label}
                     </span>
                     {watchedType === value && (
-                      <CheckCircle className="w-4 h-4 text-green-500 ml-auto" />
+                      <CheckCircle className="w-4 h-4 text-blue-500 ml-auto" />
                     )}
                   </label>
                 ))}
@@ -256,112 +260,7 @@ export default function ReportPage() {
               )}
             </div>
 
-            {/* ── Section 2: Company ── */}
-            <div className="p-6">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                Which company?
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
-                  <label key={value} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      value={value}
-                      {...register('av_company')}
-                      className="sr-only peer"
-                    />
-                    <span
-                      className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
-                        watchedCompany === value
-                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                          : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300'
-                      }`}
-                    >
-                      {label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Section 3: Location & time ── */}
-            <div className="p-6">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                Where &amp; when? <span className="text-red-400">*</span>
-              </p>
-
-              <button
-                type="button"
-                onClick={getLocation}
-                disabled={locationStatus === 'loading'}
-                className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 font-medium transition mb-3 ${
-                  locationStatus === 'success'
-                    ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                    : 'border-dashed border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-green-400 hover:text-green-600'
-                }`}
-              >
-                {locationStatus === 'loading' ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : locationStatus === 'success' ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  <MapPin className="w-5 h-5" />
-                )}
-                {locationStatus === 'success'
-                  ? 'Location captured'
-                  : locationStatus === 'loading'
-                  ? 'Getting location…'
-                  : 'Use my current location'}
-              </button>
-
-              {watchedAddress && (
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 truncate">
-                  📍 {watchedAddress}
-                </p>
-              )}
-              {locationStatus === 'error' && (
-                <p className="text-sm text-red-500 mb-3">
-                  Could not get location. Please enable location services.
-                </p>
-              )}
-
-              <input type="hidden" {...register('latitude', { valueAsNumber: true })} />
-              <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
-              <input type="hidden" {...register('city')} />
-
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <input
-                  type="datetime-local"
-                  {...register('occurred_at')}
-                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* ── Section 4: Your role ── */}
-            <div className="p-6">
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-                I was a…
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(REPORTER_TYPE_LABELS).map(([value, label]) => (
-                  <label key={value} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      value={value}
-                      {...register('reporter_type')}
-                      className="sr-only peer"
-                    />
-                    <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300 peer-checked:border-green-500 peer-checked:bg-green-50 dark:peer-checked:bg-green-900/20 peer-checked:text-green-700 dark:peer-checked:text-green-400">
-                      {label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* ── Section 5: Description & photos ── */}
+            {/* ── Section 2: Description & photos ── */}
             <div className="p-6">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
                 Details (optional)
@@ -371,11 +270,11 @@ export default function ReportPage() {
                 {...register('description')}
                 rows={4}
                 placeholder="Describe what happened — the more detail the better…"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-sm mb-4"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-4"
               />
 
               <div
-                className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-5 text-center cursor-pointer hover:border-green-400 transition"
+                className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-5 text-center cursor-pointer hover:border-blue-400 transition"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <Upload className="w-6 h-6 mx-auto text-slate-300 mb-1.5" />
@@ -420,6 +319,111 @@ export default function ReportPage() {
               )}
             </div>
 
+            {/* ── Section 3: Company ── */}
+            <div className="p-6">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                Which company?
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
+                  <label key={value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      value={value}
+                      {...register('av_company')}
+                      className="sr-only peer"
+                    />
+                    <span
+                      className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                        watchedCompany === value
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                          : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300'
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Section 4: Location & time ── */}
+            <div className="p-6">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                Where &amp; when? <span className="text-red-400">*</span>
+              </p>
+
+              <button
+                type="button"
+                onClick={getLocation}
+                disabled={locationStatus === 'loading'}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 font-medium transition mb-3 ${
+                  locationStatus === 'success'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                    : 'border-dashed border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-blue-400 hover:text-blue-600'
+                }`}
+              >
+                {locationStatus === 'loading' ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : locationStatus === 'success' ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <MapPin className="w-5 h-5" />
+                )}
+                {locationStatus === 'success'
+                  ? 'Location captured'
+                  : locationStatus === 'loading'
+                  ? 'Getting location…'
+                  : 'Use my current location'}
+              </button>
+
+              {watchedAddress && (
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 truncate">
+                  📍 {watchedAddress}
+                </p>
+              )}
+              {locationStatus === 'error' && (
+                <p className="text-sm text-red-500 mb-3">
+                  Could not get location. Please enable location services.
+                </p>
+              )}
+
+              <input type="hidden" {...register('latitude', { valueAsNumber: true })} />
+              <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
+              <input type="hidden" {...register('city')} />
+
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                <input
+                  type="datetime-local"
+                  {...register('occurred_at')}
+                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            {/* ── Section 5: Your role ── */}
+            <div className="p-6">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+                I was a…
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(REPORTER_TYPE_LABELS).map(([value, label]) => (
+                  <label key={value} className="cursor-pointer">
+                    <input
+                      type="radio"
+                      value={value}
+                      {...register('reporter_type')}
+                      className="sr-only peer"
+                    />
+                    <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 peer-checked:text-blue-700 dark:peer-checked:text-blue-400">
+                      {label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
             {/* ── Error & Submit ── */}
             {submitError && (
               <div className="px-6 py-3 bg-red-50 dark:bg-red-900/20 border-t border-red-100 dark:border-red-800">
@@ -433,7 +437,7 @@ export default function ReportPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !watchedType || !hasLocation}
-                className="w-full py-4 bg-green-500 hover:bg-green-400 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white disabled:text-slate-400 dark:disabled:text-slate-500 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2"
+                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white disabled:text-slate-400 dark:disabled:text-slate-500 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2"
               >
                 {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
                 {isSubmitting ? 'Submitting…' : 'Submit Report'}

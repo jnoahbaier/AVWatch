@@ -38,18 +38,18 @@ const REPORTS_PAGE = 6;
 
 const INCIDENT_ICONS: Record<string, string> = {
   collision: '💥',
-  near_miss: '⚠️',
   sudden_behavior: '⚡',
   blockage: '🚧',
-  other: '📋',
+  vandalism: '🚨',
+  other: '',
 };
 
 const reportSchema = z.object({
   incident_type: z.enum([
     'collision',
-    'near_miss',
     'sudden_behavior',
     'blockage',
+    'vandalism',
     'other',
   ]),
   av_company: z
@@ -64,6 +64,8 @@ const reportSchema = z.object({
   reporter_type: z
     .enum(['pedestrian', 'cyclist', 'driver', 'rider', 'other'])
     .optional(),
+  contact_name: z.string().optional(),
+  contact_email: z.string().email().optional().or(z.literal('')),
 });
 
 type ReportFormData = z.infer<typeof reportSchema>;
@@ -76,6 +78,7 @@ export default function Home() {
   >('idle');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isCertified, setIsCertified] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const carRef = useRef<HTMLDivElement>(null);
@@ -278,6 +281,8 @@ export default function Home() {
         city: data.city,
         occurred_at: new Date(data.occurred_at).toISOString(),
         reporter_type: data.reporter_type,
+        contact_name: data.contact_name || undefined,
+        contact_email: data.contact_email || undefined,
       });
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -297,6 +302,7 @@ export default function Home() {
     setLocationStatus('idle');
     setSelectedFiles([]);
     setSubmitError(null);
+    setIsCertified(false);
     reset({
       av_company: 'other',
       occurred_at: new Date().toISOString().slice(0, 16),
@@ -390,23 +396,100 @@ export default function Home() {
             <div className="lg:sticky lg:top-24">
               {isSuccess ? (
                 /* Success state */
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-10 text-center">
-                  <div className="mx-auto w-16 h-16 bg-blue-50 border border-blue-200 rounded-full flex items-center justify-center mb-5">
-                    <CheckCircle className="w-8 h-8 text-blue-500" />
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-blue-600 px-8 py-8 text-center">
+                    <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
+                      <CheckCircle className="w-8 h-8 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-1">
+                      Thank You!
+                    </h2>
+                    <p className="text-blue-100 text-sm">
+                      Your report has been submitted successfully.
+                    </p>
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                    Report Submitted
-                  </h2>
-                  <p className="text-slate-500 mb-8">
-                    Thank you for contributing to AV accountability. Your report
-                    has been added to our database.
-                  </p>
-                  <button
-                    onClick={handleReset}
-                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition shadow-sm"
-                  >
-                    Submit Another Report
-                  </button>
+
+                  <div className="px-8 py-6">
+                    <p className="text-slate-600 text-sm text-center mb-6">
+                      Here&apos;s what happens next with your report:
+                    </p>
+
+                    {/* Flowchart */}
+                    <div className="space-y-1">
+                      {/* Step 1 */}
+                      <div className="flex gap-4 items-start">
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            1
+                          </div>
+                          <div className="w-0.5 h-6 bg-blue-200 mt-1" />
+                        </div>
+                        <div className="pb-4 pt-1">
+                          <p className="font-semibold text-slate-800 text-sm">Report received</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Your report is stored securely in our database.</p>
+                        </div>
+                      </div>
+
+                      {/* Step 2 */}
+                      <div className="flex gap-4 items-start">
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            2
+                          </div>
+                          <div className="w-0.5 h-6 bg-blue-200 mt-1" />
+                        </div>
+                        <div className="pb-4 pt-1">
+                          <p className="font-semibold text-slate-800 text-sm">Reviewed by our team</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Our team checks the report for accuracy and completeness.</p>
+                        </div>
+                      </div>
+
+                      {/* Step 3 */}
+                      <div className="flex gap-4 items-start">
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 rounded-full bg-blue-400 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            3
+                          </div>
+                          <div className="w-0.5 h-6 bg-blue-200 mt-1" />
+                        </div>
+                        <div className="pb-4 pt-1">
+                          <p className="font-semibold text-slate-800 text-sm">Corroborated with similar reports</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Reports near the same location &amp; time are linked together to build credibility.</p>
+                        </div>
+                      </div>
+
+                      {/* Step 4 */}
+                      <div className="flex gap-4 items-start">
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-bold shrink-0">
+                            4
+                          </div>
+                        </div>
+                        <div className="pt-1">
+                          <p className="font-semibold text-slate-800 text-sm">Shared with regulators</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Validated reports are forwarded to the CA DMV and relevant agencies.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* CTAs */}
+                    <div className="mt-6 space-y-2">
+                      <a
+                        href="#reports"
+                        onClick={handleReset}
+                        className="block w-full px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
+                      >
+                        View Recent Incidents
+                      </a>
+                      <button
+                        onClick={handleReset}
+                        className="block w-full px-5 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-semibold text-sm text-center transition"
+                      >
+                        Submit Another Report
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 /* Form */
@@ -452,9 +535,11 @@ export default function Home() {
                                 {...register('incident_type')}
                                 className="sr-only"
                               />
-                              <span className="text-lg w-7 text-center select-none">
-                                {INCIDENT_ICONS[value]}
-                              </span>
+                              {INCIDENT_ICONS[value] && (
+                                <span className="text-lg w-7 text-center select-none">
+                                  {INCIDENT_ICONS[value]}
+                                </span>
+                              )}
                               <span
                                 className={`font-medium text-sm ${
                                   watchedType === value
@@ -476,7 +561,89 @@ export default function Home() {
                       )}
                     </div>
 
-                    {/* Section 2: Company */}
+                    {/* Section 2: Details */}
+                    <div className="p-6">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        Details (optional)
+                      </p>
+                      <textarea
+                        {...register('description')}
+                        rows={3}
+                        placeholder="Describe what happened…"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-3"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => cameraInputRef.current?.click()}
+                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
+                        >
+                          <Camera className="w-5 h-5 text-slate-400" />
+                          <span className="text-xs text-slate-500">Take photo</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
+                        >
+                          <Upload className="w-5 h-5 text-slate-400" />
+                          <span className="text-xs text-slate-500">Choose photo / video</span>
+                        </button>
+                      </div>
+                      <input
+                        ref={cameraInputRef}
+                        type="file"
+                        accept="image/*,video/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const newFiles = Array.from(e.target.files || []);
+                          setSelectedFiles((prev) =>
+                            [...prev, ...newFiles].slice(0, 3)
+                          );
+                        }}
+                      />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const newFiles = Array.from(e.target.files || []);
+                          setSelectedFiles((prev) =>
+                            [...prev, ...newFiles].slice(0, 3)
+                          );
+                        }}
+                      />
+                      {selectedFiles.length > 0 && (
+                        <ul className="mt-3 space-y-1">
+                          {selectedFiles.map((file, i) => (
+                            <li
+                              key={i}
+                              className="flex items-center justify-between text-sm bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"
+                            >
+                              <span className="truncate text-slate-700">
+                                {file.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedFiles((prev) =>
+                                    prev.filter((_, j) => j !== i)
+                                  )
+                                }
+                                className="ml-2 text-slate-400 hover:text-red-500 flex-shrink-0"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Section 3: Company */}
                     <div className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Which company?
@@ -504,7 +671,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Section 3: Location & time */}
+                    {/* Section 4: Location & time */}
                     <div className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Where &amp; when? <span className="text-red-500">*</span>
@@ -666,10 +833,10 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Section 4: Your role */}
+                    {/* Section 5: Your role */}
                     <div className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                        I was a…
+                        I was a… <span className="text-red-500">*</span>
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {Object.entries(REPORTER_TYPE_LABELS).map(
@@ -690,86 +857,28 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Section 5: Details */}
+                    {/* Section 6: Contact (optional) */}
                     <div className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                        Details (optional)
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                        Contact <span className="font-normal normal-case">(optional)</span>
                       </p>
-                      <textarea
-                        {...register('description')}
-                        rows={3}
-                        placeholder="Describe what happened…"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-3"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => cameraInputRef.current?.click()}
-                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
-                        >
-                          <Camera className="w-5 h-5 text-slate-400" />
-                          <span className="text-xs text-slate-500">Take photo</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
-                        >
-                          <Upload className="w-5 h-5 text-slate-400" />
-                          <span className="text-xs text-slate-500">Choose file</span>
-                        </button>
+                      <p className="text-xs text-slate-400 mb-3">
+                        Provide your contact info if you'd like us to follow up. Never shared publicly.
+                      </p>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          {...register('contact_name')}
+                          placeholder="Name"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <input
+                          type="email"
+                          {...register('contact_email')}
+                          placeholder="Email address"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
                       </div>
-                      <input
-                        ref={cameraInputRef}
-                        type="file"
-                        accept="image/*,video/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={(e) => {
-                          const newFiles = Array.from(e.target.files || []);
-                          setSelectedFiles((prev) =>
-                            [...prev, ...newFiles].slice(0, 3)
-                          );
-                        }}
-                      />
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*,video/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const newFiles = Array.from(e.target.files || []);
-                          setSelectedFiles((prev) =>
-                            [...prev, ...newFiles].slice(0, 3)
-                          );
-                        }}
-                      />
-                      {selectedFiles.length > 0 && (
-                        <ul className="mt-3 space-y-1">
-                          {selectedFiles.map((file, i) => (
-                            <li
-                              key={i}
-                              className="flex items-center justify-between text-sm bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"
-                            >
-                              <span className="truncate text-slate-700">
-                                {file.name}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setSelectedFiles((prev) =>
-                                    prev.filter((_, j) => j !== i)
-                                  )
-                                }
-                                className="ml-2 text-slate-400 hover:text-red-500 flex-shrink-0"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                     </div>
 
                     {/* Error */}
@@ -783,9 +892,22 @@ export default function Home() {
 
                     {/* Submit */}
                     <div className="p-6">
+                      {/* Certification checkbox */}
+                      <label className="flex items-start gap-3 mb-4 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={isCertified}
+                          onChange={(e) => setIsCertified(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+                        />
+                        <span className="text-sm text-slate-600 group-hover:text-slate-800 transition">
+                          I certify that this report is accurate to the best of my knowledge.
+                        </span>
+                      </label>
+
                       <button
                         type="submit"
-                        disabled={isSubmitting || !watchedType || !hasLocation}
+                        disabled={isSubmitting || !watchedType || !hasLocation || !isCertified}
                         className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 disabled:cursor-not-allowed text-white disabled:text-slate-400 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
                       >
                         {isSubmitting && (

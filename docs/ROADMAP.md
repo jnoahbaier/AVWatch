@@ -4,6 +4,15 @@
 
 ---
 
+## Architecture Constraints (Read Before Building Anything)
+
+- **Single scrollable page** — AVWatch is one page at `/`. Navigation scrolls to sections. No separate routes.
+- The live site at avwatch.org is the reference: Hero → Report Form → About → Recent Incidents → News → Footer.
+- **No map page, no dashboard page** — these are legacy routes (`/map`, `/dashboard`, `/bulletin`, `/news`, `/report`) that should not be developed further. The report form lives embedded in the homepage.
+- If a map is added in the future, it will be a scroll section on the homepage, not a separate route.
+
+---
+
 ## Phase 1 — Verify Core Infrastructure (Do First)
 
 These confirm what's actually working before building on top of it.
@@ -26,20 +35,18 @@ These confirm what's actually working before building on top of it.
 
 Shift AVWatch from "accountability watchdog" to "community platform" that helps make the technology safer and better for everyone. The user research shows people skew pro-AV. The platform should feel welcoming to enthusiasts, not just critics.
 
-- [ ] **Add new incident categories** to the report form:
-  - Noteworthy positive AV behavior
-  - Vehicle vandalism / obstruction of AV
-  - Human driver error near AV
-  - Other types of crashes
+- [x] **Add new incident categories** to the report form:
+  - Vehicle vandalism
   - (Keep existing: collision, near-miss, traffic violation, etc.)
 
 ---
 
 ## Phase 3 — Form UX Improvements (High Urgency)
 
-- [ ] **Add "I certify this is accurate" checkbox** — Must be checked before submit. Simple moral nudge, deters false reports.
-- [ ] **Update media upload Call To Action** — Change to "Choose photo / video" (instead of choose file) to reflect that both are accepted.
-- [ ] **Add optional contact fields** — Phone + email, clearly marked optional. Enables follow-up and corroboration between reporters.
+- [x] **Add "I certify this is accurate" checkbox** — Must be checked before submit. Simple moral nudge, deters false reports.
+- [x] **Update media upload Call To Action** — Change to "Choose photo / video" (instead of choose file) to reflect that both are accepted.
+- [x] **Add optional contact fields** — Name + email, clearly marked optional. Enables follow-up and corroboration between reporters.
+  - ⚠️ UI done. DB migration still needed: add `contact_name` and `contact_email` columns to `incidents` table and wire up `createIncident()`.
 
 ---
 
@@ -47,7 +54,7 @@ Shift AVWatch from "accountability watchdog" to "community platform" that helps 
 
 Currently missing entirely. This is the highest-leverage moment to convert a one-time reporter into a return user.
 
-- [ ] **Build confirmation / thank-you screen** — Must include:
+- [x] **Build confirmation / thank-you screen** — Must include:
   - Thank you message
   - Brief explanation of what happens next (review process, how reports are used, shoudl have nice flowchart graph with arrows, easy to understand process)
   - Call To Action to view nearby recent reports
@@ -97,7 +104,7 @@ These need more scoping before implementation.
 | Does the backend support video uploads? | Evan / Joshua | Phase 3 media upload copy, Phase 1 file upload test |
 | Where are uploaded files stored? (Supabase storage vs. S3) | Noah | Phase 6 privacy/legal design for corroboration |
 | Should post-submit flows differ by reporter persona? | Full team | Phase 7 persona flows |
-| What are the 4 admin emails for the dashboard allowlist? | Full team | Phase 5 admin auth |
+| ~~What are the 4 admin emails for the dashboard allowlist?~~ | ✅ Resolved: jnoah_baier, mppaz, joshua.mussman, evanhaas @berkeley.edu | Phase 5 admin auth |
 
 ---
 

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const navigation = [
   { name: 'Recent Reports', href: '/#reports' },
@@ -12,6 +13,10 @@ const navigation = [
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Admin routes have their own layout — don't render the public navbar
+  if (pathname?.startsWith('/admin')) return null;
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm">

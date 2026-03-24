@@ -28,31 +28,40 @@ GEMINI_API_URL = (
 # AV companies we track
 KNOWN_COMPANIES = ["waymo", "zoox", "cruise", "tesla", "nuro", "aurora", "motional", "unknown"]
 
-# Incident types matching our existing schema
-KNOWN_INCIDENT_TYPES = ["collision", "near_miss", "sudden_behavior", "blockage", "other"]
+# Incident types matching our schema (keep in sync with frontend utils.ts and DB enum)
+KNOWN_INCIDENT_TYPES = [
+    "collision",        # AV involved in a crash
+    "sudden_behavior",  # Erratic, unexpected AV movement or near-miss
+    "blockage",         # AV blocked traffic or emergency vehicles
+    "vandalism",        # AV was vandalized or physically obstructed by a human
+    "other",            # Any other noteworthy AV event (human error near AV, positive behavior, etc.)
+]
 
 # The classification prompt sent to Gemini for each post
-RELEVANCE_PROMPT = """You are a safety analyst for AV Watch, a platform that tracks real-world
-autonomous vehicle (AV) safety incidents in the San Francisco Bay Area and beyond.
+RELEVANCE_PROMPT = """You are an analyst for AV Watch, a community platform that documents all
+noteworthy real-world autonomous vehicle (AV) events — good, bad, and everything in between.
+The platform serves both AV critics AND enthusiasts who want to help make the technology safer.
 
 Your job is to read a Reddit post and decide:
-1. Is this post reporting or describing a REAL AV incident?
+1. Is this post reporting or describing a REAL, NOTEWORTHY AV event?
 
-   An incident counts if it involves an autonomous or self-driving vehicle:
-   - Causing or nearly causing a collision
-   - Blocking traffic, intersections, or emergency vehicles
-   - Behaving dangerously or erratically
-   - Getting stuck or causing disruption
-   - Being involved in a crash or near-miss
+   A post IS relevant if it involves an autonomous or self-driving vehicle in any of these ways:
+   - SAFETY INCIDENTS: collision, near-miss, erratic behavior, blocking traffic or emergency vehicles
+   - VANDALISM / OBSTRUCTION: a human vandalizing, attacking, or physically obstructing an AV
+   - HUMAN ERROR NEAR AV: a human driver, cyclist, or pedestrian making an error that interacted
+     with or affected an AV (e.g. cutting off a Waymo, swerving into its path)
+   - POSITIVE BEHAVIOR: an AV handling a difficult situation notably well (e.g. correctly yielding
+     to a cyclist, smoothly navigating a complex intersection, avoiding an accident)
+   - OTHER NOTEWORTHY EVENTS: anything unusual or community-relevant involving a real AV on public roads
 
-   NOT an incident:
-   - General news, opinions, or commentary about AV companies
-   - Stock prices, earnings, business news
-   - Feature announcements or software updates
-   - Positive experiences with no safety concern
-   - Hypothetical discussions
+   A post is NOT relevant if it is:
+   - Pure news/opinion about AV companies with no specific on-road event
+   - Stock prices, earnings, business news, or funding announcements
+   - Feature announcements, software updates, or product launches
+   - Purely hypothetical or speculative discussions
+   - Clearly fictional or satirical
 
-2. If it IS an incident, extract structured data.
+2. If it IS relevant, extract structured data.
 
 Reddit post to analyze:
 ---
@@ -67,9 +76,9 @@ Respond with ONLY valid JSON in exactly this format:
   "is_relevant": true or false,
   "relevance_reason": "one sentence explaining your decision",
   "extracted_company": "waymo|zoox|cruise|tesla|nuro|aurora|motional|unknown|null",
-  "extracted_incident_type": "collision|near_miss|sudden_behavior|blockage|other|null",
+  "extracted_incident_type": "collision|near_miss|sudden_behavior|blockage|vandalism|other|null",
   "extracted_location": "specific location if mentioned, or null",
-  "extracted_title": "if relevant: a punchy headline under 8 words (e.g. 'Waymo blocks intersection for 20 min'). if not relevant: null",
+  "extracted_title": "if relevant: a punchy neutral headline under 8 words (e.g. 'Waymo yields for cyclist at busy intersection'). if not relevant: null",
   "extracted_summary": "if relevant: ONE sentence, max 20 words, describing exactly what happened. if not relevant: null"
 }}
 

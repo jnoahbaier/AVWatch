@@ -193,6 +193,8 @@ export async function createIncident(incident: {
   city?: string;
   occurred_at: string;
   reporter_type?: string;
+  contact_name?: string;
+  contact_email?: string;
 }) {
   // latitude and longitude are generated columns computed from location geometry
   // So we only insert the location field using PostGIS EWKT format
@@ -210,6 +212,8 @@ export async function createIncident(incident: {
       source: 'user_report',
       status: 'unverified',
       media_urls: [],
+      contact_name: incident.contact_name || null,
+      contact_email: incident.contact_email || null,
     })
     .select()
     .single();

@@ -51,9 +51,9 @@ export function formatRelativeTime(date: string | Date): string {
  */
 export const INCIDENT_TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
-  near_miss: 'Near Miss',
   sudden_behavior: 'Reckless Behavior',
   blockage: 'Blockage',
+  vandalism: 'Vandalism',
   other: 'Other',
 };
 
@@ -100,9 +100,9 @@ export const REPORTER_TYPE_LABELS: Record<string, string> = {
  */
 export const INCIDENT_TYPE_COLORS: Record<string, string> = {
   collision: '#ef4444',
-  near_miss: '#f97316',
   sudden_behavior: '#eab308',
   blockage: '#6366f1',
+  vandalism: '#dc2626',
   other: '#64748b',
 };
 

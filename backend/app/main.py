@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import incidents, data, health, data_sync, news
 from app.api import bulletin
+from app.api import admin
 from app.core.config import settings
 from app.core.database import engine, Base
 from app import models as _models  # noqa: F401 — ensure all models are registered before create_all
@@ -112,6 +113,7 @@ app.include_router(data.router, prefix="/api/data", tags=["Data & Analytics"])
 app.include_router(data_sync.router, prefix="/api", tags=["Data Sync"])
 app.include_router(news.router, prefix="/api/news", tags=["News"])
 app.include_router(bulletin.router, prefix="/api/bulletin", tags=["Bulletin"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 
 @app.get("/")

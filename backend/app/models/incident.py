@@ -27,7 +27,7 @@ class Incident(Base):
     # Core fields
     incident_type: Mapped[str] = mapped_column(
         String(50), nullable=False, index=True
-    )  # collision, near_miss, sudden_behavior, blockage, other
+    )  # collision, near_miss, sudden_behavior, blockage, vandalism, other
 
     av_company: Mapped[Optional[str]] = mapped_column(
         String(50), index=True
@@ -82,6 +82,18 @@ class Incident(Base):
     matched_bulletin_item_id: Mapped[Optional[UUID]] = mapped_column(
         UUID(as_uuid=True), nullable=True
     )  # Set once this report is merged into a bulletin item
+
+    # Optional reporter contact info (never shown publicly — admin only)
+    contact_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    contact_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+
+    # Admin review fields
+    admin_note: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True
+    )  # Internal note when discarding or flagging a report
+    corroborated_with_id: Mapped[Optional[UUID]] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )  # ID of another incident this report has been linked to for corroboration
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
