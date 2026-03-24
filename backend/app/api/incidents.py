@@ -3,6 +3,8 @@ Incident reporting and querying endpoints.
 """
 
 import hashlib
+import time
+from collections import defaultdict
 from datetime import datetime
 from typing import List, Optional, Literal
 from uuid import UUID
@@ -17,6 +19,34 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.incident import Incident
+from app.models.blocked_ip import BlockedIP
+
+# ---------------------------------------------------------------------------
+# Simple in-memory rate limiter: max 5 submissions per IP per 10 minutes
+# ---------------------------------------------------------------------------
+_RATE_LIMIT_MAX = 5
+_RATE_LIMIT_WINDOW = 600  # seconds (10 minutes)
+
+# Maps ip_hash -> list of submission timestamps
+_submission_times: dict[str, list[float]] = defaultdict(list)
+
+
+def _check_rate_limit(ip_hash: str) -> None:
+    """Raise 429 if this IP hash has exceeded the submission rate limit."""
+    now = time.monotonic()
+    window_start = now - _RATE_LIMIT_WINDOW
+    times = _submission_times[ip_hash]
+
+    # Drop timestamps outside the current window
+    _submission_times[ip_hash] = [t for t in times if t > window_start]
+
+    if len(_submission_times[ip_hash]) >= _RATE_LIMIT_MAX:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many submissions. Please wait a few minutes before submitting again.",
+        )
+
+    _submission_times[ip_hash].append(now)
 
 router = APIRouter()
 
@@ -83,18 +113,24 @@ async def create_incident(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    # Submit a new incident report.
-    # TODO: Implement rate limiting to prevent abuse and fraudulent reports.
-    #   Consider using FastAPI-Limiter or a reverse proxy like Nginx for this.
-    #
-    # - **incident_type**: collision, near_miss, sudden_behavior, blockage, other
-    # - **av_company**: waymo, cruise, zoox, tesla, other, unknown
-    # - **location**: GPS coordinates and optional address
-    # - **occurred_at**: When the incident happened
+    Submit a new incident report.
+
+    - **incident_type**: collision, near_miss, sudden_behavior, blockage, other
+    - **av_company**: waymo, cruise, zoox, tesla, other, unknown
+    - **location**: GPS coordinates and optional address
+    - **occurred_at**: When the incident happened
     """
     # Hash the client IP — never store raw IP
     client_ip = request.client.host if request.client else "unknown"
     ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
+
+    # Reject requests from blocked IPs
+    blocked = await db.execute(select(BlockedIP).where(BlockedIP.ip_hash == ip_hash))
+    if blocked.scalar_one_or_none():
+        raise HTTPException(status_code=403, detail="Submission not allowed.")
+
+    # Enforce rate limit (5 submissions per 10 minutes per IP)
+    _check_rate_limit(ip_hash)
 
     point = WKTElement(
         f"POINT({incident.location.longitude} {incident.location.latitude})",

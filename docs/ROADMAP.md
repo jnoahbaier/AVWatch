@@ -24,8 +24,8 @@ These confirm what's actually working before building on top of it.
 - [ ] **Security hardening**
   - [ ] Input sanitization / SQL injection prevention
   - [ ] XSS protection on all user-submitted text fields
-  - [ ] IP-based rate limiting on report submission endpoint (flag/block IPs with abnormally high submission volume)
-  - [ ] Auth hardening — review Supabase Row Level Security (RLS) policies
+  - [x] IP-based rate limiting on report submission endpoint — 5 submissions / 10 min per IP. Blocked IPs are also rejected at submission time.
+  - [x] Auth hardening — Supabase RLS policies written for `bulletin_items` and `news_items` (`backend/scripts/supabase-rls.sql`). Run in Supabase SQL Editor to activate.
   - [ ] Review any exposed API keys or secrets in client-side code
   - [ ] No hacker should be able to get into our database of reports 
 
@@ -58,7 +58,7 @@ Currently missing entirely. This is the highest-leverage moment to convert a one
   - Thank you message
   - Brief explanation of what happens next (review process, how reports are used, shoudl have nice flowchart graph with arrows, easy to understand process)
   - Call To Action to view nearby recent reports
-- [ ] **Show nearby recent reports after submission** — Surface both AVWatch reports and Reddit posts near the submitted location.
+- [x] **Show nearby recent reports after submission** — "View Recent Incidents" CTA scrolls to `#reports` section on the homepage after submission.
 
 ---
 
