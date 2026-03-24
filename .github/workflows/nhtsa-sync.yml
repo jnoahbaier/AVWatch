@@ -1,9 +1,6 @@
 name: NHTSA Data Sync
 
 on:
-  schedule:
-    # Run daily at 6 AM UTC (backup to pg_cron)
-    - cron: '0 6 * * *'
   workflow_dispatch:
     # Allow manual trigger
     inputs:
