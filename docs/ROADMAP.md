@@ -22,10 +22,10 @@ These confirm what's actually working before building on top of it.
 - [ ] **File uploads** — Confirm the backend accepts both photos AND video. Clarify where files are stored (Supabase storage? S3?). Document this for the team.
 - [ ] **Stress test** — Simulate high concurrent report submissions. Test edge cases: duplicate submissions, large file uploads, malformed inputs, missing required fields.
 - [ ] **Security hardening**
-  - [ ] Input sanitization / SQL injection prevention
-  - [ ] XSS protection on all user-submitted text fields
-  - [x] IP-based rate limiting on report submission endpoint — 5 submissions / 10 min per IP. Blocked IPs are also rejected at submission time.
-  - [x] Auth hardening — Supabase RLS policies written for `bulletin_items` and `news_items` (`backend/scripts/supabase-rls.sql`). Run in Supabase SQL Editor to activate.
+  - [x] Input sanitization / SQL injection prevention — Pydantic validation + SQLAlchemy ORM parameterized queries. No raw SQL.
+  - [x] XSS protection on all user-submitted text fields — React escapes all user content by default; no `dangerouslySetInnerHTML` anywhere.
+  - [x] IP-based rate limiting on report submission endpoint — 5 submissions / 10 min per IP. Blocked IPs rejected at submission time. Uses `X-Forwarded-For` behind Railway proxy. Tested + deployed to production.
+  - [x] Auth hardening — Supabase RLS policies live on `bulletin_items` and `news_items`. Anon key is read-only; writes require service role.
   - [ ] Review any exposed API keys or secrets in client-side code
   - [ ] No hacker should be able to get into our database of reports 
 
