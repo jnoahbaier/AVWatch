@@ -17,9 +17,9 @@
 
 These confirm what's actually working before building on top of it.
 
-- [ ] **Reddit integration** — Confirm recent AV reports are being pulled correctly. Verify scope covers not just AV wrongdoing but also: vandalism of AVs, human driver errors near AVs, crashes of all kinds. Check how often it refreshes and whether deduplication works.
-- [ ] **Report corroboration logic** — Verify that when 3+ users file reports of a similar incident (seems to be same location/time window), the incident surfaces in the "Recent Reports" section. Trace the full logic end-to-end.
-- [ ] **File uploads** — Confirm the backend accepts both photos AND video. Clarify where files are stored (Supabase storage? S3?). Document this for the team.
+- [x] **Reddit integration** — Verified working in production. Pulls from 6 subreddits (`waymo`, `SelfDrivingCars`, `robotaxi`, `sanfrancisco`, `bayarea`, `teslamotors`), 25 posts each. OAuth + RSS fallback. Gemini AI filters for relevance. Deduplicates by `external_id`. Refreshes hourly. Scope confirmed: covers vandalism, collisions, sudden behavior (e.g. "Tiktoker vandalizes Waymo mirrors", "Waymo leaves scene of freeway car flip").
+- [x] **Report corroboration logic** — Fully implemented. 2-pass system runs every 30 min: Pass A boosts existing Reddit bulletin items when 2+ distinct-IP reports match; Pass B creates new community bulletin items from 3+ distinct-IP reports within 500m + 2hr window. IP deduplication prevents gaming.
+- [ ] **File uploads** — ⚠️ STUB — endpoint exists but silently discards files. No storage backend (S3 keys in config but no boto3 client initialized, no Supabase storage). `incident.media_urls` is never populated. Needs S3 or Supabase storage implementation before media upload is usable.
 - [ ] **Stress test** — Simulate high concurrent report submissions. Test edge cases: duplicate submissions, large file uploads, malformed inputs, missing required fields.
 - [ ] **Security hardening**
   - [x] Input sanitization / SQL injection prevention — Pydantic validation + SQLAlchemy ORM parameterized queries. No raw SQL.
