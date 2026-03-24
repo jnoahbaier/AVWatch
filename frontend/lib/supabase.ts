@@ -183,6 +183,49 @@ export async function getDataSources() {
   return data as DataSource[];
 }
 
+// ---------------------------------------------------------------------------
+// Media upload — files go directly from browser → Supabase Storage (CDN),
+// bypassing the Railway backend entirely. Returns public URLs.
+// ---------------------------------------------------------------------------
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'];
+const IMAGE_SIZE_LIMIT = 10 * 1024 * 1024;  // 10 MB
+const VIDEO_SIZE_LIMIT = 50 * 1024 * 1024;  // 50 MB
+
+export async function uploadIncidentMedia(files: File[]): Promise<string[]> {
+  const urls: string[] = [];
+
+  for (const file of files) {
+    const isImage = ALLOWED_IMAGE_TYPES.includes(file.type);
+    const isVideo = ALLOWED_VIDEO_TYPES.includes(file.type);
+
+    if (!isImage && !isVideo) {
+      throw new Error(`${file.name}: unsupported file type. Use JPG, PNG, WebP, GIF, MP4, or MOV.`);
+    }
+
+    const sizeLimit = isVideo ? VIDEO_SIZE_LIMIT : IMAGE_SIZE_LIMIT;
+    if (file.size > sizeLimit) {
+      const limitLabel = isVideo ? '50 MB' : '10 MB';
+      throw new Error(`${file.name} exceeds the ${limitLabel} limit.`);
+    }
+
+    // Unique path: timestamp + random slug + original extension
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
+    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('incident-media')
+      .upload(path, file, { contentType: file.type, upsert: false });
+
+    if (error) throw new Error(`Upload failed for ${file.name}: ${error.message}`);
+
+    const { data } = supabase.storage.from('incident-media').getPublicUrl(path);
+    urls.push(data.publicUrl);
+  }
+
+  return urls;
+}
+
 export async function createIncident(incident: {
   incident_type: string;
   av_company?: string;
@@ -195,6 +238,7 @@ export async function createIncident(incident: {
   reporter_type?: string;
   contact_name?: string;
   contact_email?: string;
+  media_urls?: string[];
 }) {
   // latitude and longitude are generated columns computed from location geometry
   // So we only insert the location field using PostGIS EWKT format
@@ -211,7 +255,7 @@ export async function createIncident(incident: {
       reporter_type: incident.reporter_type,
       source: 'user_report',
       status: 'unverified',
-      media_urls: [],
+      media_urls: incident.media_urls ?? [],
       contact_name: incident.contact_name || null,
       contact_email: incident.contact_email || null,
     })

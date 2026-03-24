@@ -60,6 +60,7 @@ export default function ReportPage() {
   >('idle');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -128,7 +129,18 @@ export default function ReportPage() {
     setSubmitError(null);
     setIsSubmitting(true);
     try {
-      const { createIncident } = await import('@/lib/supabase');
+      const { createIncident, uploadIncidentMedia } = await import('@/lib/supabase');
+
+      // Upload media first (if any) — goes directly to Supabase Storage CDN
+      let mediaUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        setUploadProgress(
+          `Uploading ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}…`
+        );
+        mediaUrls = await uploadIncidentMedia(selectedFiles);
+        setUploadProgress(null);
+      }
+
       await createIncident({
         incident_type: data.incident_type,
         av_company: data.av_company,
@@ -139,6 +151,7 @@ export default function ReportPage() {
         city: data.city,
         occurred_at: new Date(data.occurred_at).toISOString(),
         reporter_type: data.reporter_type,
+        media_urls: mediaUrls,
       });
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -150,6 +163,7 @@ export default function ReportPage() {
       );
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
@@ -286,10 +300,23 @@ export default function ReportPage() {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/*,video/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,video/mp4,video/quicktime,video/webm"
                   className="hidden"
                   onChange={(e) => {
-                    setSelectedFiles(Array.from(e.target.files || []).slice(0, 3));
+                    const files = Array.from(e.target.files || []).slice(0, 3);
+                    const oversized = files.find((f) => {
+                      const isVideo = f.type.startsWith('video/');
+                      return f.size > (isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024);
+                    });
+                    if (oversized) {
+                      const isVideo = oversized.type.startsWith('video/');
+                      setSubmitError(
+                        `"${oversized.name}" is too large. ${isVideo ? 'Videos' : 'Photos'} must be under ${isVideo ? '50 MB' : '10 MB'}.`
+                      );
+                      return;
+                    }
+                    setSubmitError(null);
+                    setSelectedFiles(files);
                   }}
                 />
               </div>
@@ -440,7 +467,7 @@ export default function ReportPage() {
                 className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white disabled:text-slate-400 dark:disabled:text-slate-500 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2"
               >
                 {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                {isSubmitting ? 'Submitting…' : 'Submit Report'}
+                {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
               </button>
               <p className="mt-3 text-center text-xs text-slate-400">
                 Anonymous by default · no account required · your location is never tracked
