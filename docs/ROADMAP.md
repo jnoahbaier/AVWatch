@@ -8,8 +8,8 @@
 
 These confirm what's actually working before building on top of it.
 
-- [ ] **Reddit integration** — Confirm recent AV reports are being pulled correctly. Verify scope covers not just AV wrongdoing but also: vandalism of AVs, human driver errors near AVs, positive AV behavior, crashes of all kinds. Check how often it refreshes and whether deduplication works.
-- [ ] **Report corroboration logic** — Verify that when 3+ users file reports of a similar incident (same location/time window), the incident surfaces in the "Recent Reports" section. Trace the full logic end-to-end.
+- [ ] **Reddit integration** — Confirm recent AV reports are being pulled correctly. Verify scope covers not just AV wrongdoing but also: vandalism of AVs, human driver errors near AVs, crashes of all kinds. Check how often it refreshes and whether deduplication works.
+- [ ] **Report corroboration logic** — Verify that when 3+ users file reports of a similar incident (seems to be same location/time window), the incident surfaces in the "Recent Reports" section. Trace the full logic end-to-end.
 - [ ] **File uploads** — Confirm the backend accepts both photos AND video. Clarify where files are stored (Supabase storage? S3?). Document this for the team.
 - [ ] **Stress test** — Simulate high concurrent report submissions. Test edge cases: duplicate submissions, large file uploads, malformed inputs, missing required fields.
 - [ ] **Security hardening**
@@ -18,36 +18,27 @@ These confirm what's actually working before building on top of it.
   - [ ] IP-based rate limiting on report submission endpoint (flag/block IPs with abnormally high submission volume)
   - [ ] Auth hardening — review Supabase Row Level Security (RLS) policies
   - [ ] Review any exposed API keys or secrets in client-side code
+  - [ ] No hacker should be able to get into our database of reports 
 
 ---
 
 ## Phase 2 — Strategic Reframe (High Urgency)
 
-Shift AVWatch from "accountability watchdog" to "community stewardship platform." The user research shows people skew pro-AV. The platform should feel welcoming to enthusiasts, not just critics.
+Shift AVWatch from "accountability watchdog" to "community platform" that helps make the technology safer and better for everyone. The user research shows people skew pro-AV. The platform should feel welcoming to enthusiasts, not just critics.
 
 - [ ] **Add new incident categories** to the report form:
   - Noteworthy positive AV behavior
   - Vehicle vandalism / obstruction of AV
   - Human driver error near AV
+  - Other types of crashes
   - (Keep existing: collision, near-miss, traffic violation, etc.)
-- [ ] **Rewrite homepage copy** — Replace "hold companies accountable" framing with "help make the technology better." Neutral/positive tone throughout. Full copy pass on `avwatch.org`.
-- [ ] **Rewrite report form header copy** — Reflect expanded scope. Make reporting a Waymo vandalism feel just as natural as reporting a collision.
-- [ ] **Restrict location input to California only** — Map picker and/or address autocomplete should only accept CA locations.
 
 ---
 
 ## Phase 3 — Form UX Improvements (High Urgency)
 
-- [ ] **Rename role field** — Change "I was a…" label to "My role"
-- [ ] **Reorder form fields** — New suggested flow:
-  1. Incident type
-  2. Location
-  3. My role
-  4. Description
-  5. Media upload
-  6. Contact info (optional)
 - [ ] **Add "I certify this is accurate" checkbox** — Must be checked before submit. Simple moral nudge, deters false reports.
-- [ ] **Update media upload CTA** — Change to "Choose photo / video" to reflect that both are accepted.
+- [ ] **Update media upload Call To Action** — Change to "Choose photo / video" (instead of choose file) to reflect that both are accepted.
 - [ ] **Add optional contact fields** — Phone + email, clearly marked optional. Enables follow-up and corroboration between reporters.
 
 ---
@@ -58,8 +49,8 @@ Currently missing entirely. This is the highest-leverage moment to convert a one
 
 - [ ] **Build confirmation / thank-you screen** — Must include:
   - Thank you message
-  - Brief explanation of what happens next (review process, how reports are used)
-  - CTA to view nearby recent reports on the map
+  - Brief explanation of what happens next (review process, how reports are used, shoudl have nice flowchart graph with arrows, easy to understand process)
+  - Call To Action to view nearby recent reports
 - [ ] **Show nearby recent reports after submission** — Surface both AVWatch reports and Reddit posts near the submitted location.
 
 ---
@@ -68,11 +59,11 @@ Currently missing entirely. This is the highest-leverage moment to convert a one
 
 A private, internal-only view for the 4 team members to review, validate, and manage submitted reports.
 
-- [ ] **Auth** — Google SSO login. Allowlist of exactly 4 emails (team only). No one else can access.
+- [ ] **Auth** — Google SSO login. Allowlist of exactly 4 emails (team only). No one else can access: jnoah_baier@berkeley.edu, mppaz@berkeley.edu, joshua.mussman@berkeley.edu, evanhaas@berkeley.edu
 - [ ] **Reports queue** — Table/list of all submitted reports, sortable/filterable by: date, incident type, location, status (pending / validated / discarded).
 - [ ] **Per-report actions:**
   - Validate (marks report as credible, makes it eligible for map display / featured section)
-  - Discard (removes from public view, with optional internal note)
+  - Discard (removes from public view, with optional internal note). Ability to block ip addresses or flag addresses that are 'shitposting' or might be 'trolls'
   - Flag for corroboration (links two reports of the same incident, optionally intro-ing reporters if both opted in for contact)
 - [ ] **Settings page** — Manage allowlisted admin emails, toggle feature flags, view basic platform stats (total reports, reports this week, top incident types).
 - [ ] **Route protection** — Admin routes must be completely inaccessible to non-admins at both the UI and API/RLS level.
