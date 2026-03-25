@@ -26,8 +26,8 @@ These confirm what's actually working before building on top of it.
   - [x] XSS protection on all user-submitted text fields — React escapes all user content by default; no `dangerouslySetInnerHTML` anywhere.
   - [x] IP-based rate limiting on report submission endpoint — 5 submissions / 10 min per IP. Blocked IPs rejected at submission time. Uses `X-Forwarded-For` behind Railway proxy. Tested + deployed to production.
   - [x] Auth hardening — Supabase RLS policies live on `bulletin_items` and `news_items`. Anon key is read-only; writes require service role.
-  - [ ] Review any exposed API keys or secrets in client-side code
-  - [ ] No hacker should be able to get into our database of reports 
+  - [x] Review exposed API keys/secrets — Audit complete. All .env files properly gitignored. No hardcoded secrets in source. CI/CD uses GitHub Secrets. Backend secrets (GEMINI, DB, Reddit) server-only. Two client-exposed items: Supabase anon key (by design, now RLS-protected) and Mapbox token (public `pk.` token — needs domain-locking in Mapbox dashboard to prevent billing abuse).
+  - [x] No hacker should be able to get into our database of reports — RLS enabled on `incidents` table. Anon: SELECT (non-rejected) + INSERT (user_report source only). UPDATE/DELETE blocked for all non-service_role callers. Contact fields (name/email) excluded from all public queries. `bulletin_items` and `news_items` already RLS-protected.
 
 ---
 
