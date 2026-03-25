@@ -11,10 +11,12 @@
 
 declare global {
   interface Window {
-    // posthog is injected by PostHogProvider
+    // PostHog instance — attached by PostHogProvider after lazy-load
     posthog?: {
       capture: (event: string, properties?: Record<string, unknown>) => void;
     };
+    // Analytics key injected server-side in layout.tsx to avoid build-time bake issues
+    __PH_KEY?: string;
   }
 }
 

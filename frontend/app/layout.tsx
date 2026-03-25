@@ -84,9 +84,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Inject analytics key at server-render time so it's available regardless
+  // of whether the env var was set during the Next.js build step.
+  // The client reads window.__PH_KEY instead of process.env.NEXT_PUBLIC_POSTHOG_KEY.
+  const phKey = process.env.POSTHOG_KEY ?? process.env.NEXT_PUBLIC_POSTHOG_KEY ?? '';
+
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-screen font-sans antialiased bg-[#f0f6ff]">
+        {phKey && (
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `window.__PH_KEY=${JSON.stringify(phKey)}`,
+            }}
+          />
+        )}
         <Providers>
           <Navbar />
           <main className="flex-1">{children}</main>

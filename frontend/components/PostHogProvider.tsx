@@ -15,7 +15,10 @@ export function PostHogProvider() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    // Read from window.__PH_KEY (injected server-side in layout.tsx) so the key
+    // is always the live runtime value, never a stale build-time bake.
+    const key = (window as Window & { __PH_KEY?: string }).__PH_KEY
+      ?? process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!key || typeof window === 'undefined') return;
 
     // Lazy-load posthog-js so it never blocks the initial render
