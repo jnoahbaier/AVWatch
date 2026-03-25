@@ -21,13 +21,21 @@ These confirm what's actually working before building on top of it.
 - [x] **Report corroboration logic** — Fully implemented. 2-pass system runs every 30 min: Pass A boosts existing Reddit bulletin items when 2+ distinct-IP reports match; Pass B creates new community bulletin items from 3+ distinct-IP reports within 500m + 2hr window. IP deduplication prevents gaming.
 - [x] **File uploads** — Live. Frontend uploads directly to Supabase Storage CDN (bypasses Railway). `uploadIncidentMedia()` validates type (JPG/PNG/WebP/GIF/HEIC/MP4/MOV/WebM) and size (photos ≤10 MB, videos ≤50 MB). URLs saved to `incident.media_urls` at submission time. Bucket: `incident-media` (public, 50 MB hard limit, anon upload + public read policies). Report form shows live upload progress.
 - [x] **Stress test** — Verified in production. 20 concurrent users × 5 rounds: 0% error rate across all read endpoints. Rate limiting fires correctly at submission 6+ (429). All 5 validation edge cases (bad type, missing field, oversized description, out-of-range lat/lng, malformed JSON) return 422. p50 latency 317–541ms, p95 1.3–3.5s under load. DB connection pool tuned (pool_size=10, max_overflow=20). Test script: `backend/tests/stress_test.py`.
-- [ ] **Security hardening**
+- [x] **Security hardening**
   - [x] Input sanitization / SQL injection prevention — Pydantic validation + SQLAlchemy ORM parameterized queries. No raw SQL.
   - [x] XSS protection on all user-submitted text fields — React escapes all user content by default; no `dangerouslySetInnerHTML` anywhere.
   - [x] IP-based rate limiting on report submission endpoint — 5 submissions / 10 min per IP. Blocked IPs rejected at submission time. Uses `X-Forwarded-For` behind Railway proxy. Tested + deployed to production.
   - [x] Auth hardening — Supabase RLS policies live on `bulletin_items` and `news_items`. Anon key is read-only; writes require service role.
   - [x] Review exposed API keys/secrets — Audit complete. All .env files properly gitignored. No hardcoded secrets in source. CI/CD uses GitHub Secrets. Backend secrets (GEMINI, DB, Reddit) server-only. Two client-exposed items: Supabase anon key (by design, now RLS-protected) and Mapbox token (public `pk.` token — needs domain-locking in Mapbox dashboard to prevent billing abuse).
   - [x] No hacker should be able to get into our database of reports — RLS enabled on `incidents` table. Anon: SELECT (non-rejected) + INSERT (user_report source only). UPDATE/DELETE blocked for all non-service_role callers. Contact fields (name/email) excluded from all public queries. `bulletin_items` and `news_items` already RLS-protected.
+
+---
+
+## Pre-Launch — Ad Campaign Readiness
+
+- [x] **Analytics (PostHog)** — Lazy-loaded PostHog JS, key injected server-side via `AnalyticsScript` server component (uses `headers()` to force dynamic rendering so key is always live, never build-time baked). Tracks: `$pageview` on every visit + client-side navigation, `report_form_started` (first interaction), `report_media_attached` (file selected), `report_submitted` (with `incident_type`, `av_company`, `has_media`, `reporter_type` properties). UTM params (`utm_source`, `utm_medium`, `utm_campaign`) captured automatically by PostHog on every pageview. Env var: `POSTHOG_KEY` set in Vercel. Confirmed: POST 200 to `us.i.posthog.com/e/` in production.
+- [x] **Open Graph / Twitter card meta tags** — Full OG block live: `siteName`, `url`, `locale`, `type`. Twitter card: `summary_large_image`. `metadataBase` set to `https://www.avwatch.org`. Robots: `index: true`, `follow: true`, `max-image-preview: large`. Custom 1200×630 OG image generated at edge runtime (`app/opengraph-image.tsx`): dark navy background, "AVWatch" headline, UC Berkeley badge, "Submit a report at avwatch.org" CTA. Verified sharp link previews on Reddit/Slack/iMessage.
+- [x] **UTM tracking for ad campaigns** — Use `?utm_source=reddit&utm_medium=paid&utm_campaign=sf_launch` on all ad links pointing to avwatch.org. PostHog attributes pageviews and form submissions to the campaign automatically.
 
 ---
 
@@ -108,4 +116,4 @@ These need more scoping before implementation.
 
 ---
 
-*Last updated: 2026-03-24*
+*Last updated: 2026-03-24 — Pre-launch section added; Security hardening ✅; PostHog analytics ✅; OG meta tags ✅*
