@@ -20,7 +20,7 @@ These confirm what's actually working before building on top of it.
 - [x] **Reddit integration** — Verified working in production. Pulls from 6 subreddits (`waymo`, `SelfDrivingCars`, `robotaxi`, `sanfrancisco`, `bayarea`, `teslamotors`), 25 posts each. OAuth + RSS fallback. Gemini AI filters for relevance. Deduplicates by `external_id`. Refreshes hourly. Scope confirmed: covers vandalism, collisions, sudden behavior (e.g. "Tiktoker vandalizes Waymo mirrors", "Waymo leaves scene of freeway car flip").
 - [x] **Report corroboration logic** — Fully implemented. 2-pass system runs every 30 min: Pass A boosts existing Reddit bulletin items when 2+ distinct-IP reports match; Pass B creates new community bulletin items from 3+ distinct-IP reports within 500m + 2hr window. IP deduplication prevents gaming.
 - [x] **File uploads** — Live. Frontend uploads directly to Supabase Storage CDN (bypasses Railway). `uploadIncidentMedia()` validates type (JPG/PNG/WebP/GIF/HEIC/MP4/MOV/WebM) and size (photos ≤10 MB, videos ≤50 MB). URLs saved to `incident.media_urls` at submission time. Bucket: `incident-media` (public, 50 MB hard limit, anon upload + public read policies). Report form shows live upload progress.
-- [ ] **Stress test** — Simulate high concurrent report submissions. Test edge cases: duplicate submissions, large file uploads, malformed inputs, missing required fields.
+- [x] **Stress test** — Verified in production. 20 concurrent users × 5 rounds: 0% error rate across all read endpoints. Rate limiting fires correctly at submission 6+ (429). All 5 validation edge cases (bad type, missing field, oversized description, out-of-range lat/lng, malformed JSON) return 422. p50 latency 317–541ms, p95 1.3–3.5s under load. DB connection pool tuned (pool_size=10, max_overflow=20). Test script: `backend/tests/stress_test.py`.
 - [ ] **Security hardening**
   - [x] Input sanitization / SQL injection prevention — Pydantic validation + SQLAlchemy ORM parameterized queries. No raw SQL.
   - [x] XSS protection on all user-submitted text fields — React escapes all user content by default; no `dangerouslySetInnerHTML` anywhere.
@@ -79,9 +79,9 @@ A private, internal-only view for the 4 team members to review, validate, and ma
 
 ## Phase 6 — Trust & Credibility System (Medium Priority)
 
-- [ ] **Define credibility threshold algorithm** — Proposed starting model: 3+ corroborating reports + media attached = "high credibility" → eligible for featured/billboard display. Refine with team.
+- [x] **Credibility threshold algorithm** — Already implemented. Automated: Pass A boosts Reddit items when 2+ distinct-IP reports corroborate (5+ = `is_hot`); Pass B creates community items from 3+ distinct-IP reports within 500m + 2hr (5+ = `is_hot`). Manual: admins can Validate / Discard / Corroborate any report. Status model: unverified → verified / rejected / corroborated.
 - [ ] **Research FixItMarine's validation approach** — Understand their threshold-based or manual review model before finalizing ours.
-- [ ] **Surface AV-abuse hotspots on map** — Heatmap layer for vandalism/obstruction incidents. Specific SF streets known for high vandalism could be a compelling feature.
+- [x] **Hotspot heatmap** — Descoped. AV incidents (especially from Reddit/social) lack precise enough geocoding to make a heatmap trustworthy. Recent Incidents billboard serves this need instead.
 
 ---
 

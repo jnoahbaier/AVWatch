@@ -15,6 +15,11 @@ engine = create_async_engine(
     settings.async_database_url,
     echo=settings.DEBUG,
     future=True,
+    # Pool tuning for Railway (single instance, moderate traffic)
+    pool_size=10,        # keep 10 persistent connections warm
+    max_overflow=20,     # allow up to 20 extra connections under spike
+    pool_timeout=30,     # wait up to 30s for a connection before erroring
+    pool_recycle=1800,   # recycle connections every 30 min to avoid stale sockets
     connect_args={"timeout": 10},
 )
 
