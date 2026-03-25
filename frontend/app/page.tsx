@@ -77,6 +77,7 @@ export default function Home() {
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCertified, setIsCertified] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -270,7 +271,18 @@ export default function Home() {
     setSubmitError(null);
     setIsSubmitting(true);
     try {
-      const { createIncident } = await import('@/lib/supabase');
+      const { createIncident, uploadIncidentMedia } = await import('@/lib/supabase');
+
+      // Upload media first (if any) — goes directly to Supabase Storage CDN
+      let mediaUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        setUploadProgress(
+          `Uploading ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}…`
+        );
+        mediaUrls = await uploadIncidentMedia(selectedFiles);
+        setUploadProgress(null);
+      }
+
       await createIncident({
         incident_type: data.incident_type,
         av_company: data.av_company,
@@ -283,6 +295,7 @@ export default function Home() {
         reporter_type: data.reporter_type,
         contact_name: data.contact_name || undefined,
         contact_email: data.contact_email || undefined,
+        media_urls: mediaUrls,
       });
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -294,6 +307,7 @@ export default function Home() {
       );
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
@@ -913,7 +927,7 @@ export default function Home() {
                         {isSubmitting && (
                           <Loader2 className="w-5 h-5 animate-spin" />
                         )}
-                        {isSubmitting ? 'Submitting…' : 'Submit Report'}
+                        {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
                       </button>
                       <p className="mt-3 text-center text-xs text-slate-400">
                         Anonymous by default · your location is never stored
