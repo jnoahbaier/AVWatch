@@ -96,9 +96,11 @@ export async function getIncidents(options?: {
   limit?: number;
   offset?: number;
 }) {
+  // Explicitly exclude private fields (contact_name, contact_email) from public queries
+  const PUBLIC_FIELDS = 'id,incident_type,av_company,description,latitude,longitude,address,city,occurred_at,reported_at,reporter_type,status,source,media_urls,fatalities,injuries,external_id,created_at';
   let query = supabase
     .from('incidents')
-    .select('*')
+    .select(PUBLIC_FIELDS)
     .neq('status', 'rejected')
     .order('occurred_at', { ascending: false });
 
@@ -270,9 +272,10 @@ export async function createIncident(incident: {
 }
 
 export async function getRecentIncidents(limit = 5) {
+  const PUBLIC_FIELDS = 'id,incident_type,av_company,description,latitude,longitude,address,city,occurred_at,reported_at,reporter_type,status,source,media_urls,fatalities,injuries,external_id,created_at';
   const { data, error } = await supabase
     .from('incidents')
-    .select('*')
+    .select(PUBLIC_FIELDS)
     .neq('status', 'rejected')
     .order('occurred_at', { ascending: false })
     .limit(limit);
