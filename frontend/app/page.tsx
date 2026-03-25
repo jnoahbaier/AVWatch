@@ -565,9 +565,8 @@ export default function Home() {
                               <input
                                 type="radio"
                                 value={value}
-                                {...register('incident_type')}
+                                {...register('incident_type', { onChange: handleFormInteraction })}
                                 className="sr-only"
-                                onChange={handleFormInteraction}
                               />
                               {INCIDENT_ICONS[value] && (
                                 <span className="text-lg w-7 text-center select-none">
