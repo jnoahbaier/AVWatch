@@ -5,30 +5,68 @@ import './globals.css';
 import { Providers } from './providers';
 import { Navbar } from '@/components/layout/Navbar';
 
+const SITE_URL = 'https://www.avwatch.org';
+const SITE_NAME = 'AVWatch';
+const TITLE = 'AVWatch — Report Autonomous Vehicle Incidents';
+const DESCRIPTION =
+  'Witnessed a Waymo, Zoox, or Tesla robotaxi behave dangerously? Report it on AVWatch — a free, community-driven platform tracking AV safety incidents in real time. Built by UC Berkeley researchers.';
+
 export const metadata: Metadata = {
-  title: 'AV Watch | Autonomous Vehicle Accountability Platform',
-  description:
-    'A transparent platform for reporting and tracking autonomous vehicle incidents. Empowering communities with data-driven accountability.',
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
   keywords: [
     'autonomous vehicles',
     'robotaxi',
-    'waymo',
-    'self-driving cars',
-    'safety',
+    'waymo incident',
+    'self-driving car accident',
+    'AV safety',
     'incident reporting',
+    'San Francisco',
+    'Zoox',
+    'Tesla FSD',
+    'community reporting',
   ],
-  authors: [{ name: 'AV Watch Team' }],
+  authors: [{ name: 'AV Watch Team', url: SITE_URL }],
+  creator: 'UC Berkeley School of Information',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
     apple: '/favicon.svg',
   },
   openGraph: {
-    title: 'AV Watch | Autonomous Vehicle Accountability Platform',
-    description:
-      'Report AV incidents and explore community-driven safety data',
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: DESCRIPTION,
     type: 'website',
+    url: SITE_URL,
     locale: 'en_US',
+    images: [
+      {
+        url: '/opengraph-image',
+        width: 1200,
+        height: 630,
+        alt: 'AVWatch — Report autonomous vehicle incidents',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/opengraph-image'],
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+    },
   },
 };
 

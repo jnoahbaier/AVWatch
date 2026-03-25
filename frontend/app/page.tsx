@@ -27,6 +27,7 @@ import {
 
 import { BulletinCard, type BulletinItem } from '@/components/bulletin/BulletinCard';
 import { NewsHeadlines } from '@/components/news/NewsHeadlines';
+import { track, Events } from '@/lib/analytics';
 
 const LocationMapPicker = dynamic(
   () => import('@/components/LocationMapPicker').then((m) => m.LocationMapPicker),
@@ -83,6 +84,7 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const carRef = useRef<HTMLDivElement>(null);
+  const formStartedRef = useRef(false);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
 
@@ -263,6 +265,14 @@ export default function Home() {
     }
   };
 
+  /** Fire report_form_started once per session on first field interaction */
+  const handleFormInteraction = () => {
+    if (!formStartedRef.current) {
+      formStartedRef.current = true;
+      track(Events.FORM_STARTED);
+    }
+  };
+
   const onSubmit = async (data: ReportFormData) => {
     if (!hasLocation) {
       setSubmitError('Please provide a location using one of the options above.');
@@ -297,6 +307,15 @@ export default function Home() {
         contact_email: data.contact_email || undefined,
         media_urls: mediaUrls,
       });
+
+      track(Events.REPORT_SUBMITTED, {
+        incident_type: data.incident_type,
+        av_company: data.av_company,
+        has_media: mediaUrls.length > 0,
+        has_description: !!data.description,
+        reporter_type: data.reporter_type ?? null,
+      });
+
       setIsSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -548,6 +567,7 @@ export default function Home() {
                                 value={value}
                                 {...register('incident_type')}
                                 className="sr-only"
+                                onChange={handleFormInteraction}
                               />
                               {INCIDENT_ICONS[value] && (
                                 <span className="text-lg w-7 text-center select-none">
@@ -612,6 +632,7 @@ export default function Home() {
                         className="hidden"
                         onChange={(e) => {
                           const newFiles = Array.from(e.target.files || []);
+                          if (newFiles.length > 0) track(Events.MEDIA_ATTACHED, { count: newFiles.length, source: 'camera' });
                           setSelectedFiles((prev) =>
                             [...prev, ...newFiles].slice(0, 3)
                           );
@@ -625,6 +646,7 @@ export default function Home() {
                         className="hidden"
                         onChange={(e) => {
                           const newFiles = Array.from(e.target.files || []);
+                          if (newFiles.length > 0) track(Events.MEDIA_ATTACHED, { count: newFiles.length, source: 'file_picker' });
                           setSelectedFiles((prev) =>
                             [...prev, ...newFiles].slice(0, 3)
                           );
