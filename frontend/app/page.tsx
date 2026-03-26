@@ -81,7 +81,6 @@ export default function Home() {
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isCertified, setIsCertified] = useState(false);
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const carRef = useRef<HTMLDivElement>(null);
@@ -275,12 +274,8 @@ export default function Home() {
   };
 
   const onSubmit = async (data: ReportFormData) => {
-    setAttemptedSubmit(true);
-    const missing: string[] = [];
-    if (!hasLocation) missing.push('"Where & when?" — location');
-    if (!isCertified) missing.push('the certification checkbox');
-    if (missing.length > 0) {
-      setSubmitError(`Please complete: ${missing.join(', ')}.`);
+    if (!hasLocation) {
+      setSubmitError('Please provide a location using one of the options above.');
       return;
     }
     setSubmitError(null);
@@ -341,7 +336,6 @@ export default function Home() {
     setSelectedFiles([]);
     setSubmitError(null);
     setIsCertified(false);
-    setAttemptedSubmit(false);
     reset({
       av_company: 'other',
       occurred_at: new Date().toISOString().slice(0, 16),
@@ -533,18 +527,7 @@ export default function Home() {
               ) : (
                 /* Form */
                 <form
-                  onSubmit={handleSubmit(onSubmit, (errs) => {
-                    setAttemptedSubmit(true);
-                    const missing: string[] = [];
-                    if (errs.incident_type) missing.push('"What happened?"');
-                    if (errs.latitude || errs.longitude || !hasLocation) missing.push('"Where & when?" — location');
-                    if (!isCertified) missing.push('the certification checkbox');
-                    setSubmitError(
-                      missing.length > 0
-                        ? `Please complete: ${missing.join(', ')}.`
-                        : 'Please fill in all required fields.'
-                    );
-                  })}
+                  onSubmit={handleSubmit(onSubmit)}
                 >
                   <div className="bg-white rounded-2xl shadow-xl border border-slate-100 divide-y divide-slate-100">
 
@@ -556,8 +539,8 @@ export default function Home() {
                     </div>
 
                     {/* Section 1: What happened */}
-                    <div className={`p-6 ${attemptedSubmit && !watchedType ? 'bg-red-50/50' : ''}`}>
-                      <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${attemptedSubmit && !watchedType ? 'text-red-500' : 'text-slate-400'}`}>
+                    <div className="p-6">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         What happened? <span className="text-red-500">*</span>
                       </p>
                       <div className="grid grid-cols-1 gap-2">
@@ -598,9 +581,6 @@ export default function Home() {
                           )
                         )}
                       </div>
-                      {attemptedSubmit && !watchedType && (
-                        <p className="mt-2 text-sm text-red-500 font-medium">⚠ Please select an incident type.</p>
-                      )}
                     </div>
 
                     {/* Section 2: Details */}
@@ -716,8 +696,8 @@ export default function Home() {
                     </div>
 
                     {/* Section 4: Location & time */}
-                    <div className={`p-6 ${attemptedSubmit && !hasLocation ? 'bg-red-50/50' : ''}`}>
-                      <p className={`text-xs font-semibold uppercase tracking-wider mb-3 ${attemptedSubmit && !hasLocation ? 'text-red-500' : 'text-slate-400'}`}>
+                    <div className="p-6">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Where &amp; when? <span className="text-red-500">*</span>
                       </p>
 
@@ -875,9 +855,6 @@ export default function Home() {
                           className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
-                      {attemptedSubmit && !hasLocation && (
-                        <p className="mt-2 text-sm text-red-500 font-medium">⚠ Please provide a location using one of the options above.</p>
-                      )}
                     </div>
 
                     {/* Section 5: Your role */}
@@ -931,7 +908,7 @@ export default function Home() {
                     {/* Error */}
                     {submitError && (
                       <div className="px-6 py-3 bg-red-50 border-t border-red-200">
-                        <p className="text-sm text-red-600 font-medium">
+                        <p className="text-sm text-red-600 text-center">
                           {submitError}
                         </p>
                       </div>
@@ -940,25 +917,39 @@ export default function Home() {
                     {/* Submit */}
                     <div className="p-6">
                       {/* Certification checkbox */}
-                      <label className={`flex items-start gap-3 mb-1 cursor-pointer group p-2 rounded-lg transition ${attemptedSubmit && !isCertified ? 'bg-red-50 ring-1 ring-red-200' : ''}`}>
+                      <label className="flex items-start gap-3 mb-4 cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={isCertified}
                           onChange={(e) => setIsCertified(e.target.checked)}
                           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                         />
-                        <span className={`text-sm transition ${attemptedSubmit && !isCertified ? 'text-red-600 font-medium' : 'text-slate-600 group-hover:text-slate-800'}`}>
+                        <span className="text-sm text-slate-600 group-hover:text-slate-800 transition">
                           I certify that this report is accurate to the best of my knowledge.
                         </span>
                       </label>
-                      {attemptedSubmit && !isCertified && (
-                        <p className="mb-3 text-sm text-red-500 font-medium pl-2">⚠ Please check this box to submit.</p>
+
+                      {/* Live requirements checklist — shown when button is disabled */}
+                      {(!watchedType || !hasLocation || !isCertified) && (
+                        <div className="mb-4 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Still needed to submit:</p>
+                          {[
+                            { done: !!watchedType,   label: 'Select an incident type' },
+                            { done: hasLocation,     label: 'Add a location' },
+                            { done: isCertified,     label: 'Check the certification box' },
+                          ].map(({ done, label }) => !done && (
+                            <div key={label} className="flex items-center gap-2 text-sm text-slate-500">
+                              <span className="w-4 h-4 rounded-full border-2 border-slate-300 flex-shrink-0" />
+                              {label}
+                            </div>
+                          ))}
+                        </div>
                       )}
 
                       <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
+                        disabled={isSubmitting || !watchedType || !hasLocation || !isCertified}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 disabled:cursor-not-allowed text-white disabled:text-slate-400 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
                       >
                         {isSubmitting && (
                           <Loader2 className="w-5 h-5 animate-spin" />
