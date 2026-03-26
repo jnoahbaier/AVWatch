@@ -85,6 +85,9 @@ export default function Home() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const carRef = useRef<HTMLDivElement>(null);
   const formStartedRef = useRef(false);
+  const incidentSectionRef = useRef<HTMLDivElement>(null);
+  const locationSectionRef = useRef<HTMLDivElement>(null);
+  const certRef = useRef<HTMLLabelElement>(null);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
 
@@ -539,7 +542,7 @@ export default function Home() {
                     </div>
 
                     {/* Section 1: What happened */}
-                    <div className="p-6">
+                    <div ref={incidentSectionRef} className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         What happened? <span className="text-red-500">*</span>
                       </p>
@@ -696,7 +699,7 @@ export default function Home() {
                     </div>
 
                     {/* Section 4: Location & time */}
-                    <div className="p-6">
+                    <div ref={locationSectionRef} className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Where &amp; when? <span className="text-red-500">*</span>
                       </p>
@@ -917,7 +920,7 @@ export default function Home() {
                     {/* Submit */}
                     <div className="p-6">
                       {/* Certification checkbox */}
-                      <label className="flex items-start gap-3 mb-4 cursor-pointer group">
+                      <label ref={certRef} className="flex items-start gap-3 mb-4 cursor-pointer group">
                         <input
                           type="checkbox"
                           checked={isCertified}
@@ -925,37 +928,26 @@ export default function Home() {
                           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                         />
                         <span className="text-sm text-slate-600 group-hover:text-slate-800 transition">
-                          I certify that this report is accurate to the best of my knowledge. <span className="text-red-500">*</span>
+                          I certify that this report is accurate to the best of my knowledge.
                         </span>
                       </label>
 
-                      {/* Live requirements checklist — shown when button is disabled */}
-                      {(!watchedType || !hasLocation || !isCertified) && (
-                        <div className="mb-4 px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
-                          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Still needed to submit:</p>
-                          {[
-                            { done: !!watchedType,   label: 'Select an incident type' },
-                            { done: hasLocation,     label: 'Add a location' },
-                            { done: isCertified,     label: 'Check the certification box' },
-                          ].map(({ done, label }) => !done && (
-                            <div key={label} className="flex items-center gap-2 text-sm text-slate-500">
-                              <span className="w-4 h-4 rounded-full border-2 border-slate-300 flex-shrink-0" />
-                              {label}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <button
-                        type="submit"
-                        disabled={isSubmitting || !watchedType || !hasLocation || !isCertified}
-                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 disabled:cursor-not-allowed text-white disabled:text-slate-400 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
-                      >
-                        {isSubmitting && (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        )}
-                        {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
-                      </button>
+                      <div onClick={() => {
+                        if (!watchedType) incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        else if (!hasLocation) locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        else if (!isCertified) certRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting || !watchedType || !hasLocation || !isCertified}
+                          className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 disabled:cursor-not-allowed text-white disabled:text-slate-400 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
+                        >
+                          {isSubmitting && (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          )}
+                          {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
+                        </button>
+                      </div>
                       <p className="mt-3 text-center text-xs text-slate-400">
                         Anonymous by default · your location is never stored
                       </p>
