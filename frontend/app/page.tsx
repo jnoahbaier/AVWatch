@@ -87,6 +87,7 @@ export default function Home() {
   const formStartedRef = useRef(false);
   const incidentSectionRef = useRef<HTMLDivElement>(null);
   const locationSectionRef = useRef<HTMLDivElement>(null);
+  const reporterSectionRef = useRef<HTMLDivElement>(null);
   const certRef = useRef<HTMLLabelElement>(null);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
@@ -168,6 +169,7 @@ export default function Home() {
   });
 
   const watchedType = watch('incident_type');
+  const watchedReporterType = watch('reporter_type');
   const watchedCompany = watch('av_company');
   const watchedLat = watch('latitude');
   const watchedLng = watch('longitude');
@@ -861,7 +863,7 @@ export default function Home() {
                     </div>
 
                     {/* Section 5: Your role */}
-                    <div className="p-6">
+                    <div ref={reporterSectionRef} className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         I was a… <span className="text-red-500">*</span>
                       </p>
@@ -928,26 +930,39 @@ export default function Home() {
                           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                         />
                         <span className="text-sm text-slate-600 group-hover:text-slate-800 transition">
-                          I certify that this report is accurate to the best of my knowledge.
+                          I certify that this report is accurate to the best of my knowledge.<span className="text-red-500 ml-0.5">*</span>
                         </span>
                       </label>
 
-                      <div onClick={() => {
-                        if (!watchedType) incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        else if (!hasLocation) locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        else if (!isCertified) certRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                      }}>
-                        <button
-                          type="submit"
-                          disabled={isSubmitting || !watchedType || !hasLocation || !isCertified}
-                          className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-100 disabled:cursor-not-allowed text-white disabled:text-slate-400 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
-                        >
-                          {isSubmitting && (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          )}
-                          {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
-                        </button>
-                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        onClick={(e) => {
+                          if (!watchedType) {
+                            e.preventDefault();
+                            incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          } else if (!hasLocation) {
+                            e.preventDefault();
+                            locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          } else if (!watchedReporterType) {
+                            e.preventDefault();
+                            reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          } else if (!isCertified) {
+                            e.preventDefault();
+                            certRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }
+                        }}
+                        className={`w-full py-4 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 ${
+                          isSubmitting || !watchedType || !hasLocation || !watchedReporterType || !isCertified
+                            ? 'bg-slate-100 cursor-not-allowed text-slate-400'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20'
+                        }`}
+                      >
+                        {isSubmitting && (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        )}
+                        {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
+                      </button>
                       <p className="mt-3 text-center text-xs text-slate-400">
                         Anonymous by default · your location is never stored
                       </p>
