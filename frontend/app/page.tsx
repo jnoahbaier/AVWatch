@@ -925,7 +925,7 @@ export default function Home() {
                           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
                         />
                         <span className="text-sm text-slate-600 group-hover:text-slate-800 transition">
-                          I certify that this report is accurate to the best of my knowledge.
+                          I certify that this report is accurate to the best of my knowledge. <span className="text-red-500">*</span>
                         </span>
                       </label>
 
