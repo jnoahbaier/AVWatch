@@ -132,7 +132,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
         </div>
 
         {/* Title */}
-        <h3 className="line-clamp-1 text-sm font-semibold leading-snug text-slate-900 group-hover:text-[#5B9DFF] transition mb-2">
+        <h3 className="line-clamp-1 text-sm font-semibold leading-snug text-[#2C3E50] group-hover:text-[#5B9DFF] transition mb-2">
           {item.title}
         </h3>
 

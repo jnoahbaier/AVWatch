@@ -17,14 +17,14 @@ function LoginContent() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#2C3E50] flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-[#5B9DFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#2C3E50] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -42,7 +42,7 @@ function LoginContent() {
         </div>
 
         {/* Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-8">
+        <div className="rounded-xl border border-[#415A73] bg-[#34495E] p-8">
           <h1 className="text-white font-semibold text-lg mb-1">Sign in</h1>
           <p className="text-slate-400 text-sm mb-6">
             Restricted to{' '}
@@ -63,7 +63,7 @@ function LoginContent() {
 
           <button
             onClick={() => signIn('google', { callbackUrl: '/admin/dashboard' })}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-medium py-2.5 px-4 rounded-lg transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-100 text-[#2C3E50] font-medium py-2.5 px-4 rounded-lg transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>

@@ -96,12 +96,12 @@ function DetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 py-8"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C3E50]/75 px-4 py-8"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-[#415A73] bg-[#34495E]">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-slate-800 sticky top-0 bg-slate-900">
+        <div className="sticky top-0 flex items-start justify-between border-b border-[#415A73] bg-[#34495E] p-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs border ${statusMeta.color}`}>
@@ -248,7 +248,7 @@ function DetailModal({
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent?: string }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+    <div className="rounded-xl border border-[#415A73] bg-[#34495E] p-5">
       <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-2xl font-bold ${accent ?? 'text-white'}`}>{value}</p>
     </div>
@@ -270,8 +270,8 @@ function DiscardModal({
   const [blockIp, setBlockIp] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C3E50]/70 px-4">
+      <div className="w-full max-w-md rounded-xl border border-[#415A73] bg-[#34495E] p-6">
         <h2 className="text-white font-semibold mb-1">Discard report</h2>
         <p className="text-slate-400 text-sm mb-4">
           <span className="font-mono text-slate-300">{incident.id.slice(0, 8)}…</span>{' '}
@@ -332,8 +332,8 @@ function CorroborateModal({
   const [targetId, setTargetId] = useState('');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C3E50]/70 px-4">
+      <div className="w-full max-w-md rounded-xl border border-[#415A73] bg-[#34495E] p-6">
         <h2 className="text-white font-semibold mb-1">Flag for corroboration</h2>
         <p className="text-slate-400 text-sm mb-4">
           Link this report to another report of the same incident.
@@ -501,9 +501,9 @@ export default function AdminDashboard() {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-[#2C3E50]">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-10">
+      <header className="sticky top-0 z-10 border-b border-[#415A73] bg-[#2C3E50]/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
@@ -550,7 +550,7 @@ export default function AdminDashboard() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-slate-500"
+            className="rounded-lg border border-[#415A73] bg-[#34495E] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-slate-400"
           >
             <option value="">All statuses</option>
             <option value="unverified">Pending</option>
@@ -562,7 +562,7 @@ export default function AdminDashboard() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-slate-500"
+            className="rounded-lg border border-[#415A73] bg-[#34495E] px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-slate-400"
           >
             <option value="">All types</option>
             {Object.entries(TYPE_LABELS).map(([v, l]) => (
@@ -572,7 +572,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => setSortDir(d => d === 'desc' ? 'asc' : 'desc')}
-            className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2 hover:border-slate-500 transition-colors flex items-center gap-1.5"
+            className="flex items-center gap-1.5 rounded-lg border border-[#415A73] bg-[#34495E] px-3 py-2 text-sm text-slate-300 transition-colors hover:border-slate-400"
           >
             Date {sortDir === 'desc' ? '↓' : '↑'}
           </button>
@@ -590,11 +590,11 @@ export default function AdminDashboard() {
         )}
 
         {/* Table */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+        <div className="overflow-hidden rounded-xl border border-[#415A73] bg-[#34495E]">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 text-xs uppercase tracking-wider">
+                <tr className="border-b border-[#415A73] text-xs uppercase tracking-wider text-slate-400">
                   <th className="text-left px-4 py-3 font-medium">Date</th>
                   <th className="text-left px-4 py-3 font-medium">Type</th>
                   <th className="text-left px-4 py-3 font-medium">Company</th>
@@ -622,7 +622,7 @@ export default function AdminDashboard() {
                     <tr
                       key={inc.id}
                       onClick={() => setDetailTarget(inc)}
-                      className="border-b border-slate-800/60 hover:bg-slate-800/40 transition-colors cursor-pointer"
+                      className="cursor-pointer border-b border-[#415A73]/60 transition-colors hover:bg-[#415A73]/35"
                     >
                       <td className="px-4 py-3 text-slate-300 whitespace-nowrap">
                         {formatDate(inc.reported_at)}
@@ -714,7 +714,7 @@ export default function AdminDashboard() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="border-t border-slate-800 px-4 py-3 flex items-center justify-between text-sm text-slate-400">
+            <div className="flex items-center justify-between border-t border-[#415A73] px-4 py-3 text-sm text-slate-400">
               <span>Page {page} of {totalPages}</span>
               <div className="flex gap-2">
                 <button

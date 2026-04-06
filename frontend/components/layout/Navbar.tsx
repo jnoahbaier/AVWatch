@@ -43,7 +43,7 @@ export function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition rounded-lg"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#2C3E50] hover:bg-slate-100 transition rounded-lg"
                 >
                   {item.name}
                 </Link>
@@ -51,7 +51,7 @@ export function Navbar() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition rounded-lg"
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#2C3E50] hover:bg-slate-100 transition rounded-lg"
                 >
                   {item.name}
                 </a>
@@ -72,7 +72,7 @@ export function Navbar() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition"
+            className="md:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-[#2C3E50] transition"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -93,7 +93,7 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-[#2C3E50] transition"
                   >
                     {item.name}
                   </Link>
@@ -102,7 +102,7 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-[#2C3E50] transition"
                   >
                     {item.name}
                   </a>

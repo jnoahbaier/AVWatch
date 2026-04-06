@@ -167,16 +167,16 @@ export default function AdminSettings() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-[#2C3E50] flex items-center justify-center">
         <div className="w-5 h-5 border-2 border-[#5B9DFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-[#2C3E50]">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-10">
+      <header className="sticky top-0 z-10 border-b border-[#415A73] bg-[#2C3E50]/80 backdrop-blur">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
@@ -223,7 +223,7 @@ export default function AdminSettings() {
                 { label: 'This week', value: stats.this_week, color: 'text-white' },
                 { label: 'Blocked IPs', value: stats.blocked_ips, color: 'text-orange-400' },
               ].map(({ label, value, color }) => (
-                <div key={label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div key={label} className="rounded-xl border border-[#415A73] bg-[#34495E] p-4">
                   <p className="text-slate-500 text-xs mb-1">{label}</p>
                   <p className={`text-2xl font-bold ${color}`}>{value}</p>
                 </div>
@@ -248,7 +248,7 @@ export default function AdminSettings() {
               value={newEmail}
               onChange={e => setNewEmail(e.target.value)}
               placeholder="new.admin@berkeley.edu"
-              className="flex-1 bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 placeholder:text-slate-600 focus:outline-none focus:border-slate-500"
+              className="flex-1 rounded-lg border border-[#415A73] bg-[#34495E] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-slate-400"
             />
             <button
               type="submit"
@@ -262,7 +262,7 @@ export default function AdminSettings() {
           {loadingAllowlist ? (
             <div className="text-slate-500 text-sm">Loading…</div>
           ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="overflow-hidden rounded-xl border border-[#415A73] bg-[#34495E]">
               {allowlist.length === 0 ? (
                 <div className="px-4 py-6 text-center text-slate-500 text-sm">
                   No entries — add one above. (Fallback: hardcoded list in auth.ts)
@@ -272,7 +272,7 @@ export default function AdminSettings() {
                   <div
                     key={entry.email}
                     className={`flex items-center justify-between px-4 py-3 ${
-                      i < allowlist.length - 1 ? 'border-b border-slate-800' : ''
+                      i < allowlist.length - 1 ? 'border-b border-[#415A73]' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -319,7 +319,7 @@ export default function AdminSettings() {
           <p className="text-slate-500 text-sm mb-4">
             Manually block an IP hash (SHA-256). You can copy a hash from the Reports Queue.
           </p>
-          <form onSubmit={handleBlockIP} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+          <form onSubmit={handleBlockIP} className="space-y-3 rounded-xl border border-[#415A73] bg-[#34495E] p-4">
             <div>
               <label className="block text-slate-400 text-xs mb-1">IP hash (SHA-256)</label>
               <input
@@ -361,14 +361,14 @@ export default function AdminSettings() {
           {loadingIPs ? (
             <div className="text-slate-500 text-sm">Loading…</div>
           ) : blockedIPs.length === 0 ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-8 text-center text-slate-500 text-sm">
+            <div className="rounded-xl border border-[#415A73] bg-[#34495E] px-4 py-8 text-center text-sm text-slate-500">
               No blocked IPs.
             </div>
           ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="overflow-hidden rounded-xl border border-[#415A73] bg-[#34495E]">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-500 text-xs uppercase tracking-wider">
+                  <tr className="border-b border-[#415A73] text-xs uppercase tracking-wider text-slate-500">
                     <th className="text-left px-4 py-3 font-medium">IP hash</th>
                     <th className="text-left px-4 py-3 font-medium">Reason</th>
                     <th className="text-left px-4 py-3 font-medium">Blocked by</th>
@@ -380,7 +380,7 @@ export default function AdminSettings() {
                   {blockedIPs.map((ip, i) => (
                     <tr
                       key={ip.id}
-                      className={i < blockedIPs.length - 1 ? 'border-b border-slate-800/60' : ''}
+                      className={i < blockedIPs.length - 1 ? 'border-b border-[#415A73]/60' : ''}
                     >
                       <td className="px-4 py-3 font-mono text-slate-400 text-xs">
                         {ip.ip_hash.slice(0, 16)}…
@@ -411,7 +411,7 @@ export default function AdminSettings() {
         {/* Environment info */}
         <section>
           <h2 className="text-white font-semibold text-base mb-4">Environment</h2>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <div className="overflow-hidden rounded-xl border border-[#415A73] bg-[#34495E]">
             {[
               { label: 'Backend URL', value: process.env.NEXT_PUBLIC_API_URL || 'Not set' },
               { label: 'Environment', value: process.env.NODE_ENV || 'unknown' },
@@ -419,7 +419,7 @@ export default function AdminSettings() {
               <div
                 key={label}
                 className={`flex items-center justify-between px-4 py-3 ${
-                  i < arr.length - 1 ? 'border-b border-slate-800' : ''
+                  i < arr.length - 1 ? 'border-b border-[#415A73]' : ''
                 }`}
               >
                 <span className="text-slate-400 text-sm">{label}</span>

@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-primary)'],
+      },
       colors: {
         // AV Watch brand colors
         brand: {
@@ -66,6 +69,5 @@ const config: Config = {
 };
 
 export default config;
-
 
 

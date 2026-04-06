@@ -306,7 +306,7 @@ export default function MapPage() {
             offset={25}
           >
             <div className="p-3 text-center">
-              <div className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+              <div className="text-2xl font-bold text-[#2C3E50] dark:text-white mb-1">
                 {hoveredCluster.pointCount}
               </div>
               <div className="text-sm text-slate-600 dark:text-slate-400">
@@ -351,7 +351,7 @@ export default function MapPage() {
       {showFilters && (
         <div className="absolute top-16 left-4 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-h-[70vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-slate-900 dark:text-white">Filters</h3>
+            <h3 className="font-semibold text-[#2C3E50] dark:text-white">Filters</h3>
             <button
               onClick={() => setShowFilters(false)}
               className="text-slate-400 hover:text-slate-600"
@@ -391,7 +391,7 @@ export default function MapPage() {
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: INCIDENT_TYPE_COLORS[value] }}
                   />
-                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition">
+                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-[#2C3E50] dark:group-hover:text-white transition">
                     {label}
                   </span>
                 </label>
@@ -426,7 +426,7 @@ export default function MapPage() {
                     onChange={() => toggleFilter('companies', value)}
                     className="w-4 h-4 rounded border-slate-300 text-green-500 focus:ring-green-500"
                   />
-                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition">
+                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-[#2C3E50] dark:group-hover:text-white transition">
                     {label}
                   </span>
                 </label>
@@ -465,7 +465,7 @@ export default function MapPage() {
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: DATA_SOURCE_COLORS[value] }}
                   />
-                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition">
+                  <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-[#2C3E50] dark:group-hover:text-white transition">
                     {label}
                   </span>
                 </label>
@@ -482,7 +482,7 @@ export default function MapPage() {
                 sources: [],
               })
             }
-            className="mt-4 w-full py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg transition"
+            className="mt-4 w-full py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg transition"
           >
             Clear all filters
           </button>
@@ -512,7 +512,7 @@ export default function MapPage() {
 
       {/* Stats Badge */}
       <div className="absolute bottom-4 right-4 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 px-4 py-2">
-        <span className="text-sm font-medium text-slate-900 dark:text-white">
+        <span className="text-sm font-medium text-[#2C3E50] dark:text-white">
           {filteredIncidents.length}
         </span>
         <span className="text-sm text-slate-500 ml-1">

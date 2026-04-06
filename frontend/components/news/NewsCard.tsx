@@ -63,7 +63,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
         </div>
 
         {/* Headline */}
-        <h3 className="line-clamp-3 flex-1 text-sm font-semibold leading-snug text-slate-900 group-hover:text-[#5B9DFF] transition">
+        <h3 className="line-clamp-3 flex-1 text-sm font-semibold leading-snug text-[#2C3E50] group-hover:text-[#5B9DFF] transition">
           {item.title}
         </h3>
 

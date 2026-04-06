@@ -148,7 +148,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+            <h1 className="text-3xl font-bold text-[#2C3E50] dark:text-white">
               AV Incident Dashboard
             </h1>
             <p className="mt-2 text-slate-600 dark:text-slate-400">
@@ -169,7 +169,7 @@ export default function DashboardPage() {
           <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
             <div className="flex items-center gap-3 mb-3">
               <Database className="w-5 h-5 text-[#5B9DFF]" />
-              <h3 className="font-semibold text-slate-900 dark:text-white">Official Data Sources</h3>
+              <h3 className="font-semibold text-[#2C3E50] dark:text-white">Official Data Sources</h3>
             </div>
             <div className="flex flex-wrap gap-3">
               {sourceChartData.map((source) => (
@@ -259,7 +259,7 @@ export default function DashboardPage() {
         {/* Trend Chart */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-8">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-[#2C3E50] dark:text-white">
               Incident Trends (30 Days)
             </h3>
             <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -274,7 +274,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Incidents by Type */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
+            <h3 className="text-lg font-semibold text-[#2C3E50] dark:text-white mb-6">
               Incidents by Type
             </h3>
             {typeChartData.length > 0 ? (
@@ -288,7 +288,7 @@ export default function DashboardPage() {
 
           {/* Incidents by Company */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
+            <h3 className="text-lg font-semibold text-[#2C3E50] dark:text-white mb-6">
               Incidents by Company
             </h3>
             {companyChartData.length > 0 ? (
@@ -307,7 +307,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center gap-3 mb-6">
               <Database className="w-5 h-5 text-[#5B9DFF]" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[#2C3E50] dark:text-white">
                 Data Sources
               </h3>
             </div>
@@ -333,7 +333,7 @@ export default function DashboardPage() {
           {/* Recent Activity */}
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-[#2C3E50] dark:text-white">
                 Recent Reports
               </h3>
               <a
@@ -357,7 +357,7 @@ export default function DashboardPage() {
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                    <p className="text-sm font-medium text-[#2C3E50] dark:text-white truncate">
                       {INCIDENT_TYPE_LABELS[incident.incident_type] || incident.incident_type}
                     </p>
                     <p className="text-xs text-slate-500 truncate">
@@ -382,7 +382,7 @@ export default function DashboardPage() {
         {/* Company Comparison Table */}
         {companyStats.length > 0 && (
           <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">
+            <h3 className="text-lg font-semibold text-[#2C3E50] dark:text-white mb-6">
               Company Comparison
             </h3>
             <div className="overflow-x-auto">
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                       key={company.av_company}
                       className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30"
                     >
-                      <td className="py-3 px-4 font-medium text-slate-900 dark:text-white">
+                      <td className="py-3 px-4 font-medium text-[#2C3E50] dark:text-white">
                         {AV_COMPANY_LABELS[company.av_company] || company.av_company}
                       </td>
                       <td className="py-3 px-4 text-right text-slate-700 dark:text-slate-300">
@@ -469,7 +469,7 @@ function MetricCard({
         <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>
       </div>
       <div className="mt-3 flex items-baseline gap-2">
-        <span className="text-3xl font-bold text-slate-900 dark:text-white">
+        <span className="text-3xl font-bold text-[#2C3E50] dark:text-white">
           {value}
         </span>
         {change && (
@@ -507,12 +507,12 @@ function SourceCard({ source }: { source: DataSource }) {
   return (
     <div className="p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="font-medium text-slate-900 dark:text-white">{source.name}</h4>
+        <h4 className="font-medium text-[#2C3E50] dark:text-white">{source.name}</h4>
         <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusColor}`}>
           {statusLabel}
         </span>
       </div>
-      <p className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+      <p className="text-xl font-bold text-[#2C3E50] dark:text-white mb-1">
         {source.records_count.toLocaleString()}
       </p>
       <p className="text-xs text-slate-500 line-clamp-2">{source.description}</p>

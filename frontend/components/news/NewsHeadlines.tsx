@@ -96,7 +96,7 @@ function NewsHeadlineRow({ item }: { item: NewsItem }) {
           </span>
           {age && <span className="text-xs text-slate-400">{age}</span>}
         </div>
-        <p className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-[#5B9DFF] transition leading-snug">
+        <p className="line-clamp-2 text-sm font-semibold text-[#2C3E50] group-hover:text-[#5B9DFF] transition leading-snug">
           {item.title}
         </p>
       </div>

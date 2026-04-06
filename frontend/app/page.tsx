@@ -384,7 +384,7 @@ export default function Home() {
 
             {/* ── LEFT: copy + imagery ── */}
             <div className="pt-4 flex flex-col">
-              <h1 className="text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.1] mb-5">
+              <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
                 Witnessed an<br />
                 <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
               </h1>
@@ -538,7 +538,7 @@ export default function Home() {
 
                     {/* Header */}
                     <div className="px-6 pt-6 pb-4">
-                      <h2 className="text-lg font-bold text-slate-900">
+                      <h2 className="text-lg font-bold text-[#2C3E50]">
                         Report an Incident
                       </h2>
                     </div>
@@ -597,7 +597,7 @@ export default function Home() {
                         {...register('description')}
                         rows={3}
                         placeholder="Describe what happened…"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-3"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-3"
                       />
                       <div className="flex gap-2">
                         <button
@@ -788,7 +788,7 @@ export default function Home() {
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
                                 placeholder="e.g. Market St & 5th, San Francisco"
-                                className="flex-1 bg-transparent text-slate-900 placeholder-slate-400 text-sm outline-none"
+                                className="flex-1 bg-transparent text-[#2C3E50] placeholder-slate-400 text-sm outline-none"
                               />
                               {isGeocoding && <Loader2 className="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" />}
                               {locationStatus === 'success' && !isGeocoding && (
@@ -857,7 +857,7 @@ export default function Home() {
                         <input
                           type="datetime-local"
                           {...register('occurred_at')}
-                          className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                          className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -899,13 +899,13 @@ export default function Home() {
                           type="text"
                           {...register('contact_name')}
                           placeholder="Name"
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                         <input
                           type="email"
                           {...register('contact_email')}
                           placeholder="Email address"
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -1014,7 +1014,7 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Text occupies left half only */}
           <div className="max-w-xl">
-            <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-8">
+            <h2 className="text-4xl lg:text-5xl font-bold text-[#2C3E50] leading-tight mb-8">
               Autonomous driving<br />
               <span className="text-[#5B9DFF]">is expanding fast.</span>
             </h2>
@@ -1022,7 +1022,7 @@ export default function Home() {
             <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
               <p>
                 Yet there is no simple, reliable way for people to report what they witness on the road.{' '}
-                <span className="font-semibold text-slate-900">AV Watch changes that.</span>
+                <span className="font-semibold text-[#2C3E50]">AV Watch changes that.</span>
               </p>
               <p>
                 Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them.
@@ -1042,7 +1042,7 @@ export default function Home() {
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-semibold uppercase tracking-wider mb-4">
               Community Reports
             </span>
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+            <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
               Recent Incidents
             </h2>
             <p className="text-slate-500">
@@ -1096,7 +1096,7 @@ export default function Home() {
             <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider mb-4">
               Latest Coverage
             </span>
-            <h2 className="text-3xl font-bold text-slate-900 mb-2">
+            <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
               In the News
             </h2>
             <p className="text-slate-500">

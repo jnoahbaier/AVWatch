@@ -77,7 +77,7 @@ export default function BulletinPage() {
 
         {/* Page header */}
         <div className="py-10">
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-[#2C3E50] tracking-tight">
             Recent Reports
           </h1>
           <p className="mt-2 text-slate-500 text-sm max-w-xl">

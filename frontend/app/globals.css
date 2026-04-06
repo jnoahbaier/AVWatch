@@ -6,8 +6,9 @@
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
-  --foreground-rgb: 15, 23, 42;
+  --foreground-rgb: 44, 62, 80;
   --background: #f0f6ff;
+  --font-primary: 'Satoshi', ui-sans-serif, system-ui;
 }
 
 html {
@@ -56,4 +57,18 @@ body {
   .badge-other {
     @apply bg-slate-50 text-slate-600 border border-slate-200;
   }
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-VariableItalic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
 }

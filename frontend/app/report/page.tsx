@@ -209,7 +209,7 @@ export default function ReportPage() {
       <div className="max-w-xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+          <h1 className="text-3xl font-bold text-[#2C3E50] dark:text-white">
             Report an AV Incident
           </h1>
           <p className="mt-2 text-slate-500 dark:text-slate-400">
@@ -284,7 +284,7 @@ export default function ReportPage() {
                 {...register('description')}
                 rows={4}
                 placeholder="Describe what happened — the more detail the better…"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-4"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#2C3E50] dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-4"
               />
 
               <div
@@ -424,7 +424,7 @@ export default function ReportPage() {
                 <input
                   type="datetime-local"
                   {...register('occurred_at')}
-                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-[#2C3E50] dark:text-white text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                 />
               </div>
             </div>
