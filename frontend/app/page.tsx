@@ -220,23 +220,23 @@ export default function Home() {
     typeof watchedLng === 'number' &&
     !isNaN(watchedLng);
 
-  const toggleChoice = <K extends keyof ReportFormData>(
-    field: K,
-    currentValue: ReportFormData[K] | undefined,
-    nextValue: Exclude<ReportFormData[K], undefined>,
-    clearField?: keyof ReportFormData
+  const toggleChoice = (
+    field: 'incident_type' | 'reporter_type' | 'av_company',
+    currentValue: string | undefined,
+    nextValue: string,
+    clearField?: 'other_incident_type' | 'other_reporter_type' | 'other_av_company'
   ) => {
     handleFormInteraction();
     const shouldClear = currentValue === nextValue;
 
-    setValue(field, (shouldClear ? undefined : nextValue) as ReportFormData[K], {
+    setValue(field as never, (shouldClear ? undefined : nextValue) as never, {
       shouldDirty: true,
       shouldTouch: true,
       shouldValidate: true,
     });
 
     if (clearField && (shouldClear || nextValue !== 'other')) {
-      setValue(clearField as keyof ReportFormData, '' as never, {
+      setValue(clearField as never, '' as never, {
         shouldDirty: true,
         shouldTouch: true,
         shouldValidate: true,
