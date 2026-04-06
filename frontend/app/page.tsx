@@ -904,8 +904,9 @@ export default function Home() {
 
                       {/* Confirmed address pill */}
                       {watchedAddress && locationStatus === 'success' && locationMethod !== 'address' && (
-                        <p className="text-xs text-slate-500 mt-2 truncate">
-                          📍 {watchedAddress}
+                        <p className="mt-2 flex items-center gap-1.5 truncate text-xs text-slate-500">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{watchedAddress}</span>
                         </p>
                       )}
 

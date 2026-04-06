@@ -405,8 +405,9 @@ export default function ReportPage() {
               </button>
 
               {watchedAddress && (
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 truncate">
-                  📍 {watchedAddress}
+                <p className="mb-3 flex items-center gap-1.5 truncate text-sm text-slate-500 dark:text-slate-400">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{watchedAddress}</span>
                 </p>
               )}
               {locationStatus === 'error' && (
