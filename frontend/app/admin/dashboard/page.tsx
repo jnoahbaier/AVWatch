@@ -50,7 +50,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 const TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
   near_miss: 'Near Miss',
-  sudden_behavior: 'Reckless Behavior',
+  sudden_behavior: 'Driving Incident',
   blockage: 'Blockage',
   vandalism: 'Vandalism',
   other: 'Other',

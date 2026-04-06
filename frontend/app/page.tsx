@@ -8,6 +8,8 @@ import {
   MapPin,
   Calendar,
   CheckCircle,
+  ChevronDown,
+  CarFront,
   Loader2,
   Upload,
   Camera,
@@ -17,6 +19,10 @@ import {
   UserX,
   Search,
   Map,
+  TriangleAlert,
+  TrafficCone,
+  ShieldAlert,
+  CircleHelp,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -37,13 +43,15 @@ const LocationMapPicker = dynamic(
 const BULLETIN_API = '/api/bulletin';
 const REPORTS_PAGE = 6;
 
-const INCIDENT_ICONS: Record<string, string> = {
-  collision: '💥',
-  sudden_behavior: '⚡',
-  blockage: '🚧',
-  vandalism: '🚨',
-  other: '',
+const INCIDENT_ICONS = {
+  collision: TriangleAlert,
+  sudden_behavior: CarFront,
+  blockage: TrafficCone,
+  vandalism: ShieldAlert,
+  other: CircleHelp,
 };
+
+const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-400';
 
 const reportSchema = z.object({
   incident_type: z.enum([
@@ -55,7 +63,10 @@ const reportSchema = z.object({
   ]),
   av_company: z
     .enum(['waymo', 'zoox', 'tesla', 'other', 'unknown'])
-    .default('other'),
+    .optional(),
+  other_av_company: z.string().max(120).optional(),
+  other_incident_type: z.string().max(120).optional(),
+  other_reporter_type: z.string().max(120).optional(),
   description: z.string().max(2000).optional(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
@@ -67,9 +78,36 @@ const reportSchema = z.object({
     .optional(),
   contact_name: z.string().optional(),
   contact_email: z.string().email().optional().or(z.literal('')),
+}).superRefine((data, ctx) => {
+  if (data.incident_type === 'other' && !data.other_incident_type?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['other_incident_type'],
+      message: 'Please tell us what happened.',
+    });
+  }
+  if (data.reporter_type === 'other' && !data.other_reporter_type?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['other_reporter_type'],
+      message: 'Please tell us your role.',
+    });
+  }
+  if (data.av_company === 'other' && !data.other_av_company?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['other_av_company'],
+      message: 'Please tell us which company.',
+    });
+  }
 });
 
 type ReportFormData = z.infer<typeof reportSchema>;
+
+function getLocalDateTimeValue(date = new Date()) {
+  const offsetMs = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
 
 export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,14 +201,15 @@ export default function Home() {
   } = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
-      av_company: 'waymo',
-      occurred_at: new Date().toISOString().slice(0, 16),
+      occurred_at: getLocalDateTimeValue(),
     },
   });
 
   const watchedType = watch('incident_type');
   const watchedReporterType = watch('reporter_type');
   const watchedCompany = watch('av_company');
+  const watchedOtherIncidentType = watch('other_incident_type');
+  const watchedOtherReporterType = watch('other_reporter_type');
   const watchedLat = watch('latitude');
   const watchedLng = watch('longitude');
   const watchedAddress = watch('address');
@@ -180,6 +219,30 @@ export default function Home() {
     !isNaN(watchedLat) &&
     typeof watchedLng === 'number' &&
     !isNaN(watchedLng);
+
+  const toggleChoice = <K extends keyof ReportFormData>(
+    field: K,
+    currentValue: ReportFormData[K] | undefined,
+    nextValue: Exclude<ReportFormData[K], undefined>,
+    clearField?: keyof ReportFormData
+  ) => {
+    handleFormInteraction();
+    const shouldClear = currentValue === nextValue;
+
+    setValue(field, (shouldClear ? undefined : nextValue) as ReportFormData[K], {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+
+    if (clearField && (shouldClear || nextValue !== 'other')) {
+      setValue(clearField as keyof ReportFormData, '' as never, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+  };
 
   const getLocation = () => {
     setLocationStatus('loading');
@@ -298,10 +361,27 @@ export default function Home() {
         setUploadProgress(null);
       }
 
+      const descriptionParts = [
+        data.av_company === 'other' && data.other_av_company?.trim()
+          ? `AV company: ${data.other_av_company.trim()}`
+          : null,
+        data.other_incident_type?.trim()
+          ? `Other incident type: ${data.other_incident_type.trim()}`
+          : null,
+        data.reporter_type === 'other' && data.other_reporter_type?.trim()
+          ? `Reporter role: ${data.other_reporter_type.trim()}`
+          : null,
+        data.description?.trim() ? data.description.trim() : null,
+      ].filter(Boolean);
+
+      const description = descriptionParts.length > 0
+        ? descriptionParts.join('\n\n')
+        : undefined;
+
       await createIncident({
         incident_type: data.incident_type,
         av_company: data.av_company,
-        description: data.description,
+        description,
         latitude: data.latitude,
         longitude: data.longitude,
         address: data.address,
@@ -317,7 +397,7 @@ export default function Home() {
         incident_type: data.incident_type,
         av_company: data.av_company,
         has_media: mediaUrls.length > 0,
-        has_description: !!data.description,
+        has_description: !!description,
         reporter_type: data.reporter_type ?? null,
       });
 
@@ -342,8 +422,11 @@ export default function Home() {
     setSubmitError(null);
     setIsCertified(false);
     reset({
-      av_company: 'other',
-      occurred_at: new Date().toISOString().slice(0, 16),
+      av_company: undefined,
+      other_av_company: '',
+      other_incident_type: '',
+      other_reporter_type: '',
+      occurred_at: getLocalDateTimeValue(),
     });
   };
 
@@ -548,28 +631,45 @@ export default function Home() {
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         What happened? <span className="text-red-500">*</span>
                       </p>
+                      <input type="hidden" {...register('incident_type')} />
                       <div className="grid grid-cols-1 gap-2">
                         {Object.entries(INCIDENT_TYPE_LABELS).map(
                           ([value, label]) => (
-                            <label
+                            <button
                               key={value}
+                              type="button"
+                              onClick={() =>
+                                toggleChoice(
+                                  'incident_type',
+                                  watchedType,
+                                  value as Exclude<ReportFormData['incident_type'], undefined>,
+                                  'other_incident_type'
+                                )
+                              }
                               className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
                                 watchedType === value
                                   ? 'border-[#5B9DFF] bg-blue-50'
                                   : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
                               }`}
                             >
-                              <input
-                                type="radio"
-                                value={value}
-                                {...register('incident_type', { onChange: handleFormInteraction })}
-                                className="sr-only"
-                              />
-                              {INCIDENT_ICONS[value] && (
-                                <span className="text-lg w-7 text-center select-none">
-                                  {INCIDENT_ICONS[value]}
-                                </span>
-                              )}
+                              <span
+                                className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
+                                  watchedType === value
+                                    ? 'border-[#5B9DFF]/25 bg-[#5B9DFF]/10'
+                                    : 'border-[#5B9DFF]/20 bg-[#5B9DFF]/8'
+                                }`}
+                              >
+                                {(() => {
+                                  const Icon = INCIDENT_ICONS[value as keyof typeof INCIDENT_ICONS];
+                                  return (
+                                    <Icon
+                                      className={`h-4.5 w-4.5 ${
+                                        watchedType === value ? 'text-[#5B9DFF]' : 'text-[#5B9DFF]'
+                                      }`}
+                                    />
+                                  );
+                                })()}
+                              </span>
                               <span
                                 className={`font-medium text-sm ${
                                   watchedType === value
@@ -582,125 +682,28 @@ export default function Home() {
                               {watchedType === value && (
                                 <CheckCircle className="w-4 h-4 text-[#5B9DFF] ml-auto" />
                               )}
-                            </label>
+                            </button>
                           )
                         )}
                       </div>
-                    </div>
-
-                    {/* Section 2: Details */}
-                    <div className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                        Details (optional)
-                      </p>
-                      <textarea
-                        {...register('description')}
-                        rows={3}
-                        placeholder="Describe what happened…"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-3"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => cameraInputRef.current?.click()}
-                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
-                        >
-                          <Camera className="w-5 h-5 text-slate-400" />
-                          <span className="text-xs text-slate-500">Take photo</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
-                        >
-                          <Upload className="w-5 h-5 text-slate-400" />
-                          <span className="text-xs text-slate-500">Choose photo / video</span>
-                        </button>
-                      </div>
-                      <input
-                        ref={cameraInputRef}
-                        type="file"
-                        accept="image/*,video/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={(e) => {
-                          const newFiles = Array.from(e.target.files || []);
-                          if (newFiles.length > 0) track(Events.MEDIA_ATTACHED, { count: newFiles.length, source: 'camera' });
-                          setSelectedFiles((prev) =>
-                            [...prev, ...newFiles].slice(0, 3)
-                          );
-                        }}
-                      />
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/*,video/*"
-                        className="hidden"
-                        onChange={(e) => {
-                          const newFiles = Array.from(e.target.files || []);
-                          if (newFiles.length > 0) track(Events.MEDIA_ATTACHED, { count: newFiles.length, source: 'file_picker' });
-                          setSelectedFiles((prev) =>
-                            [...prev, ...newFiles].slice(0, 3)
-                          );
-                        }}
-                      />
-                      {selectedFiles.length > 0 && (
-                        <ul className="mt-3 space-y-1">
-                          {selectedFiles.map((file, i) => (
-                            <li
-                              key={i}
-                              className="flex items-center justify-between text-sm bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"
-                            >
-                              <span className="truncate text-slate-700">
-                                {file.name}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setSelectedFiles((prev) =>
-                                    prev.filter((_, j) => j !== i)
-                                  )
-                                }
-                                className="ml-2 text-slate-400 hover:text-red-500 flex-shrink-0"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
+                      {watchedType === 'other' && (
+                        <div className="mt-3">
+                          <input
+                            type="text"
+                            {...register('other_incident_type', { onChange: handleFormInteraction })}
+                            placeholder="Briefly describe what happened"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:border-transparent focus:ring-2 focus:ring-[#5B9DFF]"
+                          />
+                          {errors.other_incident_type && (
+                            <p className="mt-2 text-xs text-red-500">
+                              {errors.other_incident_type.message}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
 
-                    {/* Section 3: Company */}
-                    <div className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                        Which company?
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
-                          <label key={value} className="cursor-pointer">
-                            <input
-                              type="radio"
-                              value={value}
-                              {...register('av_company')}
-                              className="sr-only peer"
-                            />
-                            <span
-                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
-                                watchedCompany === value
-                                  ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
-                                  : 'border-slate-200 text-slate-600 hover:border-blue-300'
-                              }`}
-                            >
-                              {label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Section 4: Location & time */}
+                    {/* Section 2: Location & time */}
                     <div ref={locationSectionRef} className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Where &amp; when? <span className="text-red-500">*</span>
@@ -862,52 +865,230 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Section 5: Your role */}
+                    {/* Section 3: Your role */}
                     <div ref={reporterSectionRef} className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         I was a… <span className="text-red-500">*</span>
                       </p>
+                      <input type="hidden" {...register('reporter_type')} />
                       <div className="flex flex-wrap gap-2">
                         {Object.entries(REPORTER_TYPE_LABELS).map(
                           ([value, label]) => (
-                            <label key={value} className="cursor-pointer">
-                              <input
-                                type="radio"
-                                value={value}
-                                {...register('reporter_type')}
-                                className="sr-only peer"
-                              />
-                              <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 text-slate-600 hover:border-blue-300 peer-checked:border-[#5B9DFF] peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                toggleChoice(
+                                  'reporter_type',
+                                  watchedReporterType,
+                                  value as Exclude<ReportFormData['reporter_type'], undefined>,
+                                  'other_reporter_type'
+                                )
+                              }
+                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                                watchedReporterType === value
+                                  ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
+                                  : 'border-slate-200 text-slate-600 hover:border-blue-300'
+                              }`}
+                            >
                                 {label}
-                              </span>
-                            </label>
+                            </button>
                           )
                         )}
                       </div>
+                      {watchedReporterType === 'other' && (
+                        <div className="mt-3">
+                          <input
+                            type="text"
+                            {...register('other_reporter_type', { onChange: handleFormInteraction })}
+                            placeholder="Briefly describe your role"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:border-transparent focus:ring-2 focus:ring-[#5B9DFF]"
+                          />
+                          {errors.other_reporter_type && (
+                            <p className="mt-2 text-xs text-red-500">
+                              {errors.other_reporter_type.message}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Section 6: Contact (optional) */}
+                    {/* Section 4: Upload content */}
                     <div className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                        Contact <span className="font-normal normal-case">(optional)</span>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        Upload content <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                       </p>
-                      <p className="text-xs text-slate-400 mb-3">
-                        Provide your contact info if you&apos;d like us to follow up. Never shared publicly.
-                      </p>
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          {...register('contact_name')}
-                          placeholder="Name"
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
-                        />
-                        <input
-                          type="email"
-                          {...register('contact_email')}
-                          placeholder="Email address"
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
-                        />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => cameraInputRef.current?.click()}
+                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
+                        >
+                          <Camera className="w-5 h-5 text-slate-400" />
+                          <span className="text-xs text-slate-500">Take photo</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
+                        >
+                          <Upload className="w-5 h-5 text-slate-400" />
+                          <span className="text-xs text-slate-500">Choose photo / video</span>
+                        </button>
                       </div>
+                      <input
+                        ref={cameraInputRef}
+                        type="file"
+                        accept="image/*,video/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const newFiles = Array.from(e.target.files || []);
+                          if (newFiles.length > 0) track(Events.MEDIA_ATTACHED, { count: newFiles.length, source: 'camera' });
+                          setSelectedFiles((prev) =>
+                            [...prev, ...newFiles].slice(0, 3)
+                          );
+                        }}
+                      />
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const newFiles = Array.from(e.target.files || []);
+                          if (newFiles.length > 0) track(Events.MEDIA_ATTACHED, { count: newFiles.length, source: 'file_picker' });
+                          setSelectedFiles((prev) =>
+                            [...prev, ...newFiles].slice(0, 3)
+                          );
+                        }}
+                      />
+                      {selectedFiles.length > 0 && (
+                        <ul className="mt-3 space-y-1">
+                          {selectedFiles.map((file, i) => (
+                            <li
+                              key={i}
+                              className="flex items-center justify-between text-sm bg-slate-50 rounded-lg px-3 py-2 border border-slate-200"
+                            >
+                              <span className="truncate text-slate-700">
+                                {file.name}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setSelectedFiles((prev) =>
+                                    prev.filter((_, j) => j !== i)
+                                  )
+                                }
+                                className="ml-2 text-slate-400 hover:text-red-500 flex-shrink-0"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Section 5: Optional details */}
+                    <div className="p-6">
+                      <details className="group rounded-xl border border-slate-200 bg-slate-50/60">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                              Optional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500">
+                              Add a company, written description, or contact info if you want to help us verify the report.
+                            </p>
+                          </div>
+                          <span className="text-slate-400 transition-transform duration-150 group-open:-rotate-90 group-open:text-[#5B9DFF]">
+                            <ChevronDown className="h-4 w-4" />
+                          </span>
+                        </summary>
+                        <div className="border-t border-slate-200 p-4 space-y-5">
+                          <div>
+                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                              Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                            </p>
+                            <input type="hidden" {...register('av_company')} />
+                            <div className="flex flex-wrap gap-2">
+                              {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  onClick={() =>
+                                    toggleChoice(
+                                      'av_company',
+                                      watchedCompany,
+                                      value as Exclude<ReportFormData['av_company'], undefined>,
+                                      'other_av_company'
+                                    )
+                                  }
+                                  className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                                    watchedCompany === value
+                                      ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
+                                      : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                                  }`}
+                                >
+                                    {label}
+                                </button>
+                              ))}
+                            </div>
+                            {watchedCompany === 'other' && (
+                              <div className="mt-3">
+                                <input
+                                  type="text"
+                                  {...register('other_av_company', { onChange: handleFormInteraction })}
+                                  placeholder="Tell us which company"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                                />
+                                {errors.other_av_company && (
+                                  <p className="mt-2 text-xs text-red-500">
+                                    {errors.other_av_company.message}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                              Details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                            </p>
+                            <textarea
+                              {...register('description')}
+                              rows={3}
+                              placeholder="Describe what happened…"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none"
+                            />
+                          </div>
+
+                          <div>
+                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                              Contact <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                            </p>
+                            <p className="mb-3 text-xs text-slate-400">
+                              Provide your contact info if you&apos;d like us to follow up. Never shared publicly.
+                            </p>
+                            <div className="space-y-2">
+                              <input
+                                type="text"
+                                {...register('contact_name')}
+                                placeholder="Name"
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                              />
+                              <input
+                                type="email"
+                                {...register('contact_email')}
+                                placeholder="Email address"
+                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </details>
                     </div>
 
                     {/* Error */}
