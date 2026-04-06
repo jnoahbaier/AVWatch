@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
@@ -24,13 +25,15 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-md shadow-blue-500/25">
-              <span className="text-white font-bold text-xs tracking-tight">AV</span>
-            </div>
-            <span className="font-bold text-slate-900 tracking-tight">
-              AV Watch
-            </span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/navbar_logo.png"
+              alt="AV Watch logo"
+              width={160}
+              height={40}
+              className="h-[32px] w-auto object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -60,7 +63,7 @@ export function Navbar() {
           <div className="hidden md:flex items-center">
             <a
               href="/#report"
-              className="rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-500/20 transition"
+              className="rounded-lg bg-[#5B9DFF] hover:bg-[#3A72D9] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#5B9DFF]/20 transition"
             >
               Report Incident
             </a>
@@ -108,7 +111,7 @@ export function Navbar() {
               <a
                 href="/#report"
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-xl bg-blue-600 px-4 py-3 text-center text-base font-semibold text-white hover:bg-blue-700 transition"
+                className="mt-2 rounded-xl bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-3 text-center text-base font-semibold text-white shadow-md shadow-[#5B9DFF]/20 transition"
               >
                 Report Incident →
               </a>

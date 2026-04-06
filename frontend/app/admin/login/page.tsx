@@ -17,7 +17,7 @@ function LoginContent() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#5B9DFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -28,7 +28,7 @@ function LoginContent() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">AV</span>
             </div>
             <span className="text-white font-semibold text-xl">Watch</span>

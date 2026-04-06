@@ -27,7 +27,7 @@ const SOURCE_INITIALS: Record<string, string> = {
 
 // Matching bg colors for the fallback thumbnail
 const SOURCE_FALLBACK_BG: Record<string, string> = {
-  'The Robot Report': 'bg-blue-100 text-blue-600',
+  'The Robot Report': 'bg-blue-100 text-[#5B9DFF]',
   'IEEE Spectrum': 'bg-purple-100 text-purple-600',
   'Electrek (Waymo)': 'bg-cyan-100 text-cyan-600',
   'TechCrunch (Transportation)': 'bg-orange-100 text-orange-600',
@@ -96,13 +96,13 @@ function NewsHeadlineRow({ item }: { item: NewsItem }) {
           </span>
           {age && <span className="text-xs text-slate-400">{age}</span>}
         </div>
-        <p className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition leading-snug">
+        <p className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-[#5B9DFF] transition leading-snug">
           {item.title}
         </p>
       </div>
 
       {/* Arrow */}
-      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-blue-500 transition" />
+      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-[#5B9DFF] transition" />
     </a>
   );
 }
@@ -145,7 +145,7 @@ export function NewsHeadlines() {
       ) : error ? (
         <div className="py-8 text-center text-sm text-slate-500">
           Could not load news.{' '}
-          <button onClick={load} className="text-blue-600 underline">
+          <button onClick={load} className="text-[#5B9DFF] underline">
             Retry
           </button>
         </div>
@@ -162,7 +162,7 @@ export function NewsHeadlines() {
         <div className="mt-4 text-right">
           <a
             href="/news"
-            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[#5B9DFF] hover:text-blue-700 transition"
           >
             See more news
             <ArrowRight className="h-4 w-4" />

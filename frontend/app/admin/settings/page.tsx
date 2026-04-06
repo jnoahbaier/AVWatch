@@ -168,7 +168,7 @@ export default function AdminSettings() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-5 h-5 border-2 border-[#5B9DFF] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -179,7 +179,7 @@ export default function AdminSettings() {
       <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xs">AV</span>
             </div>
             <span className="text-white font-semibold">Admin</span>
@@ -253,7 +253,7 @@ export default function AdminSettings() {
             <button
               type="submit"
               disabled={addingEmail || !newEmail.trim()}
-              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors whitespace-nowrap"
+              className="px-4 py-2 text-sm bg-[#5B9DFF] hover:bg-[#5B9DFF] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors whitespace-nowrap"
             >
               {addingEmail ? 'Adding…' : '+ Add'}
             </button>
@@ -276,7 +276,7 @@ export default function AdminSettings() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-full bg-[#5B9DFF]/20 border border-[#5B9DFF]/30 flex items-center justify-center">
                         <span className="text-blue-400 text-xs font-semibold">
                           {entry.email[0].toUpperCase()}
                         </span>
@@ -288,7 +288,7 @@ export default function AdminSettings() {
                     </div>
                     <div className="flex items-center gap-2">
                       {entry.email === session?.user?.email && (
-                        <span className="text-xs text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded-full">
+                        <span className="text-xs text-blue-400 bg-[#5B9DFF]/10 border border-[#5B9DFF]/20 px-2 py-0.5 rounded-full">
                           You
                         </span>
                       )}

@@ -132,7 +132,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
         </div>
 
         {/* Title */}
-        <h3 className="line-clamp-1 text-sm font-semibold leading-snug text-slate-900 group-hover:text-blue-600 transition mb-2">
+        <h3 className="line-clamp-1 text-sm font-semibold leading-snug text-slate-900 group-hover:text-[#5B9DFF] transition mb-2">
           {item.title}
         </h3>
 
@@ -176,7 +176,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
                   · 👥 {item.user_report_count}
                 </span>
               )}
-              <div className="flex items-center gap-1 text-xs font-semibold text-blue-600">
+              <div className="flex items-center gap-1 text-xs font-semibold text-[#5B9DFF]">
                 {`r/${item.source_subreddit}`}
                 <ExternalLink className="h-3 w-3" />
               </div>

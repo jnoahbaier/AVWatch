@@ -63,7 +63,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
         </div>
 
         {/* Headline */}
-        <h3 className="line-clamp-3 flex-1 text-sm font-semibold leading-snug text-slate-900 group-hover:text-blue-600 transition">
+        <h3 className="line-clamp-3 flex-1 text-sm font-semibold leading-snug text-slate-900 group-hover:text-[#5B9DFF] transition">
           {item.title}
         </h3>
 
@@ -75,7 +75,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
         )}
 
         {/* Read more */}
-        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-blue-600">
+        <div className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#5B9DFF]">
           Read more
           <ExternalLink className="h-3 w-3" />
         </div>

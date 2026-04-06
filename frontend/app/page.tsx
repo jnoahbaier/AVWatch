@@ -163,7 +163,7 @@ export default function Home() {
   } = useForm<ReportFormData>({
     resolver: zodResolver(reportSchema),
     defaultValues: {
-      av_company: 'other',
+      av_company: 'waymo',
       occurred_at: new Date().toISOString().slice(0, 16),
     },
   });
@@ -386,7 +386,7 @@ export default function Home() {
             <div className="pt-4 flex flex-col">
               <h1 className="text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.1] mb-5">
                 Witnessed an<br />
-                <span className="text-blue-600">autonomous vehicle incident?</span>
+                <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
               </h1>
 
               <p className="text-xl text-slate-600 mb-4 md:mb-8 max-w-lg leading-relaxed">
@@ -405,7 +405,7 @@ export default function Home() {
                     key={label}
                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm text-slate-700 font-medium"
                   >
-                    <Icon className="w-3.5 h-3.5 text-blue-500" />
+                    <Icon className="w-3.5 h-3.5 text-[#5B9DFF]" />
                     {label}
                   </div>
                 ))}
@@ -436,7 +436,7 @@ export default function Home() {
                 /* Success state */
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                   {/* Header */}
-                  <div className="bg-blue-600 px-8 py-8 text-center">
+                  <div className="bg-[#5B9DFF] px-8 py-8 text-center">
                     <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
                       <CheckCircle className="w-8 h-8 text-white" />
                     </div>
@@ -458,7 +458,7 @@ export default function Home() {
                       {/* Step 1 */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
                             1
                           </div>
                           <div className="w-0.5 h-6 bg-blue-200 mt-1" />
@@ -472,7 +472,7 @@ export default function Home() {
                       {/* Step 2 */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
                             2
                           </div>
                           <div className="w-0.5 h-6 bg-blue-200 mt-1" />
@@ -516,7 +516,7 @@ export default function Home() {
                       <a
                         href="#reports"
                         onClick={handleReset}
-                        className="block w-full px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
+                        className="block w-full px-5 py-3 bg-[#5B9DFF] hover:bg-blue-700 text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
                       >
                         View Recent Incidents
                       </a>
@@ -555,7 +555,7 @@ export default function Home() {
                               key={value}
                               className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
                                 watchedType === value
-                                  ? 'border-blue-500 bg-blue-50'
+                                  ? 'border-[#5B9DFF] bg-blue-50'
                                   : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
                               }`}
                             >
@@ -580,7 +580,7 @@ export default function Home() {
                                 {label}
                               </span>
                               {watchedType === value && (
-                                <CheckCircle className="w-4 h-4 text-blue-500 ml-auto" />
+                                <CheckCircle className="w-4 h-4 text-[#5B9DFF] ml-auto" />
                               )}
                             </label>
                           )
@@ -597,7 +597,7 @@ export default function Home() {
                         {...register('description')}
                         rows={3}
                         placeholder="Describe what happened…"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-3"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-3"
                       />
                       <div className="flex gap-2">
                         <button
@@ -689,7 +689,7 @@ export default function Home() {
                             <span
                               className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
                                 watchedCompany === value
-                                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                  ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                   : 'border-slate-200 text-slate-600 hover:border-blue-300'
                               }`}
                             >
@@ -719,7 +719,7 @@ export default function Home() {
                             onClick={() => setLocationMethod(id)}
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition ${
                               locationMethod === id
-                                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+                                ? 'bg-blue-50 text-blue-700 border-b-2 border-[#5B9DFF]'
                                 : 'text-slate-500 hover:bg-slate-50'
                             }`}
                           >
@@ -738,8 +738,8 @@ export default function Home() {
                             disabled={locationStatus === 'loading'}
                             className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 font-medium transition text-sm ${
                               locationStatus === 'success'
-                                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                : 'border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50'
+                                ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
+                                : 'border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-[#5B9DFF] hover:bg-blue-50/50'
                             }`}
                           >
                             {locationStatus === 'loading' ? (
@@ -767,7 +767,7 @@ export default function Home() {
                       {locationMethod === 'address' && (
                         <div className="space-y-2">
                           <div className="relative">
-                            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent">
+                            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-[#5B9DFF] focus-within:border-transparent">
                               <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
                               <input
                                 type="text"
@@ -792,7 +792,7 @@ export default function Home() {
                               />
                               {isGeocoding && <Loader2 className="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" />}
                               {locationStatus === 'success' && !isGeocoding && (
-                                <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                                <CheckCircle className="w-4 h-4 text-[#5B9DFF] flex-shrink-0" />
                               )}
                             </div>
 
@@ -819,7 +819,7 @@ export default function Home() {
                             <p className="text-xs text-red-500">{geocodeError}</p>
                           )}
                           {locationStatus === 'success' && watchedAddress && locationMethod === 'address' && (
-                            <p className="text-xs text-blue-600 flex items-center gap-1">
+                            <p className="text-xs text-[#5B9DFF] flex items-center gap-1">
                               <CheckCircle className="w-3 h-3" /> Location set
                             </p>
                           )}
@@ -857,7 +857,7 @@ export default function Home() {
                         <input
                           type="datetime-local"
                           {...register('occurred_at')}
-                          className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -877,7 +877,7 @@ export default function Home() {
                                 {...register('reporter_type')}
                                 className="sr-only peer"
                               />
-                              <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 text-slate-600 hover:border-blue-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 peer-checked:text-blue-700">
+                              <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 text-slate-600 hover:border-blue-300 peer-checked:border-[#5B9DFF] peer-checked:bg-blue-50 peer-checked:text-blue-700">
                                 {label}
                               </span>
                             </label>
@@ -899,13 +899,13 @@ export default function Home() {
                           type="text"
                           {...register('contact_name')}
                           placeholder="Name"
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                         <input
                           type="email"
                           {...register('contact_email')}
                           placeholder="Email address"
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-900 placeholder-slate-400 text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -927,7 +927,7 @@ export default function Home() {
                           type="checkbox"
                           checked={isCertified}
                           onChange={(e) => setIsCertified(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+                          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-[#5B9DFF] focus:ring-[#5B9DFF] flex-shrink-0"
                         />
                         <span className="text-sm text-slate-600 group-hover:text-slate-800 transition">
                           I certify that this report is accurate to the best of my knowledge.<span className="text-red-500 ml-0.5">*</span>
@@ -955,7 +955,7 @@ export default function Home() {
                         className={`w-full py-4 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 ${
                           isSubmitting || !watchedType || !hasLocation || !watchedReporterType || !isCertified
                             ? 'bg-slate-100 cursor-not-allowed text-slate-400'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20'
+                            : 'bg-[#5B9DFF] hover:bg-blue-700 text-white shadow-md shadow-[#5B9DFF]/20'
                         }`}
                       >
                         {isSubmitting && (
@@ -1016,7 +1016,7 @@ export default function Home() {
           <div className="max-w-xl">
             <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 leading-tight mb-8">
               Autonomous driving<br />
-              <span className="text-blue-600">is expanding fast.</span>
+              <span className="text-[#5B9DFF]">is expanding fast.</span>
             </h2>
 
             <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
@@ -1078,7 +1078,7 @@ export default function Home() {
                   <button
                     onClick={loadMoreReports}
                     disabled={reportLoadingMore}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600 transition disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition disabled:opacity-50"
                   >
                     {reportLoadingMore ? 'Loading…' : 'Show more'}
                   </button>
@@ -1108,7 +1108,10 @@ export default function Home() {
       </section>
 
       {/* ─────────────────────── ABOUT SECTION ─────────────────────── */}
-      <section id="about" className="py-20 bg-blue-600 relative overflow-hidden">
+      <section
+        id="about"
+        className="py-20 relative overflow-hidden bg-[linear-gradient(135deg,#3A72D9_0%,#5B9DFF_52%,#3F7FE8_100%)]"
+      >
         {/* White grid pattern on blue */}
         <div
           className="absolute inset-0"
@@ -1123,15 +1126,15 @@ export default function Home() {
           }}
         />
         {/* Soft glow */}
-        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-blue-400/30 blur-3xl pointer-events-none" />
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-blue-500/20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#8FC0FF]/28 blur-3xl pointer-events-none" />
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[#2F6FE0]/22 blur-3xl pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* Left: Mission */}
             <div>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-blue-400/40 bg-blue-500/30 text-blue-100 text-xs font-semibold uppercase tracking-wider mb-6">
+              <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-blue-400/40 bg-[#5B9DFF]/30 text-blue-100 text-xs font-semibold uppercase tracking-wider mb-6">
                 Our Mission
               </span>
               <h2 className="text-3xl font-bold text-white mb-5">

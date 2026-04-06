@@ -168,7 +168,7 @@ export default function DashboardPage() {
         {sourceChartData.length > 0 && (
           <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
             <div className="flex items-center gap-3 mb-3">
-              <Database className="w-5 h-5 text-blue-600" />
+              <Database className="w-5 h-5 text-[#5B9DFF]" />
               <h3 className="font-semibold text-slate-900 dark:text-white">Official Data Sources</h3>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -306,7 +306,7 @@ export default function DashboardPage() {
           {/* Data Sources */}
           <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
             <div className="flex items-center gap-3 mb-6">
-              <Database className="w-5 h-5 text-blue-500" />
+              <Database className="w-5 h-5 text-[#5B9DFF]" />
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Data Sources
               </h3>
@@ -458,7 +458,7 @@ function MetricCard({
   const colorClasses = {
     orange: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
     green: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-    blue: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+    blue: 'bg-blue-100 text-[#5B9DFF] dark:bg-blue-900/30 dark:text-blue-400',
     purple: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
   };
 

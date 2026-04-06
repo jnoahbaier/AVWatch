@@ -51,7 +51,7 @@ body {
     @apply bg-yellow-50 text-yellow-600 border border-yellow-200;
   }
   .badge-blockage {
-    @apply bg-blue-50 text-blue-600 border border-blue-200;
+    @apply bg-blue-50 text-[#5B9DFF] border border-blue-200;
   }
   .badge-other {
     @apply bg-slate-50 text-slate-600 border border-slate-200;

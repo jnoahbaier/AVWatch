@@ -171,7 +171,7 @@ export default function ReportPage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
-          <div className="mx-auto w-20 h-20 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center justify-center mb-6">
+          <div className="mx-auto w-20 h-20 bg-[#5B9DFF]/10 border border-[#5B9DFF]/20 rounded-full flex items-center justify-center mb-6">
             <CheckCircle className="w-12 h-12 text-blue-400" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
@@ -188,7 +188,7 @@ export default function ReportPage() {
                 setLocationStatus('idle');
                 setSelectedFiles([]);
               }}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition"
+              className="px-6 py-3 bg-[#5B9DFF] hover:bg-[#5B9DFF] text-white rounded-xl font-medium transition"
             >
               Submit Another
             </button>
@@ -239,7 +239,7 @@ export default function ReportPage() {
                     key={value}
                     className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
                       watchedType === value
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        ? 'border-[#5B9DFF] bg-blue-50 dark:bg-blue-900/20'
                         : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
@@ -264,7 +264,7 @@ export default function ReportPage() {
                       {label}
                     </span>
                     {watchedType === value && (
-                      <CheckCircle className="w-4 h-4 text-blue-500 ml-auto" />
+                      <CheckCircle className="w-4 h-4 text-[#5B9DFF] ml-auto" />
                     )}
                   </label>
                 ))}
@@ -284,7 +284,7 @@ export default function ReportPage() {
                 {...register('description')}
                 rows={4}
                 placeholder="Describe what happened — the more detail the better…"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm mb-4"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none text-sm mb-4"
               />
 
               <div
@@ -363,7 +363,7 @@ export default function ReportPage() {
                     <span
                       className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
                         watchedCompany === value
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                          ? 'border-[#5B9DFF] bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
                           : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                       }`}
                     >
@@ -386,8 +386,8 @@ export default function ReportPage() {
                 disabled={locationStatus === 'loading'}
                 className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border-2 font-medium transition mb-3 ${
                   locationStatus === 'success'
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
-                    : 'border-dashed border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-blue-400 hover:text-blue-600'
+                    ? 'border-[#5B9DFF] bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                    : 'border-dashed border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-blue-400 hover:text-[#5B9DFF]'
                 }`}
               >
                 {locationStatus === 'loading' ? (
@@ -424,7 +424,7 @@ export default function ReportPage() {
                 <input
                   type="datetime-local"
                   {...register('occurred_at')}
-                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                 />
               </div>
             </div>
@@ -443,7 +443,7 @@ export default function ReportPage() {
                       {...register('reporter_type')}
                       className="sr-only peer"
                     />
-                    <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300 peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 peer-checked:text-blue-700 dark:peer-checked:text-blue-400">
+                    <span className="inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-300 peer-checked:border-[#5B9DFF] peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/20 peer-checked:text-blue-700 dark:peer-checked:text-blue-400">
                       {label}
                     </span>
                   </label>
@@ -464,7 +464,7 @@ export default function ReportPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !watchedType || !hasLocation}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white disabled:text-slate-400 dark:disabled:text-slate-500 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2"
+                className="w-full py-4 bg-[#5B9DFF] hover:bg-blue-700 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white disabled:text-slate-400 dark:disabled:text-slate-500 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2"
               >
                 {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
                 {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}

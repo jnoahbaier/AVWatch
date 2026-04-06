@@ -44,7 +44,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   unverified: { label: 'Pending', color: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
   verified: { label: 'Validated', color: 'bg-green-500/15 text-green-400 border-green-500/30' },
   rejected: { label: 'Discarded', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
-  corroborated: { label: 'Corroborated', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+  corroborated: { label: 'Corroborated', color: 'bg-[#5B9DFF]/15 text-blue-400 border-[#5B9DFF]/30' },
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -358,7 +358,7 @@ function CorroborateModal({
           <button
             onClick={() => targetId && onConfirm(targetId)}
             disabled={!targetId}
-            className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+            className="px-4 py-2 text-sm bg-[#5B9DFF] hover:bg-[#5B9DFF] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
           >
             Link reports
           </button>
@@ -506,7 +506,7 @@ export default function AdminDashboard() {
       <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xs">AV</span>
             </div>
             <span className="text-white font-semibold">Admin</span>
@@ -689,7 +689,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => setCorrobTarget(inc)}
                               title="Flag for corroboration"
-                              className="px-2.5 py-1 text-xs bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-600/30 rounded-lg transition-colors"
+                              className="px-2.5 py-1 text-xs bg-[#5B9DFF]/20 hover:bg-[#5B9DFF]/40 text-blue-400 border border-[#5B9DFF]/30 rounded-lg transition-colors"
                             >
                               ↔ Link
                             </button>

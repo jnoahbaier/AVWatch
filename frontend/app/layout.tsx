@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'AV Watch Team', url: SITE_URL }],
   creator: 'UC Berkeley School of Information',
   icons: {
-    icon: '/favicon.svg',
-    shortcut: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
   openGraph: {
     siteName: SITE_NAME,
