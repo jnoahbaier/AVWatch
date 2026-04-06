@@ -19,7 +19,6 @@ What it tests:
 """
 
 import asyncio
-import json
 import os
 import statistics
 import sys
@@ -84,7 +83,6 @@ def print_stats(label: str, results: list[dict]) -> None:
     times = [r["ms"] for r in results]
     p50 = percentile(times, 50) if len(times) >= 2 else (times[0] if times else 0)
     p95 = percentile(times, 95) if len(times) >= 20 else max(times) if times else 0
-    p99 = percentile(times, 99) if len(times) >= 100 else max(times) if times else 0
     err_rate = len(errors) / total * 100 if total else 0
 
     status = GREEN if err_rate == 0 else (YELLOW if err_rate < 10 else RED)

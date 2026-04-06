@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from sqlalchemy import String, Text, DateTime, Integer, Float, Boolean, func
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
 

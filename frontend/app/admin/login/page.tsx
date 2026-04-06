@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, Suspense } from 'react';
@@ -27,11 +28,15 @@ function LoginContent() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AV</span>
-            </div>
-            <span className="text-white font-semibold text-xl">Watch</span>
+          <div className="mb-3 flex justify-center">
+            <Image
+              src="/navbar_logo.png"
+              alt="AV Watch logo"
+              width={160}
+              height={40}
+              className="h-[32px] w-auto object-contain"
+              priority
+            />
           </div>
           <p className="text-slate-400 text-sm">Admin Portal — Team Access Only</p>
         </div>

@@ -7,24 +7,22 @@ from the Next.js admin panel via server-side API proxy routes.
 """
 
 from datetime import datetime
+import re
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Query
-from geoalchemy2 import WKTElement
 from pydantic import BaseModel
-from sqlalchemy import select, func, delete
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.incident import Incident
-from app.models.blocked_ip import BlockedIP
 from app.models.admin_allowlist import AdminAllowlist
+from app.models.blocked_ip import BlockedIP
+from app.models.incident import Incident
 
 router = APIRouter()
-
-import re
 
 _POINT_RE = re.compile(r"POINT\(([^\s]+)\s+([^\s]+)\)")
 
