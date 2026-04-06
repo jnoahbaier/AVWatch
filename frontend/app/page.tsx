@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -52,6 +52,8 @@ const INCIDENT_ICONS = {
 };
 
 const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-400';
+const emptyToUndefined = (value: unknown) =>
+  value === '' || value === null ? undefined : value;
 
 const reportSchema = z.object({
   incident_type: z.enum([
@@ -61,9 +63,10 @@ const reportSchema = z.object({
     'vandalism',
     'other',
   ]),
-  av_company: z
-    .enum(['waymo', 'zoox', 'tesla', 'other', 'unknown'])
-    .optional(),
+  av_company: z.preprocess(
+    emptyToUndefined,
+    z.enum(['waymo', 'zoox', 'tesla', 'other', 'unknown']).optional()
+  ),
   other_av_company: z.string().max(120).optional(),
   other_incident_type: z.string().max(120).optional(),
   other_reporter_type: z.string().max(120).optional(),
@@ -73,9 +76,10 @@ const reportSchema = z.object({
   address: z.string().optional(),
   city: z.string().optional(),
   occurred_at: z.string(),
-  reporter_type: z
-    .enum(['pedestrian', 'cyclist', 'driver', 'rider', 'other'])
-    .optional(),
+  reporter_type: z.preprocess(
+    emptyToUndefined,
+    z.enum(['pedestrian', 'cyclist', 'driver', 'rider', 'other']).optional()
+  ),
   contact_name: z.string().optional(),
   contact_email: z.string().email().optional().or(z.literal('')),
 }).superRefine((data, ctx) => {
@@ -126,6 +130,7 @@ export default function Home() {
   const incidentSectionRef = useRef<HTMLDivElement>(null);
   const locationSectionRef = useRef<HTMLDivElement>(null);
   const reporterSectionRef = useRef<HTMLDivElement>(null);
+  const optionalDetailsRef = useRef<HTMLDetailsElement>(null);
   const certRef = useRef<HTMLLabelElement>(null);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
@@ -415,6 +420,59 @@ export default function Home() {
     }
   };
 
+  const onInvalidSubmit = (invalidErrors: FieldErrors<ReportFormData>) => {
+    if (invalidErrors.other_incident_type?.message) {
+      setSubmitError(invalidErrors.other_incident_type.message);
+      incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (invalidErrors.other_reporter_type?.message) {
+      setSubmitError(invalidErrors.other_reporter_type.message);
+      reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (invalidErrors.other_av_company?.message) {
+      setSubmitError(invalidErrors.other_av_company.message);
+      optionalDetailsRef.current?.setAttribute('open', '');
+      optionalDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    setSubmitError('Please complete the highlighted required fields before submitting.');
+
+    if (!watchedType) {
+      incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!hasLocation) {
+      locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (!watchedReporterType) {
+      reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (watchedType === 'other' && !watchedOtherIncidentType?.trim()) {
+      incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (watchedReporterType === 'other' && !watchedOtherReporterType?.trim()) {
+      reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    if (watchedCompany === 'other') {
+      optionalDetailsRef.current?.setAttribute('open', '');
+      optionalDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const handleReset = () => {
     setIsSuccess(false);
     setLocationStatus('idle');
@@ -615,7 +673,7 @@ export default function Home() {
               ) : (
                 /* Form */
                 <form
-                  onSubmit={handleSubmit(onSubmit)}
+                  onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
                 >
                   <div className="bg-white rounded-2xl shadow-xl border border-slate-100 divide-y divide-slate-100">
 
@@ -993,7 +1051,7 @@ export default function Home() {
 
                     {/* Section 5: Optional details */}
                     <div className="p-6">
-                      <details className="group rounded-xl border border-slate-200 bg-slate-50/60">
+                      <details ref={optionalDetailsRef} className="group rounded-xl border border-slate-200 bg-slate-50/60">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
