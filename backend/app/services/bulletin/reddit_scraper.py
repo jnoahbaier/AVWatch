@@ -2,11 +2,13 @@
 Reddit scraper for AV-related incident signals.
 
 Strategy (in priority order):
-  1. OAuth2 app-only flow  — if REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET are set
-  2. RSS feed fallback     — no credentials needed, always works
-
-RSS feeds are public Atom XML endpoints Reddit still exposes without auth.
-They give us title, body excerpt, URL, and timestamp — enough for Gemini.
+  1. OAuth2 app-only flow   — if REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET are set
+  2. Public JSON fallback   — no credentials needed; returns full post data including
+                              upvotes/comments. Rate-limited to ~1 req/sec unauthenticated;
+                              the 2s inter-subreddit delay keeps us well within limits.
+  3. RSS feed last resort   — only if the public JSON endpoint fails (e.g. 429/blocked).
+                              RSS loses all engagement metrics (upvotes = 0), so posts
+                              from this path will be dropped by MIN_UPVOTES_TO_STORE.
 
 Monitored subreddits:
   - r/waymo            — Waymo-specific incidents and community reports
@@ -100,7 +102,14 @@ class RedditScraper:
                     if self._use_auth:
                         posts = await self._fetch_via_oauth(client, subreddit)
                     else:
-                        posts = await self._fetch_via_rss(client, subreddit)
+                        try:
+                            posts = await self._fetch_via_public_json(client, subreddit)
+                        except Exception as json_exc:
+                            logger.warning(
+                                f"Public JSON failed for r/{subreddit} ({json_exc}), "
+                                "falling back to RSS (upvotes will be 0)"
+                            )
+                            posts = await self._fetch_via_rss(client, subreddit)
                     logger.info(f"Fetched {len(posts)} posts from r/{subreddit}")
                     all_posts.extend(posts)
                     await asyncio.sleep(2.0)  # Be polite
@@ -162,7 +171,30 @@ class RedditScraper:
         ]
 
     # ------------------------------------------------------------------
-    # RSS fallback
+    # Public JSON fallback (no credentials, full post data)
+    # ------------------------------------------------------------------
+
+    async def _fetch_via_public_json(
+        self, client: httpx.AsyncClient, subreddit: str
+    ) -> list[RawRedditPost]:
+        url = f"{_PUBLIC_BASE}/r/{subreddit}/new.json?limit={POSTS_PER_SUBREDDIT}&raw_json=1"
+        response = await client.get(
+            url,
+            headers={"User-Agent": _USER_AGENT},
+            follow_redirects=True,
+        )
+        response.raise_for_status()
+        posts_data = response.json().get("data", {}).get("children", [])
+        return [
+            p for p in (
+                self._parse_json_post(child.get("data", {}), subreddit)
+                for child in posts_data
+            )
+            if p
+        ]
+
+    # ------------------------------------------------------------------
+    # RSS last resort
     # ------------------------------------------------------------------
 
     async def _fetch_via_rss(

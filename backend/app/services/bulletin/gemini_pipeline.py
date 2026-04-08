@@ -34,32 +34,37 @@ KNOWN_INCIDENT_TYPES = [
     "sudden_behavior",  # Erratic, unexpected AV movement or near-miss
     "blockage",         # AV blocked traffic or emergency vehicles
     "vandalism",        # AV was vandalized or physically obstructed by a human
-    "other",            # Any other noteworthy AV event (human error near AV, positive behavior, etc.)
+    "other",            # Specific AV incident that doesn't fit above categories (e.g. police stop, passenger stranding)
 ]
 
 # The classification prompt sent to Gemini for each post
-RELEVANCE_PROMPT = """You are an analyst for AV Watch, a community platform that documents all
-noteworthy real-world autonomous vehicle (AV) events — good, bad, and everything in between.
-The platform serves both AV critics AND enthusiasts who want to help make the technology safer.
+RELEVANCE_PROMPT = """You are a strict incident analyst for AV Watch, a platform that tracks
+real-world autonomous vehicle (AV) safety incidents and problematic behavior.
 
 Your job is to read a Reddit post and decide:
-1. Is this post reporting or describing a REAL, NOTEWORTHY AV event?
+1. Is this post reporting a REAL, SPECIFIC AV INCIDENT or problematic event?
 
-   A post IS relevant if it involves an autonomous or self-driving vehicle in any of these ways:
-   - SAFETY INCIDENTS: collision, near-miss, erratic behavior, blocking traffic or emergency vehicles
+   A post IS relevant ONLY if it describes a specific on-road event such as:
+   - COLLISION / CRASH: an AV was involved in a collision or near-miss with another vehicle,
+     cyclist, or pedestrian
+   - SUDDEN / ERRATIC BEHAVIOR: unexpected braking, swerving, freezing, or dangerous maneuvers
+   - BLOCKAGE: AV blocked traffic, an intersection, emergency vehicles, or a driveway
    - VANDALISM / OBSTRUCTION: a human vandalizing, attacking, or physically obstructing an AV
-   - HUMAN ERROR NEAR AV: a human driver, cyclist, or pedestrian making an error that interacted
-     with or affected an AV (e.g. cutting off a Waymo, swerving into its path)
-   - POSITIVE BEHAVIOR: an AV handling a difficult situation notably well (e.g. correctly yielding
-     to a cyclist, smoothly navigating a complex intersection, avoiding an accident)
-   - OTHER NOTEWORTHY EVENTS: anything unusual or community-relevant involving a real AV on public roads
+   - BEING PULLED OVER / CITED: an AV stopped by police or authorities
+   - STRANDING PASSENGERS: AV left passengers stranded mid-trip or in an unsafe location
+   - FLEET-WIDE FAILURE: multiple AVs simultaneously failing or behaving abnormally
 
    A post is NOT relevant if it is:
-   - Pure news/opinion about AV companies with no specific on-road event
-   - Stock prices, earnings, business news, or funding announcements
-   - Feature announcements, software updates, or product launches
-   - Purely hypothetical or speculative discussions
+   - News about service launches, expansions, or new cities (e.g. "Waymo launches in Nashville")
+   - General positive experiences or scenic/interesting rides with no safety concern
+   - Business news, funding, partnerships, or earnings
+   - Product/feature announcements or software updates
+   - Opinion pieces, polls, or hypothetical discussions
+   - A funny or quirky moment with no safety or operational problem
    - Clearly fictional or satirical
+
+   When in doubt, lean toward NOT relevant. Only flag posts that describe a concrete problem
+   or safety event involving a specific AV on a public road.
 
 2. If it IS relevant, extract structured data.
 
