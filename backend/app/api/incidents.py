@@ -74,7 +74,7 @@ class LocationInput(BaseModel):
 
 class IncidentCreate(BaseModel):
     incident_type: Literal[
-        "collision", "near_miss", "sudden_behavior", "blockage", "other"
+        "collision", "injury", "near_miss", "sudden_behavior", "blockage", "vandalism", "other"
     ] = Field(..., description="Type of incident")
     av_company: Literal["waymo", "cruise", "zoox", "tesla", "other", "unknown"] = Field(
         default="unknown", description="AV company involved"
@@ -115,7 +115,7 @@ async def create_incident(
     """
     Submit a new incident report.
 
-    - **incident_type**: collision, near_miss, sudden_behavior, blockage, other
+    - **incident_type**: collision, injury, near_miss, sudden_behavior, blockage, vandalism, other
     - **av_company**: waymo, cruise, zoox, tesla, other, unknown
     - **location**: GPS coordinates and optional address
     - **occurred_at**: When the incident happened

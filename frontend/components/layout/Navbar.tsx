@@ -34,6 +34,9 @@ export function Navbar() {
               className="h-[32px] w-auto object-contain"
               priority
             />
+            {/* <span className="mt-px pl-0 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:text-[11px]">
+              A UC Berkeley project
+            </span> */}
           </Link>
 
           {/* Desktop Navigation */}

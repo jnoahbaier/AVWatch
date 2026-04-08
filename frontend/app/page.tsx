@@ -22,11 +22,14 @@ import {
   TriangleAlert,
   TrafficCone,
   ShieldAlert,
+  HeartPulse,
   CircleHelp,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
   INCIDENT_TYPE_LABELS,
+  INCIDENT_TYPE_HELP_TEXT,
+  INCIDENT_TYPE_ORDER,
   REPORT_COMPANY_OPTIONS,
   REPORTER_TYPE_LABELS,
 } from '@/lib/utils';
@@ -44,9 +47,10 @@ const BULLETIN_API = '/api/bulletin';
 const REPORTS_PAGE = 6;
 
 const INCIDENT_ICONS = {
-  collision: TriangleAlert,
   sudden_behavior: CarFront,
   blockage: TrafficCone,
+  collision: TriangleAlert,
+  injury: HeartPulse,
   vandalism: ShieldAlert,
   other: CircleHelp,
 };
@@ -58,6 +62,7 @@ const emptyToUndefined = (value: unknown) =>
 const reportSchema = z.object({
   incident_type: z.enum([
     'collision',
+    'injury',
     'sudden_behavior',
     'blockage',
     'vandalism',
@@ -68,7 +73,6 @@ const reportSchema = z.object({
     z.enum(['waymo', 'zoox', 'tesla', 'other', 'unknown']).optional()
   ),
   other_av_company: z.string().max(120).optional(),
-  other_incident_type: z.string().max(120).optional(),
   other_reporter_type: z.string().max(120).optional(),
   description: z.string().max(2000).optional(),
   latitude: z.number().min(-90).max(90),
@@ -83,10 +87,10 @@ const reportSchema = z.object({
   contact_name: z.string().optional(),
   contact_email: z.string().email().optional().or(z.literal('')),
 }).superRefine((data, ctx) => {
-  if (data.incident_type === 'other' && !data.other_incident_type?.trim()) {
+  if (data.incident_type === 'other' && !data.description?.trim()) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ['other_incident_type'],
+      path: ['description'],
       message: 'Please tell us what happened.',
     });
   }
@@ -213,7 +217,7 @@ export default function Home() {
   const watchedType = watch('incident_type');
   const watchedReporterType = watch('reporter_type');
   const watchedCompany = watch('av_company');
-  const watchedOtherIncidentType = watch('other_incident_type');
+  const watchedDescription = watch('description');
   const watchedOtherReporterType = watch('other_reporter_type');
   const watchedLat = watch('latitude');
   const watchedLng = watch('longitude');
@@ -229,7 +233,7 @@ export default function Home() {
     field: 'incident_type' | 'reporter_type' | 'av_company',
     currentValue: string | undefined,
     nextValue: string,
-    clearField?: 'other_incident_type' | 'other_reporter_type' | 'other_av_company'
+    clearField?: 'other_reporter_type' | 'other_av_company'
   ) => {
     handleFormInteraction();
     const shouldClear = currentValue === nextValue;
@@ -370,9 +374,6 @@ export default function Home() {
         data.av_company === 'other' && data.other_av_company?.trim()
           ? `AV company: ${data.other_av_company.trim()}`
           : null,
-        data.other_incident_type?.trim()
-          ? `Other incident type: ${data.other_incident_type.trim()}`
-          : null,
         data.reporter_type === 'other' && data.other_reporter_type?.trim()
           ? `Reporter role: ${data.other_reporter_type.trim()}`
           : null,
@@ -421,8 +422,8 @@ export default function Home() {
   };
 
   const onInvalidSubmit = (invalidErrors: FieldErrors<ReportFormData>) => {
-    if (invalidErrors.other_incident_type?.message) {
-      setSubmitError(invalidErrors.other_incident_type.message);
+    if (invalidErrors.description?.message && watchedType === 'other') {
+      setSubmitError(invalidErrors.description.message);
       incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -435,8 +436,7 @@ export default function Home() {
 
     if (invalidErrors.other_av_company?.message) {
       setSubmitError(invalidErrors.other_av_company.message);
-      optionalDetailsRef.current?.setAttribute('open', '');
-      optionalDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -457,7 +457,7 @@ export default function Home() {
       return;
     }
 
-    if (watchedType === 'other' && !watchedOtherIncidentType?.trim()) {
+    if (watchedType === 'other' && !watchedDescription?.trim()) {
       incidentSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -468,8 +468,7 @@ export default function Home() {
     }
 
     if (watchedCompany === 'other') {
-      optionalDetailsRef.current?.setAttribute('open', '');
-      optionalDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   };
 
@@ -482,8 +481,8 @@ export default function Home() {
     reset({
       av_company: undefined,
       other_av_company: '',
-      other_incident_type: '',
       other_reporter_type: '',
+      description: '',
       occurred_at: getLocalDateTimeValue(),
     });
   };
@@ -539,7 +538,7 @@ export default function Home() {
               <div className="hidden md:flex flex-wrap gap-3 mb-10">
                 {[
                   { icon: UserX, label: 'Fully anonymous' },
-                  { icon: GraduationCap, label: 'Independent research' },
+                  { icon: GraduationCap, label: 'UC Berkeley Research' },
                   { icon: ShieldCheck, label: 'No account needed' },
                 ].map(({ icon: Icon, label }) => (
                   <div
@@ -555,7 +554,7 @@ export default function Home() {
               {/* AV car imagery — drives in from left on scroll (desktop only) */}
               <div
                 ref={carRef}
-                className={`hidden md:block relative mt-6 lg:mt-16 lg:-mr-32 transition-all duration-[1100ms] ease-out ${
+                className={`hidden md:block relative mt-6 lg:mt-16 lg:-mr-32 lg:-translate-y-16 xl:-translate-y-20 transition-all duration-[1100ms] ease-out ${
                   carInView
                     ? 'translate-x-0 opacity-100'
                     : 'lg:-translate-x-full opacity-0'
@@ -690,9 +689,10 @@ export default function Home() {
                         What happened? <span className="text-red-500">*</span>
                       </p>
                       <input type="hidden" {...register('incident_type')} />
-                      <div className="grid grid-cols-1 gap-2">
-                        {Object.entries(INCIDENT_TYPE_LABELS).map(
-                          ([value, label]) => (
+                      <div className="grid grid-cols-2 gap-2">
+                        {INCIDENT_TYPE_ORDER.map((value) => {
+                          const label = INCIDENT_TYPE_LABELS[value];
+                          return (
                             <button
                               key={value}
                               type="button"
@@ -700,8 +700,7 @@ export default function Home() {
                                 toggleChoice(
                                   'incident_type',
                                   watchedType,
-                                  value as Exclude<ReportFormData['incident_type'], undefined>,
-                                  'other_incident_type'
+                                  value as Exclude<ReportFormData['incident_type'], undefined>
                                 )
                               }
                               className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
@@ -711,7 +710,7 @@ export default function Home() {
                               }`}
                             >
                               <span
-                                className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-lg border ${
                                   watchedType === value
                                     ? 'border-[#5B9DFF]/25 bg-[#5B9DFF]/10'
                                     : 'border-[#5B9DFF]/20 bg-[#5B9DFF]/8'
@@ -721,7 +720,7 @@ export default function Home() {
                                   const Icon = INCIDENT_ICONS[value as keyof typeof INCIDENT_ICONS];
                                   return (
                                     <Icon
-                                      className={`h-4.5 w-4.5 ${
+                                      className={`h-5.5 w-5.5 ${
                                         watchedType === value ? 'text-[#5B9DFF]' : 'text-[#5B9DFF]'
                                       }`}
                                     />
@@ -737,28 +736,35 @@ export default function Home() {
                               >
                                 {label}
                               </span>
-                              {watchedType === value && (
-                                <CheckCircle className="w-4 h-4 text-[#5B9DFF] ml-auto" />
-                              )}
                             </button>
-                          )
-                        )}
+                          );
+                        })}
                       </div>
-                      {watchedType === 'other' && (
+                      {watchedType && (
+                        <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                          {INCIDENT_TYPE_HELP_TEXT[watchedType]}
+                        </p>
+                      )}
+                      {watchedType && (
                         <div className="mt-3">
-                          <input
-                            type="text"
-                            {...register('other_incident_type', { onChange: handleFormInteraction })}
-                            placeholder="Briefly describe what happened"
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:border-transparent focus:ring-2 focus:ring-[#5B9DFF]"
+                          <textarea
+                            {...register('description', { onChange: handleFormInteraction })}
+                            rows={3}
+                            placeholder={
+                              watchedType === 'other'
+                                ? 'Tell us what happened'
+                                : 'Add any details about what happened'
+                            }
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:border-transparent focus:ring-2 focus:ring-[#5B9DFF] resize-none"
                           />
-                          {errors.other_incident_type && (
+                          {errors.description && (
                             <p className="mt-2 text-xs text-red-500">
-                              {errors.other_incident_type.message}
+                              {errors.description.message}
                             </p>
                           )}
                         </div>
                       )}
+
                     </div>
 
                     {/* Section 2: Location & time */}
@@ -927,7 +933,7 @@ export default function Home() {
                     {/* Section 3: Your role */}
                     <div ref={reporterSectionRef} className="p-6">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-                        I was a… <span className="text-red-500">*</span>
+                        Which best describes you? <span className="text-red-500">*</span>
                       </p>
                       <input type="hidden" {...register('reporter_type')} />
                       <div className="flex flex-wrap gap-2">
@@ -970,6 +976,51 @@ export default function Home() {
                           )}
                         </div>
                       )}
+
+                      <div className="mt-6">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                          Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                        </p>
+                        <input type="hidden" {...register('av_company')} />
+                        <div className="flex flex-wrap gap-2">
+                          {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() =>
+                                toggleChoice(
+                                  'av_company',
+                                  watchedCompany,
+                                  value as Exclude<ReportFormData['av_company'], undefined>,
+                                  'other_av_company'
+                                )
+                              }
+                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                                watchedCompany === value
+                                  ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
+                                  : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                        {watchedCompany === 'other' && (
+                          <div className="mt-3">
+                            <input
+                              type="text"
+                              {...register('other_av_company', { onChange: handleFormInteraction })}
+                              placeholder="Tell us which company"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                            />
+                            {errors.other_av_company && (
+                              <p className="mt-2 text-xs text-red-500">
+                                {errors.other_av_company.message}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Section 4: Upload content */}
@@ -1056,10 +1107,10 @@ export default function Home() {
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                              Optional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                              Additional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
-                              Add a company, written description, or contact info if you want to help us verify the report.
+                              Add contact info if you&apos;d like us to follow up and verify the report.
                             </p>
                           </div>
                           <span className="text-slate-400 transition-transform duration-150 group-open:-rotate-90 group-open:text-[#5B9DFF]">
@@ -1067,63 +1118,6 @@ export default function Home() {
                           </span>
                         </summary>
                         <div className="border-t border-slate-200 p-4 space-y-5">
-                          <div>
-                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                              Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
-                            </p>
-                            <input type="hidden" {...register('av_company')} />
-                            <div className="flex flex-wrap gap-2">
-                              {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
-                                <button
-                                  key={value}
-                                  type="button"
-                                  onClick={() =>
-                                    toggleChoice(
-                                      'av_company',
-                                      watchedCompany,
-                                      value as Exclude<ReportFormData['av_company'], undefined>,
-                                      'other_av_company'
-                                    )
-                                  }
-                                  className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
-                                    watchedCompany === value
-                                      ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
-                                      : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
-                                  }`}
-                                >
-                                    {label}
-                                </button>
-                              ))}
-                            </div>
-                            {watchedCompany === 'other' && (
-                              <div className="mt-3">
-                                <input
-                                  type="text"
-                                  {...register('other_av_company', { onChange: handleFormInteraction })}
-                                  placeholder="Tell us which company"
-                                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
-                                />
-                                {errors.other_av_company && (
-                                  <p className="mt-2 text-xs text-red-500">
-                                    {errors.other_av_company.message}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-
-                          <div>
-                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                              Details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
-                            </p>
-                            <textarea
-                              {...register('description')}
-                              rows={3}
-                              placeholder="Describe what happened…"
-                              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent resize-none"
-                            />
-                          </div>
-
                           <div>
                             <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
                               Contact <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
@@ -1383,8 +1377,8 @@ export default function Home() {
               <p className="text-blue-100 text-lg leading-relaxed">
                 AV Watch is an independent, community-driven platform for
                 reporting and tracking autonomous vehicle incidents. We believe
-                transparency and public accountability are essential to the safe
-                deployment of self-driving technology.
+                transparency supports the safe and responsible deployment of
+                self-driving technology.
               </p>
               <p className="text-blue-100 text-lg leading-relaxed mt-4">
                 Learn more about the project and team{' '}
@@ -1398,6 +1392,22 @@ export default function Home() {
                 </a>
                 .
               </p>
+              <div className="mt-8">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-100">
+                  Get in touch
+                </h3>
+                <p className="mt-2 text-blue-100 text-base leading-relaxed">
+                  For questions, feedback, or research-related inquiries, contact
+                  the team at{' '}
+                  <a
+                    href="mailto:avwatch@ischool.berkeley.edu"
+                    className="font-medium text-white underline underline-offset-2 hover:text-blue-200 transition"
+                  >
+                    avwatch@ischool.berkeley.edu
+                  </a>
+                  .
+                </p>
+              </div>
             </div>
 
             {/* Right: Berkeley logo only */}

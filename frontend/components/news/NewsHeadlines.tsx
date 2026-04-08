@@ -48,8 +48,8 @@ function timeAgo(iso: string | null): string {
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-4 py-4 animate-pulse">
-      <div className="h-14 w-14 shrink-0 rounded-lg bg-slate-200" />
+    <div className="flex items-center gap-3 py-3 sm:gap-4 sm:py-4 animate-pulse">
+      <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-200 sm:h-14 sm:w-14" />
       <div className="flex-1 space-y-2">
         <div className="h-3 w-20 rounded bg-slate-200" />
         <div className="h-4 w-full rounded bg-slate-200" />
@@ -71,10 +71,10 @@ function NewsHeadlineRow({ item }: { item: NewsItem }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-4 py-4 transition hover:bg-slate-50 rounded-xl px-2 -mx-2"
+      className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-slate-50 sm:gap-4 sm:py-4"
     >
       {/* Thumbnail */}
-      <div className={`h-14 w-14 shrink-0 overflow-hidden rounded-lg ${!item.image_url || imgFailed ? fallbackBg : 'bg-slate-100'} flex items-center justify-center`}>
+      <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg sm:h-14 sm:w-14 ${!item.image_url || imgFailed ? fallbackBg : 'bg-slate-100'}`}>
         {item.image_url && !imgFailed ? (
           <img
             src={item.image_url}
@@ -102,7 +102,7 @@ function NewsHeadlineRow({ item }: { item: NewsItem }) {
       </div>
 
       {/* Arrow */}
-      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-[#5B9DFF] transition" />
+      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:text-[#5B9DFF]" />
     </a>
   );
 }
@@ -152,7 +152,9 @@ export function NewsHeadlines() {
       ) : (
         <div className="divide-y divide-slate-100">
           {items.map((item, i) => (
-            <NewsHeadlineRow key={i} item={item} />
+            <div key={i} className={i >= 2 ? 'hidden md:block' : ''}>
+              <NewsHeadlineRow item={item} />
+            </div>
           ))}
         </div>
       )}

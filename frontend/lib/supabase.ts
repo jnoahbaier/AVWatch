@@ -10,7 +10,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Database types
 export interface Incident {
   id: string;
-  incident_type: 'collision' | 'near_miss' | 'sudden_behavior' | 'blockage' | 'other';
+  incident_type: 'collision' | 'injury' | 'near_miss' | 'sudden_behavior' | 'blockage' | 'vandalism' | 'other';
   av_company: 'waymo' | 'cruise' | 'zoox' | 'tesla' | 'other' | 'unknown' | null;
   description: string | null;
   latitude: number;
@@ -283,4 +283,3 @@ export async function getRecentIncidents(limit = 5) {
   if (error) throw error;
   return data as Incident[];
 }
-

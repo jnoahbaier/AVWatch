@@ -4,6 +4,7 @@
 
 export type IncidentType =
   | 'collision'
+  | 'injury'
   | 'near_miss'
   | 'sudden_behavior'
   | 'blockage'
@@ -168,6 +169,7 @@ export interface MonthlyDataPoint {
 
 export const INCIDENT_TYPE_LABELS: Record<IncidentType, string> = {
   collision: 'Collision',
+  injury: 'Injury',
   near_miss: 'Near Miss',
   sudden_behavior: 'Sudden Behavior',
   blockage: 'Blockage',

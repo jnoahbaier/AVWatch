@@ -51,10 +51,35 @@ export function formatRelativeTime(date: string | Date): string {
  */
 export const INCIDENT_TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
+  injury: 'Injury',
   sudden_behavior: 'Driving Incident',
   blockage: 'Blockage',
   vandalism: 'Vandalism',
   other: 'Other',
+};
+
+export const INCIDENT_TYPE_ORDER = [
+  'sudden_behavior',
+  'blockage',
+  'collision',
+  'injury',
+  'vandalism',
+  'other',
+] as const;
+
+export const INCIDENT_TYPE_HELP_TEXT: Record<string, string> = {
+  sudden_behavior:
+    'Examples: abrupt stopping, unsafe turns, unexpected acceleration, or failure to yield.',
+  blockage:
+    'Examples: blocking a lane, crosswalk, bike lane, driveway, or loading zone.',
+  collision:
+    'Examples: contact with another vehicle, a person, a cyclist, an object, or property.',
+  injury:
+    'Examples: any reported physical injury, even if the vehicle did not make direct contact.',
+  vandalism:
+    'Examples: graffiti, broken windows, tampering, thrown objects, or deliberate damage.',
+  other:
+    'Use this if the incident does not fit the categories above. Add a short description below.',
 };
 
 /**
@@ -101,6 +126,7 @@ export const REPORTER_TYPE_LABELS: Record<string, string> = {
  */
 export const INCIDENT_TYPE_COLORS: Record<string, string> = {
   collision: '#ef4444',
+  injury: '#f97316',
   sudden_behavior: '#eab308',
   blockage: '#6366f1',
   vandalism: '#dc2626',

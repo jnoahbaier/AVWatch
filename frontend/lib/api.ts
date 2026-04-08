@@ -6,7 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface Incident {
   id: string;
-  incident_type: 'collision' | 'near_miss' | 'sudden_behavior' | 'blockage' | 'other';
+  incident_type: 'collision' | 'injury' | 'near_miss' | 'sudden_behavior' | 'blockage' | 'vandalism' | 'other';
   av_company: 'waymo' | 'cruise' | 'zoox' | 'tesla' | 'other' | 'unknown';
   description?: string;
   latitude: number;
@@ -209,7 +209,6 @@ class APIClient {
 }
 
 export const api = new APIClient(API_BASE_URL);
-
 
 
 

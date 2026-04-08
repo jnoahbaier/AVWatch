@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import {
   INCIDENT_TYPE_LABELS,
+  INCIDENT_TYPE_HELP_TEXT,
+  INCIDENT_TYPE_ORDER,
   REPORT_COMPANY_OPTIONS,
   REPORTER_TYPE_LABELS,
 } from '@/lib/utils';
@@ -21,6 +23,7 @@ import {
 const reportSchema = z.object({
   incident_type: z.enum([
     'collision',
+    'injury',
     'near_miss',
     'sudden_behavior',
     'blockage',
@@ -45,6 +48,7 @@ type ReportFormData = z.infer<typeof reportSchema>;
 
 const INCIDENT_ICONS: Record<string, string> = {
   collision: '💥',
+  injury: '🩹',
   near_miss: '⚠️',
   sudden_behavior: '⚡',
   blockage: '🚧',
@@ -234,41 +238,49 @@ export default function ReportPage() {
                 What happened? <span className="text-red-400">*</span>
               </p>
               <div className="grid grid-cols-1 gap-2">
-                {Object.entries(INCIDENT_TYPE_LABELS).map(([value, label]) => (
-                  <label
-                    key={value}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
-                      watchedType === value
-                        ? 'border-[#5B9DFF] bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      value={value}
-                      {...register('incident_type')}
-                      className="sr-only"
-                    />
-                    {INCIDENT_ICONS[value] && (
-                      <span className="text-lg w-7 text-center select-none">
-                        {INCIDENT_ICONS[value]}
-                      </span>
-                    )}
-                    <span
-                      className={`font-medium ${
+                {INCIDENT_TYPE_ORDER.map((value) => {
+                  const label = INCIDENT_TYPE_LABELS[value];
+                  return (
+                    <label
+                      key={value}
+                      className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
                         watchedType === value
-                          ? 'text-blue-700 dark:text-blue-400'
-                          : 'text-slate-700 dark:text-slate-300'
+                          ? 'border-[#5B9DFF] bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                       }`}
                     >
-                      {label}
-                    </span>
-                    {watchedType === value && (
-                      <CheckCircle className="w-4 h-4 text-[#5B9DFF] ml-auto" />
-                    )}
-                  </label>
-                ))}
+                      <input
+                        type="radio"
+                        value={value}
+                        {...register('incident_type')}
+                        className="sr-only"
+                      />
+                      {INCIDENT_ICONS[value] && (
+                        <span className="text-lg w-7 text-center select-none">
+                          {INCIDENT_ICONS[value]}
+                        </span>
+                      )}
+                      <span
+                        className={`font-medium ${
+                          watchedType === value
+                            ? 'text-blue-700 dark:text-blue-400'
+                            : 'text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        {label}
+                      </span>
+                      {watchedType === value && (
+                        <CheckCircle className="w-4 h-4 text-[#5B9DFF] ml-auto" />
+                      )}
+                    </label>
+                  );
+                })}
               </div>
+              {watchedType && (
+                <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                  {INCIDENT_TYPE_HELP_TEXT[watchedType]}
+                </p>
+              )}
               {errors.incident_type && (
                 <p className="mt-2 text-sm text-red-500">Required</p>
               )}
