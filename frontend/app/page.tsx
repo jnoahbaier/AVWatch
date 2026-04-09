@@ -373,9 +373,6 @@ export default function Home() {
       }
 
       const descriptionParts = [
-        data.reporter_context
-          ? `Reporter context: ${data.reporter_context === 'directly_involved' ? 'Directly involved' : 'Bystander'}`
-          : null,
         data.av_company === 'other' && data.other_av_company?.trim()
           ? `AV company: ${data.other_av_company.trim()}`
           : null,
@@ -395,7 +392,7 @@ export default function Home() {
         address: data.address,
         city: data.city,
         occurred_at: new Date(data.occurred_at).toISOString(),
-        reporter_type: 'other',
+        reporter_type: data.reporter_context ?? undefined,
         contact_name: data.contact_name || undefined,
         contact_email: data.contact_email || undefined,
         media_urls: mediaUrls,
@@ -595,16 +592,19 @@ export default function Home() {
 
                     {/* Flowchart */}
                     <div className="space-y-1">
-                      {/* Step 1 */}
+                      {/* Step 1 — completed */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
-                            1
+                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center shrink-0">
+                            <CheckCircle className="w-5 h-5" />
                           </div>
-                          <div className="w-0.5 h-6 bg-blue-200 mt-1" />
+                          <div className="w-0.5 h-6 bg-slate-200 mt-1" />
                         </div>
                         <div className="pb-4 pt-1">
-                          <p className="font-semibold text-slate-800 text-sm">Report received</p>
+                          <p className="font-semibold text-slate-800 text-sm flex items-center gap-2">
+                            Report received
+                            <span className="text-xs font-medium text-[#5B9DFF] bg-blue-50 px-2 py-0.5 rounded-full">Done</span>
+                          </p>
                           <p className="text-slate-500 text-xs mt-0.5">Your report is stored securely in our database.</p>
                         </div>
                       </div>
@@ -612,41 +612,41 @@ export default function Home() {
                       {/* Step 2 */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold shrink-0">
                             2
                           </div>
-                          <div className="w-0.5 h-6 bg-blue-200 mt-1" />
+                          <div className="w-0.5 h-6 bg-slate-200 mt-1" />
                         </div>
                         <div className="pb-4 pt-1">
-                          <p className="font-semibold text-slate-800 text-sm">Reviewed by our team</p>
-                          <p className="text-slate-500 text-xs mt-0.5">Our team checks the report for accuracy and completeness.</p>
+                          <p className="font-semibold text-slate-400 text-sm">Reviewed by our team</p>
+                          <p className="text-slate-400 text-xs mt-0.5">Our team checks the report for accuracy and completeness.</p>
                         </div>
                       </div>
 
                       {/* Step 3 */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-blue-400 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold shrink-0">
                             3
                           </div>
-                          <div className="w-0.5 h-6 bg-blue-200 mt-1" />
+                          <div className="w-0.5 h-6 bg-slate-200 mt-1" />
                         </div>
                         <div className="pb-4 pt-1">
-                          <p className="font-semibold text-slate-800 text-sm">Corroborated with similar reports</p>
-                          <p className="text-slate-500 text-xs mt-0.5">Reports near the same location &amp; time are linked together to build credibility.</p>
+                          <p className="font-semibold text-slate-400 text-sm">Corroborated with similar reports</p>
+                          <p className="text-slate-400 text-xs mt-0.5">Reports near the same location &amp; time are linked together to build credibility.</p>
                         </div>
                       </div>
 
                       {/* Step 4 */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-slate-300 text-slate-600 flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold shrink-0">
                             4
                           </div>
                         </div>
                         <div className="pt-1">
-                          <p className="font-semibold text-slate-800 text-sm">Shared with regulators</p>
-                          <p className="text-slate-500 text-xs mt-0.5">Validated reports are forwarded to the CA DMV and relevant agencies.</p>
+                          <p className="font-semibold text-slate-400 text-sm">Shared with regulators</p>
+                          <p className="text-slate-400 text-xs mt-0.5">Validated reports are forwarded to the CA DMV and relevant agencies.</p>
                         </div>
                       </div>
                     </div>
@@ -1274,9 +1274,9 @@ export default function Home() {
           </div>
 
           {reportInitialLoading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse">
+                <div key={i} className={`rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse${i >= 3 ? ' hidden sm:block' : ''}`}>
                   <div className="h-44 bg-slate-200" />
                   <div className="p-5 space-y-3">
                     <div className="h-3 w-24 rounded bg-slate-200" />
@@ -1290,9 +1290,11 @@ export default function Home() {
             <p className="text-slate-400 text-sm">No reports yet.</p>
           ) : (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {reportItems.map((item) => (
-                  <BulletinCard key={item.id} item={item} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {reportItems.map((item, index) => (
+                  <div key={item.id} className={index >= 3 ? 'hidden sm:block' : ''}>
+                    <BulletinCard item={item} />
+                  </div>
                 ))}
               </div>
 
