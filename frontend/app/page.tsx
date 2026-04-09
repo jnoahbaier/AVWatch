@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { type FieldErrors, useForm } from 'react-hook-form';
+import { Controller, type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -59,7 +59,6 @@ const REPORTER_CONTEXT_OPTIONS = [
   { value: 'directly_involved', label: 'I was directly involved' },
   { value: 'bystander', label: 'I was a bystander' },
 ] as const;
-type ReporterContextOption = (typeof REPORTER_CONTEXT_OPTIONS)[number]['value'];
 const emptyToUndefined = (value: unknown) =>
   value === '' || value === null ? undefined : value;
 
@@ -83,7 +82,7 @@ const reportSchema = z.object({
   address: z.string().optional(),
   city: z.string().optional(),
   occurred_at: z.string(),
-  reporter_type: z.preprocess(
+  reporter_context: z.preprocess(
     emptyToUndefined,
     z.enum(['directly_involved', 'bystander']).optional()
   ),
@@ -97,11 +96,11 @@ const reportSchema = z.object({
       message: 'Please tell us what happened.',
     });
   }
-  if (!data.reporter_type) {
+  if (!data.reporter_context) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ['reporter_type'],
-      message: 'Please tell us whether you were directly involved or a bystander.',
+      path: ['reporter_context'],
+      message: 'Please select an option.',
     });
   }
   if (data.av_company === 'other' && !data.other_av_company?.trim()) {
@@ -204,6 +203,7 @@ export default function Home() {
   }
 
   const {
+    control,
     register,
     handleSubmit,
     setValue,
@@ -218,7 +218,7 @@ export default function Home() {
   });
 
   const watchedType = watch('incident_type');
-  const watchedReporterType = watch('reporter_type');
+  const watchedReporterContext = watch('reporter_context');
   const watchedCompany = watch('av_company');
   const watchedDescription = watch('description');
   const watchedLat = watch('latitude');
@@ -231,13 +231,8 @@ export default function Home() {
     typeof watchedLng === 'number' &&
     !isNaN(watchedLng);
 
-  const selectedReporterContext: ReporterContextOption | undefined =
-    watchedReporterType === 'directly_involved' || watchedReporterType === 'bystander'
-      ? watchedReporterType
-      : undefined;
-
   const toggleChoice = (
-    field: 'incident_type' | 'reporter_type' | 'av_company',
+    field: 'incident_type' | 'av_company',
     currentValue: string | undefined,
     nextValue: string,
     clearField?: 'other_av_company'
@@ -258,17 +253,6 @@ export default function Home() {
         shouldValidate: true,
       });
     }
-  };
-
-  const toggleReporterContext = (label: ReporterContextOption) => {
-    handleFormInteraction();
-    const shouldClear = selectedReporterContext === label;
-
-    setValue('reporter_type', (shouldClear ? undefined : label) as never, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true,
-    });
   };
 
   const getLocation = () => {
@@ -389,6 +373,9 @@ export default function Home() {
       }
 
       const descriptionParts = [
+        data.reporter_context
+          ? `Reporter context: ${data.reporter_context === 'directly_involved' ? 'Directly involved' : 'Bystander'}`
+          : null,
         data.av_company === 'other' && data.other_av_company?.trim()
           ? `AV company: ${data.other_av_company.trim()}`
           : null,
@@ -408,7 +395,7 @@ export default function Home() {
         address: data.address,
         city: data.city,
         occurred_at: new Date(data.occurred_at).toISOString(),
-        reporter_type: data.reporter_type,
+        reporter_type: 'other',
         contact_name: data.contact_name || undefined,
         contact_email: data.contact_email || undefined,
         media_urls: mediaUrls,
@@ -419,7 +406,7 @@ export default function Home() {
         av_company: data.av_company,
         has_media: mediaUrls.length > 0,
         has_description: !!description,
-        reporter_type: data.reporter_type ?? null,
+        reporter_type: data.reporter_context ?? null,
       });
 
       setIsSuccess(true);
@@ -443,9 +430,9 @@ export default function Home() {
       return;
     }
 
-    if (invalidErrors.reporter_type?.message) {
+    if (invalidErrors.reporter_context?.message) {
       setSubmitError(
-        invalidErrors.reporter_type?.message ??
+        invalidErrors.reporter_context?.message ??
           'Please tell us whether you were directly involved or a bystander.'
       );
       reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -470,7 +457,7 @@ export default function Home() {
       return;
     }
 
-    if (!watchedReporterType) {
+    if (!watchedReporterContext) {
       reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -493,7 +480,7 @@ export default function Home() {
     setIsCertified(false);
     reset({
       av_company: undefined,
-      reporter_type: undefined,
+      reporter_context: undefined,
       other_av_company: '',
       description: '',
       occurred_at: getLocalDateTimeValue(),
@@ -948,26 +935,34 @@ export default function Home() {
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Which best describes you? <span className="text-red-500">*</span>
                       </p>
-                      <input type="hidden" {...register('reporter_type')} />
-                      <div className="flex flex-wrap gap-2">
-                        {REPORTER_CONTEXT_OPTIONS.map(({ value, label }) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => toggleReporterContext(value)}
-                            className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
-                              selectedReporterContext === value
-                                ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
-                                : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
-                            }`}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                      {errors.reporter_type && (
+                      <Controller
+                        name="reporter_context"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex flex-wrap gap-2">
+                            {REPORTER_CONTEXT_OPTIONS.map(({ value, label }) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => {
+                                  handleFormInteraction();
+                                  field.onChange(field.value === value ? undefined : value);
+                                }}
+                                className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                                  field.value === value
+                                    ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                                }`}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      />
+                      {errors.reporter_context && (
                         <p className="mt-2 text-xs text-red-500">
-                          {errors.reporter_type.message}
+                          {errors.reporter_context.message}
                         </p>
                       )}
 
@@ -1172,7 +1167,7 @@ export default function Home() {
                           } else if (!hasLocation) {
                             e.preventDefault();
                             locationSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          } else if (!watchedReporterType) {
+                          } else if (!watchedReporterContext) {
                             e.preventDefault();
                             reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                           } else if (!isCertified) {
@@ -1181,7 +1176,7 @@ export default function Home() {
                           }
                         }}
                         className={`w-full py-4 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 ${
-                          isSubmitting || !watchedType || !hasLocation || !watchedReporterType || !isCertified
+                          isSubmitting || !watchedType || !hasLocation || !watchedReporterContext || !isCertified
                             ? 'bg-slate-100 cursor-not-allowed text-slate-400'
                             : 'bg-[#5B9DFF] hover:bg-blue-700 text-white shadow-md shadow-[#5B9DFF]/20'
                         }`}
