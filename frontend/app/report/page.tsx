@@ -24,7 +24,6 @@ const reportSchema = z.object({
   incident_type: z.enum([
     'collision',
     'injury',
-    'near_miss',
     'sudden_behavior',
     'blockage',
     'vandalism',
