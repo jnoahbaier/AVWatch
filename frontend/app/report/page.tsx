@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -55,6 +57,9 @@ const INCIDENT_ICONS: Record<string, string> = {
 };
 
 export default function ReportPage() {
+  const router = useRouter();
+  useEffect(() => { router.replace('/'); }, [router]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [locationStatus, setLocationStatus] = useState<
@@ -169,6 +174,10 @@ export default function ReportPage() {
     }
   };
 
+  // Page is hidden from public — redirect fires on mount
+  return null;
+
+  // eslint-disable-next-line no-unreachable
   if (isSuccess) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4">

@@ -595,8 +595,8 @@ export default function Home() {
                       {/* Step 1 — completed */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center shrink-0">
-                            <CheckCircle className="w-5 h-5" />
+                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            1
                           </div>
                           <div className="w-0.5 h-6 bg-slate-200 mt-1" />
                         </div>
@@ -656,7 +656,7 @@ export default function Home() {
                       <a
                         href="#reports"
                         onClick={handleReset}
-                        className="block w-full px-5 py-3 bg-[#5B9DFF] hover:bg-blue-700 text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
+                        className="block w-full px-5 py-3 bg-[#5B9DFF] hover:bg-blue-600 text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
                       >
                         View Recent Incidents
                       </a>
@@ -728,7 +728,7 @@ export default function Home() {
                                 })()}
                               </span>
                               <span
-                                className={`font-medium text-sm ${
+                                className={`font-medium text-sm text-left ${
                                   watchedType === value
                                     ? 'text-blue-700'
                                     : 'text-slate-700'
@@ -930,7 +930,7 @@ export default function Home() {
                       </div>
                     </div>
                     
-                    {/* TODO: Decide whether to keep the reporter role question in the homepage form. */}
+                    {/* Section 3: Reporter context */}
                     <div ref={reporterSectionRef} className="px-6 pt-6 pb-8">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Which best describes you? <span className="text-red-500">*</span>
@@ -1102,17 +1102,14 @@ export default function Home() {
                               Add your contact info if you&apos;d like us to follow up and verify the report.
                             </p>
                           </div>
-                          <span className="text-slate-400 transition-transform duration-150 group-open:-rotate-90 group-open:text-[#5B9DFF]">
+                          <span className="text-slate-400 transition-transform duration-150 group-open:rotate-180 group-open:text-[#5B9DFF]">
                             <ChevronDown className="h-4 w-4" />
                           </span>
                         </summary>
                         <div className="border-t border-slate-200 p-4 space-y-5">
                           <div>
-                            <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
                               Contact <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
-                            </p>
-                            <p className="mb-3 text-xs text-slate-400">
-                              Provide your contact info if you&apos;d like us to follow up. Never shared publicly.
                             </p>
                             <div className="space-y-2">
                               <input
@@ -1178,7 +1175,7 @@ export default function Home() {
                         className={`w-full py-4 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 ${
                           isSubmitting || !watchedType || !hasLocation || !watchedReporterContext || !isCertified
                             ? 'bg-slate-100 cursor-not-allowed text-slate-400'
-                            : 'bg-[#5B9DFF] hover:bg-blue-700 text-white shadow-md shadow-[#5B9DFF]/20'
+                            : 'bg-[#5B9DFF] hover:bg-blue-600 text-white shadow-md shadow-[#5B9DFF]/20'
                         }`}
                       >
                         {isSubmitting && (
@@ -1241,11 +1238,12 @@ export default function Home() {
 
             <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
               <p>
-                Yet there is no simple, reliable way for people to report what they witness on the road.{' '}
+                Yet there is no simple, fast way for people to report what they witness on the road.{' '}
                 <span className="font-semibold text-[#2C3E50]">AV Watch changes that.</span>
               </p>
               <p>
-                Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them.
+                {/* Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them. */}
+                Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles.
               </p>
               <p>
                 AV Watch is built by a team of independent researchers at UC Berkeley&apos;s School of Information.
@@ -1266,7 +1264,8 @@ export default function Home() {
               Recent Incidents
             </h2>
             <p className="text-slate-500">
-              Autonomous Vehicle incidents from real community reports.
+              {/* Autonomous Vehicle incidents from real community reports. */}
+              Incidents reported by the community.
             </p>
           </div>
 
@@ -1302,7 +1301,7 @@ export default function Home() {
                     disabled={reportLoadingMore}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition disabled:opacity-50"
                   >
-                    {reportLoadingMore ? 'Loading…' : 'Show more'}
+                    {reportLoadingMore ? 'Loading…' : 'Load more incidents'}
                   </button>
                 </div>
               )}
@@ -1322,7 +1321,8 @@ export default function Home() {
               In the News
             </h2>
             <p className="text-slate-500">
-              Recent news on autonomous vehicles.
+              {/* Recent news on autonomous vehicles. */}
+              The latest coverage on autonomous vehicle incidents and policy.
             </p>
           </div>
           <NewsHeadlines />

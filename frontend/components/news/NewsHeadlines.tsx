@@ -152,7 +152,7 @@ export function NewsHeadlines() {
       ) : (
         <div className="divide-y divide-slate-100">
           {items.map((item, i) => (
-            <div key={i} className={i >= 2 ? 'hidden md:block' : ''}>
+            <div key={i}>
               <NewsHeadlineRow item={item} />
             </div>
           ))}
