@@ -740,7 +740,7 @@ export default function Home() {
                           );
                         })}
                       </div>
-                      {watchedType && (
+                      {watchedType && ['sudden_behavior', 'other'].includes(watchedType) && (
                         <p className="mt-3 text-sm leading-relaxed text-slate-500">
                           {INCIDENT_TYPE_HELP_TEXT[watchedType]}
                         </p>
@@ -1186,9 +1186,6 @@ export default function Home() {
                         )}
                         {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
                       </button>
-                      <p className="mt-3 text-center text-xs text-slate-400">
-                        Anonymous by default · your location is never stored
-                      </p>
                     </div>
                   </div>
                 </form>
@@ -1424,7 +1421,7 @@ export default function Home() {
       {/* ─────────────────────── FOOTER ─────────────────────── */}
       <footer className="bg-white border-t border-slate-200 py-8">
           <p className="text-center text-xs text-slate-400">
-            © {new Date().getFullYear()} AV Watch · Built for AV accountability
+            © {new Date().getFullYear()} AV Watch · Built for safer autonomy
           </p>
       </footer>
     </div>

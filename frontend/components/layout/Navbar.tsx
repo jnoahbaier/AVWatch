@@ -27,12 +27,12 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src="/navbar_logo.png"
-              // src="/navbar_logo_alt_ucb.png"
+              //src="/navbar_logo.png"
+              src="/navbar_logo_alt_ucb.png"
               alt="AV Watch logo"
-              width={160}
-              height={40}
-              className="h-[32px] w-auto object-contain"
+              width={200}
+              height={50}
+              className="h-[42px] w-auto object-contain"
               priority
             />
             {/* <span className="mt-px pl-0 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:text-[11px]">

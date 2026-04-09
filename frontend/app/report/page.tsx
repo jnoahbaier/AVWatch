@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import {
   INCIDENT_TYPE_LABELS,
-  INCIDENT_TYPE_HELP_TEXT,
   INCIDENT_TYPE_ORDER,
   REPORT_COMPANY_OPTIONS,
   REPORTER_TYPE_LABELS,
@@ -275,11 +274,11 @@ export default function ReportPage() {
                   );
                 })}
               </div>
-              {watchedType && (
+              {/* {watchedType && (
                 <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                   {INCIDENT_TYPE_HELP_TEXT[watchedType]}
                 </p>
-              )}
+              )} */}
               {errors.incident_type && (
                 <p className="mt-2 text-sm text-red-500">Required</p>
               )}
@@ -481,9 +480,6 @@ export default function ReportPage() {
                 {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
                 {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
               </button>
-              <p className="mt-3 text-center text-xs text-slate-400">
-                Anonymous by default · no account required · your location is never tracked
-              </p>
             </div>
           </div>
         </form>
