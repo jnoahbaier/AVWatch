@@ -30,7 +30,8 @@ function LoginContent() {
         <div className="text-center mb-8">
           <div className="mb-3 flex justify-center">
             <Image
-              src="/navbar_logo.png"
+              src="/navbar_logo_alt_ucb.png"
+              // src="/navbar_logo_alt_ucb.png"
               alt="AV Watch logo"
               width={160}
               height={40}
