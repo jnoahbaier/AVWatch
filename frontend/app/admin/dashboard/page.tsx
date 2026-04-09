@@ -50,10 +50,15 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 const TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
   near_miss: 'Near Miss',
-  sudden_behavior: 'Driving Incident',
-  blockage: 'Blockage',
+  sudden_behavior: 'Reckless Driving',
+  blockage: 'Blocking Traffic',
   vandalism: 'Vandalism',
   other: 'Other',
+};
+
+const REPORTER_TYPE_LABELS: Record<string, string> = {
+  directly_involved: 'Directly involved',
+  bystander: 'Bystander',
 };
 
 // ─── Detail Modal ─────────────────────────────────────────────────────────────
@@ -132,7 +137,12 @@ function DetailModal({
               { label: 'Location', value: incident.address ?? incident.city },
               { label: 'City', value: incident.city },
               { label: 'Source', value: incident.source },
-              { label: 'Reporter type', value: incident.reporter_type ?? '—' },
+              {
+                label: 'Reporter type',
+                value: incident.reporter_type
+                  ? REPORTER_TYPE_LABELS[incident.reporter_type] ?? incident.reporter_type
+                  : '—',
+              },
               { label: 'Lat / Lng', value: `${incident.latitude.toFixed(5)}, ${incident.longitude.toFixed(5)}` },
               { label: 'IP hash', value: incident.reporter_ip_hash ? incident.reporter_ip_hash.slice(0, 12) + '…' : '—' },
             ].map(({ label, value }) => (

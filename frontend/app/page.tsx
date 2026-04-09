@@ -31,7 +31,6 @@ import {
   INCIDENT_TYPE_HELP_TEXT,
   INCIDENT_TYPE_ORDER,
   REPORT_COMPANY_OPTIONS,
-  REPORTER_TYPE_LABELS,
 } from '@/lib/utils';
 
 import { BulletinCard, type BulletinItem } from '@/components/bulletin/BulletinCard';
@@ -56,6 +55,11 @@ const INCIDENT_ICONS = {
 };
 
 const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-400';
+const REPORTER_CONTEXT_OPTIONS = [
+  { value: 'directly_involved', label: 'I was directly involved' },
+  { value: 'bystander', label: 'I was a bystander' },
+] as const;
+type ReporterContextOption = (typeof REPORTER_CONTEXT_OPTIONS)[number]['value'];
 const emptyToUndefined = (value: unknown) =>
   value === '' || value === null ? undefined : value;
 
@@ -73,7 +77,6 @@ const reportSchema = z.object({
     z.enum(['waymo', 'zoox', 'tesla', 'other', 'unknown']).optional()
   ),
   other_av_company: z.string().max(120).optional(),
-  other_reporter_type: z.string().max(120).optional(),
   description: z.string().max(2000).optional(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
@@ -82,7 +85,7 @@ const reportSchema = z.object({
   occurred_at: z.string(),
   reporter_type: z.preprocess(
     emptyToUndefined,
-    z.enum(['pedestrian', 'cyclist', 'driver', 'rider', 'other']).optional()
+    z.enum(['directly_involved', 'bystander']).optional()
   ),
   contact_name: z.string().optional(),
   contact_email: z.string().email().optional().or(z.literal('')),
@@ -94,11 +97,11 @@ const reportSchema = z.object({
       message: 'Please tell us what happened.',
     });
   }
-  if (data.reporter_type === 'other' && !data.other_reporter_type?.trim()) {
+  if (!data.reporter_type) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      path: ['other_reporter_type'],
-      message: 'Please tell us your role.',
+      path: ['reporter_type'],
+      message: 'Please tell us whether you were directly involved or a bystander.',
     });
   }
   if (data.av_company === 'other' && !data.other_av_company?.trim()) {
@@ -218,7 +221,6 @@ export default function Home() {
   const watchedReporterType = watch('reporter_type');
   const watchedCompany = watch('av_company');
   const watchedDescription = watch('description');
-  const watchedOtherReporterType = watch('other_reporter_type');
   const watchedLat = watch('latitude');
   const watchedLng = watch('longitude');
   const watchedAddress = watch('address');
@@ -229,11 +231,16 @@ export default function Home() {
     typeof watchedLng === 'number' &&
     !isNaN(watchedLng);
 
+  const selectedReporterContext: ReporterContextOption | undefined =
+    watchedReporterType === 'directly_involved' || watchedReporterType === 'bystander'
+      ? watchedReporterType
+      : undefined;
+
   const toggleChoice = (
     field: 'incident_type' | 'reporter_type' | 'av_company',
     currentValue: string | undefined,
     nextValue: string,
-    clearField?: 'other_reporter_type' | 'other_av_company'
+    clearField?: 'other_av_company'
   ) => {
     handleFormInteraction();
     const shouldClear = currentValue === nextValue;
@@ -251,6 +258,17 @@ export default function Home() {
         shouldValidate: true,
       });
     }
+  };
+
+  const toggleReporterContext = (label: ReporterContextOption) => {
+    handleFormInteraction();
+    const shouldClear = selectedReporterContext === label;
+
+    setValue('reporter_type', (shouldClear ? undefined : label) as never, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
   };
 
   const getLocation = () => {
@@ -374,9 +392,6 @@ export default function Home() {
         data.av_company === 'other' && data.other_av_company?.trim()
           ? `AV company: ${data.other_av_company.trim()}`
           : null,
-        data.reporter_type === 'other' && data.other_reporter_type?.trim()
-          ? `Reporter role: ${data.other_reporter_type.trim()}`
-          : null,
         data.description?.trim() ? data.description.trim() : null,
       ].filter(Boolean);
 
@@ -428,8 +443,11 @@ export default function Home() {
       return;
     }
 
-    if (invalidErrors.other_reporter_type?.message) {
-      setSubmitError(invalidErrors.other_reporter_type.message);
+    if (invalidErrors.reporter_type?.message) {
+      setSubmitError(
+        invalidErrors.reporter_type?.message ??
+          'Please tell us whether you were directly involved or a bystander.'
+      );
       reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -462,11 +480,6 @@ export default function Home() {
       return;
     }
 
-    if (watchedReporterType === 'other' && !watchedOtherReporterType?.trim()) {
-      reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return;
-    }
-
     if (watchedCompany === 'other') {
       reporterSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -480,8 +493,8 @@ export default function Home() {
     setIsCertified(false);
     reset({
       av_company: undefined,
+      reporter_type: undefined,
       other_av_company: '',
-      other_reporter_type: '',
       description: '',
       occurred_at: getLocalDateTimeValue(),
     });
@@ -537,8 +550,8 @@ export default function Home() {
               {/* Trust indicators */}
               <div className="hidden md:flex flex-wrap gap-3 mb-10">
                 {[
+                  // { icon: GraduationCap, label: 'UC Berkeley Research' },
                   { icon: UserX, label: 'Fully anonymous' },
-                  { icon: GraduationCap, label: 'UC Berkeley Research' },
                   { icon: ShieldCheck, label: 'No account needed' },
                 ].map(({ icon: Icon, label }) => (
                   <div
@@ -929,55 +942,36 @@ export default function Home() {
                         />
                       </div>
                     </div>
-
-                    {/* Section 3: Your role */}
-                    <div ref={reporterSectionRef} className="p-6">
+                    
+                    {/* TODO: Decide whether to keep the reporter role question in the homepage form. */}
+                    <div ref={reporterSectionRef} className="px-6 pt-6 pb-8">
                       <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
                         Which best describes you? <span className="text-red-500">*</span>
                       </p>
                       <input type="hidden" {...register('reporter_type')} />
                       <div className="flex flex-wrap gap-2">
-                        {Object.entries(REPORTER_TYPE_LABELS).map(
-                          ([value, label]) => (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() =>
-                                toggleChoice(
-                                  'reporter_type',
-                                  watchedReporterType,
-                                  value as Exclude<ReportFormData['reporter_type'], undefined>,
-                                  'other_reporter_type'
-                                )
-                              }
-                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
-                                watchedReporterType === value
-                                  ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
-                                  : 'border-slate-200 text-slate-600 hover:border-blue-300'
-                              }`}
-                            >
-                                {label}
-                            </button>
-                          )
-                        )}
+                        {REPORTER_CONTEXT_OPTIONS.map(({ value, label }) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => toggleReporterContext(value)}
+                            className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                              selectedReporterContext === value
+                                ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
+                                : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
                       </div>
-                      {watchedReporterType === 'other' && (
-                        <div className="mt-3">
-                          <input
-                            type="text"
-                            {...register('other_reporter_type', { onChange: handleFormInteraction })}
-                            placeholder="Briefly describe your role"
-                            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:border-transparent focus:ring-2 focus:ring-[#5B9DFF]"
-                          />
-                          {errors.other_reporter_type && (
-                            <p className="mt-2 text-xs text-red-500">
-                              {errors.other_reporter_type.message}
-                            </p>
-                          )}
-                        </div>
+                      {errors.reporter_type && (
+                        <p className="mt-2 text-xs text-red-500">
+                          {errors.reporter_type.message}
+                        </p>
                       )}
 
-                      <div className="mt-6">
+                      <div className="mt-6 -mx-6 border-t border-slate-100 px-6 pt-6">
                         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
                           Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                         </p>
@@ -1110,7 +1104,7 @@ export default function Home() {
                               Additional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
-                              Add contact info if you&apos;d like us to follow up and verify the report.
+                              Add your contact info if you&apos;d like us to follow up and verify the report.
                             </p>
                           </div>
                           <span className="text-slate-400 transition-transform duration-150 group-open:-rotate-90 group-open:text-[#5B9DFF]">
@@ -1285,7 +1279,7 @@ export default function Home() {
           </div>
 
           {reportInitialLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse">
                   <div className="h-44 bg-slate-200" />
@@ -1301,7 +1295,7 @@ export default function Home() {
             <p className="text-slate-400 text-sm">No reports yet.</p>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {reportItems.map((item) => (
                   <BulletinCard key={item.id} item={item} />
                 ))}

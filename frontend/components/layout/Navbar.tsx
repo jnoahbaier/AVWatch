@@ -28,6 +28,7 @@ export function Navbar() {
           <Link href="/" className="flex items-center">
             <Image
               src="/navbar_logo.png"
+              // src="/navbar_logo_alt_ucb.png"
               alt="AV Watch logo"
               width={160}
               height={40}
