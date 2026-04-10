@@ -19,7 +19,7 @@ export default function NewsPage() {
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-[#5B9DFF] transition mb-6"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to home
+            Back
           </Link>
           <h1 className="text-3xl font-bold text-[#2C3E50] mb-2">
             AV News

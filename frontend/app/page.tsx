@@ -14,9 +14,10 @@ import {
   Upload,
   Camera,
   X,
-  ShieldCheck,
   GraduationCap,
-  UserX,
+  Users,
+  EyeOff,
+  LockOpen,
   Search,
   Map,
   TriangleAlert,
@@ -56,7 +57,7 @@ const INCIDENT_ICONS = {
 
 const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-400';
 const REPORTER_CONTEXT_OPTIONS = [
-  { value: 'directly_involved', label: 'Directly involved' },
+  { value: 'directly_involved', label: 'I was directly involved' },
   { value: 'bystander', label: 'I was a bystander' },
 ] as const;
 const emptyToUndefined = (value: unknown) =>
@@ -550,14 +551,17 @@ export default function Home() {
               {/* Trust indicators — desktop only */}
               <div className="flex flex-wrap gap-3 mt-2">
                 {[
-                  { icon: UserX, label: 'Fully anonymous' },
-                  { icon: ShieldCheck, label: 'No account needed' },
+                  { icon: EyeOff, label: 'Anonymous' },
+                  { icon: LockOpen, label: 'No account needed' },
+                  { icon: Users, label: 'Community-driven' },
                 ].map(({ icon: Icon, label }) => (
                   <div
                     key={label}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm text-slate-700 font-medium"
+                    className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm text-slate-700 font-medium"
                   >
-                    <Icon className="w-3.5 h-3.5 text-[#5B9DFF]" />
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: '#E6F0FA' }}>
+                      <Icon className="w-3.5 h-3.5 text-[#5B9DFF]" />
+                    </span>
                     {label}
                   </div>
                 ))}
@@ -724,11 +728,8 @@ export default function Home() {
                               }`}
                             >
                               <span
-                                className={`flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-lg border ${
-                                  watchedType === value
-                                    ? 'border-[#5B9DFF]/25 bg-[#5B9DFF]/10'
-                                    : 'border-[#5B9DFF]/20 bg-[#5B9DFF]/8'
-                                }`}
+                                className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-lg"
+                                style={{ backgroundColor: '#E6F0FA' }}
                               >
                                 {(() => {
                                   const Icon = INCIDENT_ICONS[value as keyof typeof INCIDENT_ICONS];
@@ -1112,7 +1113,8 @@ export default function Home() {
                               Additional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
-                              Add your contact info if you&apos;d like us to follow up and verify the report.
+                              {/* Add your contact info if you&apos;d like us to follow up and verify the report. */}
+                              Add your contact info if we can follow up to verify your report.
                             </p>
                           </div>
                           <span className="text-slate-400 transition-transform duration-150 group-open:rotate-180 group-open:text-[#5B9DFF]">
@@ -1256,7 +1258,8 @@ export default function Home() {
               </p>
               <p>
                 {/* Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them. */}
-                Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles.
+                {/* Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles. */}
+                AV Watch is the world’s first platform dedicated to autonomous vehicle incident reporting from anyone, anywhere. By bringing together the voices of our communities, we empower them to better understand what really happens on our roads. 
               </p>
               <p className="hidden lg:block">
                 AV Watch is built by a team of independent researchers at UC Berkeley&apos;s School of Information.

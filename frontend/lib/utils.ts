@@ -106,8 +106,8 @@ export const REPORT_COMPANY_OPTIONS: { value: string; label: string }[] = [
   { value: 'waymo', label: 'Waymo' },
   { value: 'zoox', label: 'Zoox' },
   { value: 'tesla', label: 'Tesla' },
-  { value: 'unknown', label: 'Unsure' },
   { value: 'other', label: 'Other' },
+  { value: 'unknown', label: 'Unsure' },
 ];
 
 /**
