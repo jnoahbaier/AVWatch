@@ -3,8 +3,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { usePathname } from 'next/navigation';
+
+function scrollToReportSection() {
+  document.getElementById('report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 const navigation = [
   { name: 'Recent Reports', href: '/#reports' },
@@ -15,6 +19,16 @@ const navigation = [
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  const goToReportSection = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    if (pathname === '/') {
+      scrollToReportSection();
+    } else {
+      window.location.assign('/#report');
+    }
+  };
 
   if (pathname?.startsWith('/admin')) return null;
 
@@ -38,8 +52,11 @@ export function Navbar() {
               <img
                 src="/Berkeley I School Logo Blue.png"
                 alt="UC Berkeley School of Information"
-                className="w-auto block h-[24px] sm:h-[26px]"
-                style={{ transform: 'translateY(0px)' }}
+                width={160}
+                height={26}
+                className="w-auto block h-[24px] sm:h-[26px] max-h-[26px] object-contain object-left"
+                /* If Tailwind fails to load, keep logo from rendering at intrinsic PNG size */
+                style={{ maxHeight: 26, width: 'auto', height: 'auto', objectFit: 'contain' }}
               />
             </div>
           </Link>
@@ -67,6 +84,7 @@ export function Navbar() {
             )}
             <a
               href="/#report"
+              onClick={goToReportSection}
               className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-lg transition"
             >
               Report an Incident
@@ -111,7 +129,7 @@ export function Navbar() {
               <div className="pt-2 px-1">
                 <a
                   href="/#report"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={goToReportSection}
                   className="block rounded-lg bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-2.5 text-center text-sm font-semibold text-white transition"
                 >
                   Report an Incident

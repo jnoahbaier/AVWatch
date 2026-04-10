@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { flushSync } from 'react-dom';
+import { usePathname } from 'next/navigation';
 import { Controller, type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -114,12 +116,124 @@ const reportSchema = z.object({
 
 type ReportFormData = z.infer<typeof reportSchema>;
 
+/** Reel order 9→0 top-to-bottom so when the strip moves down, the next digit drops in from above the window. */
+const ODOMETER_REEL = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
+
+function reelOffsetY(d: number) {
+  return -(9 - d);
+}
+
+/** One reel: vertical strip; new digit rolls in from above (split-flap / mechanical style). */
+function OdometerDigit({
+  from,
+  to,
+  delayMs,
+  durationMs,
+}: {
+  from: number;
+  to: number;
+  delayMs: number;
+  durationMs: number;
+}) {
+  const stripRef = useRef<HTMLSpanElement>(null);
+
+  /* Web Animations API is reliable when CSS transitions are skipped (flushSync, mobile, overflow parents). */
+  useLayoutEffect(() => {
+    if (from === to) return;
+    const strip = stripRef.current;
+    if (!strip) return;
+
+    strip.style.transition = '';
+    strip.style.transform = `translateY(${reelOffsetY(from)}em)`;
+    void strip.offsetHeight;
+
+    const fromTf = `translateY(${reelOffsetY(from)}em)`;
+    const toTf = `translateY(${reelOffsetY(to)}em)`;
+
+    let anim: Animation | null = null;
+    if (typeof strip.animate === 'function') {
+      anim = strip.animate(
+        [{ transform: fromTf }, { transform: toTf }],
+        {
+          duration: durationMs,
+          delay: delayMs,
+          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+          fill: 'forwards',
+        }
+      );
+    } else {
+      strip.style.transition = `transform ${durationMs}ms cubic-bezier(0.22, 1, 0.36, 1) ${delayMs}ms`;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          strip.style.transform = toTf;
+        });
+      });
+    }
+
+    return () => {
+      anim?.cancel();
+      strip.style.transition = '';
+      strip.style.transform = '';
+    };
+  }, [from, to, delayMs, durationMs]);
+
+  if (from === to) {
+    return (
+      <span className="inline-flex min-w-[0.55em] justify-center">{to}</span>
+    );
+  }
+
+  return (
+    <span className="inline-block h-[1em] overflow-hidden align-baseline leading-none">
+      <span ref={stripRef} className="flex flex-col will-change-transform">
+        {ODOMETER_REEL.map((n) => (
+          <span
+            key={n}
+            className="flex h-[1em] shrink-0 items-center justify-center"
+          >
+            {n}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+/** Mechanical-style counter: digits roll top-to-bottom with stagger (rightmost column first). */
+function OdometerWeeklyCount({ from, to }: { from: number; to: number }) {
+  const maxLen = Math.max(String(from).length, String(to).length, 1);
+  const fromStr = from.toString().padStart(maxLen, '0');
+  const toStr = to.toString().padStart(maxLen, '0');
+  const DIGIT_MS = 1200;
+  const STAGGER_MS = 160;
+
+  return (
+    <span className="inline-flex items-baseline gap-0.5 tabular-nums">
+      {Array.from({ length: maxLen }, (_, i) => {
+        const fd = parseInt(fromStr[i]!, 10);
+        const td = parseInt(toStr[i]!, 10);
+        const delayMs = (maxLen - 1 - i) * STAGGER_MS;
+        return (
+          <OdometerDigit
+            key={`${i}-${from}-${to}`}
+            from={fd}
+            to={td}
+            delayMs={delayMs}
+            durationMs={DIGIT_MS}
+          />
+        );
+      })}
+    </span>
+  );
+}
+
 function getLocalDateTimeValue(date = new Date()) {
   const offsetMs = date.getTimezoneOffset() * 60_000;
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
 export default function Home() {
+  const pathname = usePathname();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [locationStatus, setLocationStatus] = useState<
@@ -158,6 +272,38 @@ export default function Home() {
   }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [weeklyReportsThisWeek, setWeeklyReportsThisWeek] = useState<number | null>(null);
+  const [successCountRange, setSuccessCountRange] = useState<{
+    from: number;
+    to: number;
+  } | null>(null);
+
+  const fetchWeeklyReportCount = useCallback(async () => {
+    try {
+      const res = await fetch('/api/stats/weekly-reports', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = (await res.json()) as { count?: number };
+      if (typeof data.count === 'number') setWeeklyReportsThisWeek(data.count);
+    } catch {
+      /* keep prior value */
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchWeeklyReportCount();
+  }, [fetchWeeklyReportCount]);
+
+  /** Landing with /#report (e.g. from another page) should scroll past the fixed header */
+  useEffect(() => {
+    if (pathname !== '/') return;
+    if (typeof window === 'undefined') return;
+    if (window.location.hash !== '#report') return;
+    const t = window.setTimeout(() => {
+      document.getElementById('report')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => clearTimeout(t);
+  }, [pathname]);
 
   useEffect(() => {
     const el = carRef.current;
@@ -423,8 +569,27 @@ export default function Home() {
         reporter_type: data.reporter_context ?? null,
       });
 
-      setIsSuccess(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const beforeWeekly = weeklyReportsThisWeek ?? 0;
+      const resWeekly = await fetch('/api/stats/weekly-reports', { cache: 'no-store' });
+      /* At least +1 for the submission we just made; avoids stale API count skipping the odometer */
+      let afterWeekly = beforeWeekly + 1;
+      if (resWeekly.ok) {
+        const j = (await resWeekly.json()) as { count?: number };
+        if (typeof j.count === 'number') {
+          afterWeekly = Math.max(j.count, beforeWeekly + 1);
+          setWeeklyReportsThisWeek(afterWeekly);
+        }
+      }
+      flushSync(() => {
+        setSuccessCountRange({ from: beforeWeekly, to: afterWeekly });
+        setIsSuccess(true);
+      });
+      /* Center the counter in the viewport (important for narrow / mobile layouts) — no rAF delay */
+      document.getElementById('success-weekly-count')?.scrollIntoView({
+        behavior: 'auto',
+        block: 'center',
+        inline: 'nearest',
+      });
     } catch (error) {
       setSubmitError(
         error instanceof Error
@@ -488,6 +653,7 @@ export default function Home() {
 
   const handleReset = () => {
     setIsSuccess(false);
+    setSuccessCountRange(null);
     setLocationStatus('idle');
     setSelectedFiles([]);
     setSubmitError(null);
@@ -507,7 +673,7 @@ export default function Home() {
       {/* ─────────────────────── HERO / REPORT ─────────────────────── */}
       <section
         id="report"
-        className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50"
+        className="relative scroll-mt-24 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50"
       >
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60" />
@@ -547,6 +713,15 @@ export default function Home() {
                   Report it here to make autonomous driving safer for everyone.
                 </p>
 
+                {weeklyReportsThisWeek != null && (
+                  <p className="text-sm text-slate-500 mt-1 mb-3">
+                    <span className="font-semibold tabular-nums text-[#2C3E50]">
+                      {weeklyReportsThisWeek}
+                    </span>{' '}
+                    reports submitted this week
+                  </p>
+                )}
+
               {/* Trust indicators — desktop only */}
               <div className="flex flex-wrap gap-3 mt-2">
                 {[
@@ -582,12 +757,12 @@ export default function Home() {
             </div>
 
             {/* ── RIGHT: Report Form ── */}
-            <div id="report-form" className="lg:sticky lg:top-24">
+            <div id="report-form" className="scroll-mt-20 lg:sticky lg:top-24">
               {isSuccess ? (
-                /* Success state */
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                /* Success state — avoid overflow-hidden on the whole card: it can clip transformed odometer reels */
+                <div className="rounded-2xl shadow-xl border border-slate-100 overflow-visible">
                   {/* Header */}
-                  <div className="bg-[#5B9DFF] px-8 py-8 text-center">
+                  <div className="bg-[#5B9DFF] px-8 py-8 text-center rounded-t-2xl">
                     <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
                       <CheckCircle className="w-8 h-8 text-white" />
                     </div>
@@ -597,9 +772,27 @@ export default function Home() {
                     <p className="text-blue-100 text-sm">
                       Your report has been submitted successfully.
                     </p>
+                    {successCountRange && (
+                      <div
+                        id="success-weekly-count"
+                        className="mt-5 inline-flex flex-col items-center rounded-2xl bg-white/15 px-5 py-3 ring-1 ring-white/25 backdrop-blur-sm"
+                        aria-live="polite"
+                      >
+                        <span className="text-3xl font-bold text-white leading-none tracking-tight">
+                          <OdometerWeeklyCount
+                            key={`${successCountRange.from}-${successCountRange.to}`}
+                            from={successCountRange.from}
+                            to={successCountRange.to}
+                          />
+                        </span>
+                        <span className="mt-1 text-xs font-medium text-blue-100/95">
+                          reports submitted this week
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="px-8 py-6">
+                  <div className="rounded-b-2xl bg-white px-8 py-6 overflow-hidden">
                     <p className="text-slate-600 text-sm text-center mb-6">
                       Here&apos;s what happens next with your report:
                     </p>
