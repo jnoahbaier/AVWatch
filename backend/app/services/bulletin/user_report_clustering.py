@@ -5,20 +5,28 @@ Runs every 30 minutes. Two passes:
   Pass A — Match clusters of user reports against existing Reddit bulletin items.
   Pass B — Turn large-enough clusters of user reports into brand new bulletin items.
 
+Pass B uses location + time proximity and Gemini semantic similarity to cluster reports,
+rather than requiring an exact match on company/incident_type. This handles cases where
+reporters describe the same event differently (e.g. "reckless driving" vs "collision",
+or "Waymo" vs "unknown").
+
 Privacy: exact coordinates are never written to bulletin_items. Only a
 neighborhood-level location string is derived and stored.
 """
 
+import json
 import logging
 import math
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID
 
+import httpx
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import async_session_maker
 from app.models.bulletin_item import BulletinItem
 from app.models.incident import Incident
@@ -32,10 +40,10 @@ TIME_WINDOW_HOURS = 2         # reports within this window = same incident
 LOOK_BACK_HOURS = 48          # how far back to scan for unmatched reports
 LOCATION_RADIUS_METERS = 500  # reports within this radius = same location
 
-# Incident types too vague to cluster meaningfully
-SKIP_TYPES = {"other"}
-# Companies too vague to cluster meaningfully
-SKIP_COMPANIES = {"unknown", None}
+# Companies too vague to cluster meaningfully for Pass A (Reddit boosting)
+SKIP_COMPANIES_PASS_A = {"unknown", None}
+# Incident types too vague to match against Reddit items
+SKIP_TYPES_PASS_A = {"other"}
 
 
 # ── Geo helpers ───────────────────────────────────────────────────────────────
@@ -130,6 +138,21 @@ def _make_summary(count: int, company: str, incident_type: str) -> str:
     )
 
 
+def _majority_value(values: list[Optional[str]], fallback: str) -> str:
+    """
+    Return the most common non-null, non-vague value from the list.
+    Falls back to the most common value overall, then to fallback.
+    """
+    vague = {"unknown", "other", None}
+    specific = [v for v in values if v not in vague]
+    if specific:
+        return Counter(specific).most_common(1)[0][0]
+    all_vals = [v for v in values if v]
+    if all_vals:
+        return Counter(all_vals).most_common(1)[0][0]
+    return fallback
+
+
 # ── Core clustering logic ─────────────────────────────────────────────────────
 
 class UserReportClusteringService:
@@ -165,16 +188,11 @@ class UserReportClusteringService:
 
     async def _fetch_unmatched_reports(self, db: AsyncSession) -> list[Incident]:
         cutoff = datetime.now(timezone.utc) - timedelta(hours=LOOK_BACK_HOURS)
-        skip_types = list(SKIP_TYPES)
-        skip_companies = [c for c in SKIP_COMPANIES if c is not None]
         stmt = select(Incident).where(
             and_(
                 Incident.source == "user_report",
                 Incident.matched_bulletin_item_id.is_(None),
                 Incident.occurred_at >= cutoff,
-                Incident.incident_type.not_in(skip_types),
-                Incident.av_company.isnot(None),
-                Incident.av_company.not_in(skip_companies),
             )
         )
         result = await db.execute(stmt)
@@ -188,24 +206,29 @@ class UserReportClusteringService:
         reports_with_coords: list[tuple[Incident, tuple[float, float]]],
     ) -> tuple[int, set[UUID]]:
         """
-        For each cluster of ≥MIN_REPORTS_TO_BOOST distinct-IP reports, look for
-        an existing Reddit-sourced bulletin item covering the same event and boost it.
+        For each cluster of ≥MIN_REPORTS_TO_BOOST distinct-IP reports with a known
+        company/type, look for an existing Reddit-sourced bulletin item and boost it.
         Returns (number of items boosted, set of incident IDs consumed).
         """
-        clusters = self._build_clusters(reports_with_coords, MIN_REPORTS_TO_BOOST)
+        # Pass A still groups by company+type since Reddit items have known company/type.
+        # Exclude vague company/type from this pass only.
+        eligible = [
+            (r, c) for r, c in reports_with_coords
+            if r.av_company not in SKIP_COMPANIES_PASS_A
+            and r.incident_type not in SKIP_TYPES_PASS_A
+        ]
+        clusters = self._build_typed_clusters(eligible, MIN_REPORTS_TO_BOOST)
         boosted_count = 0
         consumed_ids: set[UUID] = set()
 
         for cluster_key, cluster_reports in clusters.items():
             company, incident_type, _ = cluster_key
-            # Find a matching Reddit bulletin item
             bulletin_item = await self._find_reddit_bulletin_item(
                 db, company, incident_type, cluster_reports
             )
             if bulletin_item is None:
                 continue
 
-            # Append user report IDs that aren't already tracked
             existing = set(bulletin_item.user_report_ids or [])
             new_ids = [str(r.id) for r, _ in cluster_reports if str(r.id) not in existing]
             if not new_ids:
@@ -214,11 +237,9 @@ class UserReportClusteringService:
             bulletin_item.user_report_ids = list(existing) + new_ids
             bulletin_item.signal_count = (bulletin_item.signal_count or 0) + len(new_ids)
 
-            # Mark hot if 5+ distinct user reports now corroborate this item
             if len(bulletin_item.user_report_ids) >= 5:
                 bulletin_item.is_hot = True
 
-            # Mark incidents as corroborated
             for r, _ in cluster_reports:
                 r.status = "corroborated"
                 r.matched_bulletin_item_id = bulletin_item.id
@@ -257,7 +278,7 @@ class UserReportClusteringService:
         result = await db.execute(stmt)
         return result.scalars().first()
 
-    # ── Pass B: create new bulletin items from large clusters ─────────────────
+    # ── Pass B: create new bulletin items from large spatial clusters ──────────
 
     async def _pass_b(
         self,
@@ -267,23 +288,40 @@ class UserReportClusteringService:
         """
         For each cluster of ≥MIN_CLUSTER_SIZE distinct-IP reports that didn't match
         a Reddit item, create a new community-sourced bulletin item.
+
+        Clustering is based on location + time only — company and incident_type are
+        NOT required to match. A Gemini semantic similarity check on the descriptions
+        confirms the reports are talking about the same event.
         """
-        clusters = self._build_clusters(reports_with_coords, MIN_CLUSTER_SIZE)
+        clusters = self._build_spatial_clusters(reports_with_coords, MIN_CLUSTER_SIZE)
         created_count = 0
 
-        for cluster_key, cluster_reports in clusters.items():
-            company, incident_type, _ = cluster_key
+        for cluster_reports in clusters:
+            # Semantic similarity check: do these descriptions describe the same event?
+            descriptions = [r.description for r, _ in cluster_reports if r.description]
+            is_same_incident = await self._check_semantic_similarity(descriptions)
+            if not is_same_incident:
+                logger.info(
+                    f"Pass B: cluster of {len(cluster_reports)} reports failed semantic "
+                    "similarity check — skipping (likely unrelated events at same location)"
+                )
+                continue
+
+            # Derive company and incident_type by majority vote
+            company = _majority_value(
+                [r.av_company for r, _ in cluster_reports], fallback="unknown"
+            )
+            incident_type = _majority_value(
+                [r.incident_type for r, _ in cluster_reports], fallback="other"
+            )
+
             coords_list = [c for _, c in cluster_reports]
             clat, clon = _centroid(coords_list)
-
-            # Use city from first report as fallback
             city = cluster_reports[0][0].city or "Unknown City"
             location_text = _neighborhood_label(clat, clon, city)
-
-            # Representative time = earliest occurred_at in cluster
             occurred_at = min(r.occurred_at for r, _ in cluster_reports)
-
             count = len(cluster_reports)
+
             bulletin_item = BulletinItem(
                 title=_make_title(company, incident_type),
                 summary=_make_summary(count, company, incident_type),
@@ -300,9 +338,8 @@ class UserReportClusteringService:
                 status="active",
             )
             db.add(bulletin_item)
-            await db.flush()  # get the ID
+            await db.flush()
 
-            # Mark incidents as corroborated
             for r, _ in cluster_reports:
                 r.status = "corroborated"
                 r.matched_bulletin_item_id = bulletin_item.id
@@ -315,23 +352,18 @@ class UserReportClusteringService:
 
         return created_count
 
-    # ── Shared clustering helper ──────────────────────────────────────────────
+    # ── Clustering helpers ────────────────────────────────────────────────────
 
-    def _build_clusters(
+    def _build_typed_clusters(
         self,
         reports_with_coords: list[tuple[Incident, tuple[float, float]]],
         min_size: int,
     ) -> dict[tuple, list[tuple[Incident, tuple[float, float]]]]:
         """
-        Group reports into clusters where each cluster shares:
-          - same av_company + incident_type
-          - occurred_at within TIME_WINDOW_HOURS of each other
-          - location within LOCATION_RADIUS_METERS of each other
-          - all distinct reporter_ip_hash values (anti-gaming)
-
-        Returns only clusters that meet min_size after IP deduplication.
+        Pass A clustering: groups by company + incident_type first, then clusters
+        spatially and temporally within each group.
+        Returns only clusters meeting min_size after IP deduplication.
         """
-        # First group by company + type
         by_type: dict[tuple, list] = defaultdict(list)
         for r, coords in reports_with_coords:
             key = (r.av_company, r.incident_type)
@@ -340,20 +372,15 @@ class UserReportClusteringService:
         valid_clusters: dict[tuple, list] = {}
 
         for (company, incident_type), group in by_type.items():
-            # Sort by occurred_at for sliding-window clustering
             group.sort(key=lambda x: x[0].occurred_at)
-
-            # Greedy clustering: assign each report to first compatible cluster
-            clusters: list[list[tuple[Incident, tuple[float, float]]]] = []
+            clusters: list[list] = []
 
             for r, coords in group:
                 placed = False
                 for cluster in clusters:
-                    # Check time window against cluster centroid time
                     cluster_times = [c[0].occurred_at for c in cluster]
                     if abs((r.occurred_at - cluster_times[0]).total_seconds()) > TIME_WINDOW_HOURS * 3600:
                         continue
-                    # Check location against cluster centroid
                     clat, clon = _centroid([c[1] for c in cluster])
                     if _haversine_m(coords[0], coords[1], clat, clon) <= LOCATION_RADIUS_METERS:
                         cluster.append((r, coords))
@@ -362,21 +389,123 @@ class UserReportClusteringService:
                 if not placed:
                     clusters.append([(r, coords)])
 
-            # For each cluster, deduplicate by IP hash, then check min_size
             for i, cluster in enumerate(clusters):
                 seen_ips: set[str] = set()
-                deduped: list[tuple[Incident, tuple[float, float]]] = []
+                deduped: list = []
                 for r, coords in cluster:
                     ip = r.reporter_ip_hash or "__no_ip"
                     if ip not in seen_ips:
                         seen_ips.add(ip)
                         deduped.append((r, coords))
-
                 if len(deduped) >= min_size:
-                    cluster_key = (company, incident_type, i)
-                    valid_clusters[cluster_key] = deduped
+                    valid_clusters[(company, incident_type, i)] = deduped
 
         return valid_clusters
+
+    def _build_spatial_clusters(
+        self,
+        reports_with_coords: list[tuple[Incident, tuple[float, float]]],
+        min_size: int,
+    ) -> list[list[tuple[Incident, tuple[float, float]]]]:
+        """
+        Pass B clustering: groups reports purely by location + time proximity,
+        ignoring company and incident_type. Semantic similarity is checked separately.
+        Returns only clusters meeting min_size after IP deduplication.
+        """
+        sorted_reports = sorted(reports_with_coords, key=lambda x: x[0].occurred_at)
+        clusters: list[list] = []
+
+        for r, coords in sorted_reports:
+            placed = False
+            for cluster in clusters:
+                cluster_times = [c[0].occurred_at for c in cluster]
+                if abs((r.occurred_at - cluster_times[0]).total_seconds()) > TIME_WINDOW_HOURS * 3600:
+                    continue
+                clat, clon = _centroid([c[1] for c in cluster])
+                if _haversine_m(coords[0], coords[1], clat, clon) <= LOCATION_RADIUS_METERS:
+                    cluster.append((r, coords))
+                    placed = True
+                    break
+            if not placed:
+                clusters.append([(r, coords)])
+
+        valid: list[list] = []
+        for cluster in clusters:
+            seen_ips: set[str] = set()
+            deduped: list = []
+            for r, coords in cluster:
+                ip = r.reporter_ip_hash or "__no_ip"
+                if ip not in seen_ips:
+                    seen_ips.add(ip)
+                    deduped.append((r, coords))
+            if len(deduped) >= min_size:
+                valid.append(deduped)
+
+        return valid
+
+    async def _check_semantic_similarity(self, descriptions: list[str]) -> bool:
+        """
+        Ask Gemini whether a list of descriptions appear to describe the same incident.
+        Returns True if they do, or if the check cannot be performed (gives benefit of the doubt).
+        """
+        if len(descriptions) < 2:
+            # 0 or 1 descriptions — can't compare, trust location proximity alone
+            return True
+
+        if not settings.GEMINI_API_KEY:
+            return True
+
+        desc_lines = "\n".join(f"- {d}" for d in descriptions[:8])
+        prompt = (
+            "You are an analyst for AVWatch, a platform that tracks autonomous vehicle incidents.\n"
+            "The following descriptions were independently submitted by different people "
+            "within 500 meters and 2 hours of each other.\n\n"
+            f"Descriptions:\n{desc_lines}\n\n"
+            "Do these descriptions appear to be referring to the same real-world incident, "
+            "even if details like the exact company name or incident type differ slightly?\n"
+            'Respond with ONLY valid JSON: {"same_incident": true or false, "reason": "one sentence"}'
+        )
+
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(
+                    "https://generativelanguage.googleapis.com/v1beta/models/"
+                    "gemini-2.5-flash:generateContent",
+                    params={"key": settings.GEMINI_API_KEY},
+                    json={
+                        "contents": [{"parts": [{"text": prompt}]}],
+                        "generationConfig": {"temperature": 0.1, "maxOutputTokens": 256},
+                    },
+                    headers={"Content-Type": "application/json"},
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                raw = (
+                    data.get("candidates", [{}])[0]
+                    .get("content", {})
+                    .get("parts", [{}])[0]
+                    .get("text", "")
+                ).strip()
+
+                # Strip markdown fences if present
+                if raw.startswith("```"):
+                    raw = "\n".join(
+                        line for line in raw.split("\n") if not line.startswith("```")
+                    ).strip()
+                brace = raw.find("{")
+                if brace > 0:
+                    raw = raw[brace:]
+
+                parsed = json.loads(raw)
+                result = bool(parsed.get("same_incident", True))
+                logger.info(
+                    f"Semantic similarity: {result} — {parsed.get('reason', '')}"
+                )
+                return result
+
+        except Exception as exc:
+            logger.warning(f"Semantic similarity check failed: {exc} — defaulting to True")
+            return True
 
 
 # ── Entry point called by scheduler ──────────────────────────────────────────
