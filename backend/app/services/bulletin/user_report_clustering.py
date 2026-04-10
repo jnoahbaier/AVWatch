@@ -129,10 +129,19 @@ def _make_title(company: str, incident_type: str) -> str:
     return f"{co} {tp} reported by community"
 
 
+def _truncate_words(text: str, max_words: int = 7) -> str:
+    """Hard cap: never let a card summary exceed max_words words."""
+    words = text.split()
+    if len(words) <= max_words:
+        return text
+    return " ".join(words[:max_words]) + "…"
+
+
 def _make_summary(count: int, company: str, incident_type: str) -> str:
     co = _COMPANY_LABELS.get(company, company.title())
     tp = _TYPE_LABELS.get(incident_type, incident_type.replace("_", " "))
-    return f"{count} community members independently reported a {co} {tp}."
+    # Format: "3 reports of Zoox sudden behavior" — always ≤7 words
+    return _truncate_words(f"{count} reports of {co} {tp}")
 
 
 def _majority_value(values: list[Optional[str]], fallback: str) -> str:
