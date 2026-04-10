@@ -242,33 +242,25 @@ export async function createIncident(incident: {
   contact_email?: string;
   media_urls?: string[];
 }) {
-  // latitude and longitude are generated columns computed from location geometry
-  // So we only insert the location field using PostGIS EWKT format
-  const { data, error } = await supabase
-    .from('incidents')
-    .insert({
-      incident_type: incident.incident_type,
-      av_company: incident.av_company || 'unknown',
-      description: incident.description,
-      location: `SRID=4326;POINT(${incident.longitude} ${incident.latitude})`,
-      address: incident.address,
-      city: incident.city || 'San Francisco',
-      occurred_at: incident.occurred_at,
-      reporter_type: incident.reporter_type,
-      source: 'user_report',
-      status: 'unverified',
-      media_urls: incident.media_urls ?? [],
-      contact_name: incident.contact_name || null,
-      contact_email: incident.contact_email || null,
-    })
-    .select()
-    .single();
+  // Server route hashes client IP (X-Forwarded-For) and inserts with service role — never trust client for reporter_ip_hash
+  const res = await fetch('/api/incidents/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(incident),
+  });
 
-  if (error) {
-    console.error('Supabase insert error:', error);
-    throw error;
+  const json = await res.json();
+
+  if (!res.ok) {
+    const err = json as { error?: string };
+    const msg =
+      typeof err.error === 'string'
+        ? err.error
+        : 'Failed to submit report. Please try again.';
+    throw new Error(msg);
   }
-  return data as Incident;
+
+  return json as Incident;
 }
 
 export async function getRecentIncidents(limit = 5) {
