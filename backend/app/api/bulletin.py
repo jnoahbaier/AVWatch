@@ -6,16 +6,22 @@ All data here was collected and processed entirely in the background pipeline â€
 the frontend just reads finished, clean results.
 """
 
+import logging
 from typing import Optional
 from uuid import UUID
 
+import httpx
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.bulletin_item import BulletinItem
+from app.models.incident import Incident
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -123,6 +129,82 @@ async def get_bulletin_item(
     if not item:
         raise HTTPException(status_code=404, detail="Bulletin item not found")
     return _serialize(item)
+
+
+@router.get("/{item_id}/narrative")
+async def get_bulletin_narrative(
+    item_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Generate a Gemini AI narrative for a community bulletin item.
+    Collects descriptions from the backing user reports and synthesizes them.
+    """
+    result = await db.execute(select(BulletinItem).where(BulletinItem.id == item_id))
+    item = result.scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=404, detail="Bulletin item not found")
+
+    if item.source_platform != "community" or not item.user_report_ids:
+        return {"narrative": item.summary}
+
+    # Fetch descriptions from the backing user reports
+    incident_ids = [UUID(rid) for rid in item.user_report_ids if rid]
+    inc_result = await db.execute(
+        select(Incident.description).where(Incident.id.in_(incident_ids))
+    )
+    descriptions = [row[0] for row in inc_result.fetchall() if row[0]]
+
+    if not descriptions:
+        return {"narrative": item.summary}
+
+    narrative = await _gemini_narrative(item, descriptions)
+    return {"narrative": narrative}
+
+
+async def _gemini_narrative(item: BulletinItem, descriptions: list[str]) -> str:
+    """Call Gemini to synthesize a narrative from community report descriptions."""
+    if not settings.GEMINI_API_KEY:
+        return item.summary
+
+    company = item.av_company or "an autonomous vehicle"
+    incident_type = (item.incident_type or "incident").replace("_", " ")
+    location = item.location_text or "an unknown location"
+    count = len(descriptions)
+    report_lines = "\n".join(f"- {d}" for d in descriptions[:10])
+
+    prompt = (
+        f"You are an analyst for AVWatch, a platform that tracks real-world autonomous vehicle incidents.\n"
+        f"{count} community members independently reported a {company} {incident_type} near {location}.\n\n"
+        f"Their descriptions (personal details removed):\n{report_lines}\n\n"
+        f"Write a neutral, factual 2â€“3 sentence summary of what likely happened based on these reports. "
+        f"Be concise and objective. Do not speculate beyond what is reported. "
+        f"Output only the summary text with no titles or headers."
+    )
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+                params={"key": settings.GEMINI_API_KEY},
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 512},
+                },
+                headers={"Content-Type": "application/json"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            text = (
+                data.get("candidates", [{}])[0]
+                .get("content", {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+            ).strip()
+            return text or item.summary
+    except Exception as exc:
+        logger.warning(f"Gemini narrative failed for {item.id}: {exc}")
+        return item.summary
 
 
 @router.post("/trigger-scan")

@@ -367,7 +367,7 @@ class UserReportClusteringService:
                 seen_ips: set[str] = set()
                 deduped: list[tuple[Incident, tuple[float, float]]] = []
                 for r, coords in cluster:
-                    ip = r.reporter_ip_hash or f"__no_ip_{r.id}"
+                    ip = r.reporter_ip_hash or "__no_ip"
                     if ip not in seen_ips:
                         seen_ips.add(ip)
                         deduped.append((r, coords))

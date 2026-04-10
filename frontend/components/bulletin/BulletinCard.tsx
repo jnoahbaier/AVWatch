@@ -1,6 +1,7 @@
 'use client';
 
-import { ExternalLink, MapPin, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ExternalLink, MapPin, Users, X } from 'lucide-react';
 
 export interface BulletinItem {
   id: string;
@@ -59,7 +60,124 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function CommunityModal({
+  item,
+  onClose,
+}: {
+  item: BulletinItem;
+  onClose: () => void;
+}) {
+  const [narrative, setNarrative] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/bulletin/${item.id}/narrative`)
+      .then((r) => r.json())
+      .then((d) => setNarrative(d.narrative ?? item.summary))
+      .catch(() => setNarrative(item.summary))
+      .finally(() => setLoading(false));
+  }, [item.id, item.summary]);
+
+  const companyColor =
+    COMPANY_COLORS[item.av_company?.toLowerCase() ?? ''] ?? COMPANY_COLORS.unknown;
+  const incidentLabel = item.incident_type
+    ? INCIDENT_TYPE_LABELS[item.incident_type] ?? capitalize(item.incident_type)
+    : null;
+  const age = timeAgo(item.first_seen_at);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header banner */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-100 px-6 pt-8 pb-6 text-center">
+          <span className="text-5xl block mb-3">
+            {item.incident_type === 'collision' ? '💥'
+              : item.incident_type === 'near_miss' ? '⚠️'
+              : item.incident_type === 'blockage' ? '🚧'
+              : item.incident_type === 'sudden_behavior' ? '❗'
+              : '🚗'}
+          </span>
+          <h2 className="text-base font-bold text-emerald-800 leading-snug">
+            {item.title}
+          </h2>
+        </div>
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/70 hover:bg-white text-slate-500 hover:text-slate-800 transition"
+          aria-label="Close"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          {/* Badges + age */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {item.av_company && (
+              <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${companyColor}`}>
+                {capitalize(item.av_company)}
+              </span>
+            )}
+            {incidentLabel && (
+              <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">
+                {incidentLabel}
+              </span>
+            )}
+            <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Community
+            </span>
+            {age && <span className="text-xs text-slate-400 ml-auto">{age}</span>}
+          </div>
+
+          {/* AI narrative */}
+          <div className="text-sm text-slate-700 leading-relaxed min-h-[60px]">
+            {loading ? (
+              <div className="flex items-center gap-2 text-slate-400 text-xs">
+                <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Generating summary…
+              </div>
+            ) : (
+              narrative
+            )}
+          </div>
+
+          {/* Footer stats */}
+          <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500">
+            {item.location_text && (
+              <div className="flex items-center gap-1">
+                <MapPin className="h-3 w-3 shrink-0" />
+                <span>{item.location_text}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1 text-emerald-600 font-semibold ml-auto">
+              <Users className="h-3.5 w-3.5" />
+              {item.user_report_count} community {item.user_report_count === 1 ? 'report' : 'reports'}
+            </div>
+          </div>
+
+          <p className="text-[10px] text-slate-400 text-center">
+            Individual reports are anonymized. No personal details are shared.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function BulletinCard({ item }: { item: BulletinItem }) {
+  const [modalOpen, setModalOpen] = useState(false);
+
   const companyColor =
     COMPANY_COLORS[item.av_company?.toLowerCase() ?? ''] ?? COMPANY_COLORS.unknown;
   const age = timeAgo(item.first_seen_at);
@@ -163,13 +281,11 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
 
           {/* Source attribution */}
           {isCommunity ? (
-            /* Pure community card — show count, no external link */
             <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
               <Users className="h-3 w-3" />
               {item.user_report_count} community {item.user_report_count === 1 ? 'report' : 'reports'}
             </div>
           ) : item.source_subreddit ? (
-            /* Reddit card — show subreddit link, and community boost count if any */
             <div className="flex items-center gap-2">
               {hasUserReports && (
                 <span className="text-xs text-emerald-600 font-medium">
@@ -197,6 +313,19 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
       >
         {cardContent}
       </a>
+    );
+  }
+
+  if (isCommunity) {
+    return (
+      <>
+        <div className="block" onClick={() => setModalOpen(true)}>
+          {cardContent}
+        </div>
+        {modalOpen && (
+          <CommunityModal item={item} onClose={() => setModalOpen(false)} />
+        )}
+      </>
     );
   }
 
