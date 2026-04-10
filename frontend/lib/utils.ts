@@ -51,7 +51,7 @@ export function formatRelativeTime(date: string | Date): string {
  */
 export const INCIDENT_TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
-  accessibility: 'Accessibility',
+  accessibility: 'Accessibility Issue',
   sudden_behavior: 'Reckless Driving',
   blockage: 'Blocking Traffic',
   vandalism: 'Vandalism',
@@ -75,7 +75,7 @@ export const INCIDENT_TYPE_HELP_TEXT: Record<string, string> = {
   collision:
     'Examples: contact with another vehicle, a person, a cyclist, an object, or property.',
   accessibility:
-    'Examples: unable to access a pickup or drop-off location due to AV positioning, AV blocking a wheelchair ramp or accessible pedestrian signal, or failure to accommodate passengers with mobility needs.',
+    'Examples: AV blocking a pickup/drop-off spot, wheelchair ramp, or accessible crossing; or failure to accommodate passengers with mobility needs.',
   vandalism:
     'Examples: graffiti, broken windows, tampering, thrown objects, or deliberate damage.',
   other:

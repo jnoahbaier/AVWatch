@@ -93,6 +93,11 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <main className="flex-1">{children}</main>
+          <footer className="bg-white border-t border-slate-200 py-8">
+            <p className="text-center text-xs text-slate-400">
+              © {new Date().getFullYear()} AV Watch · Built for safer autonomy
+            </p>
+          </footer>
         </Providers>
       </body>
     </html>

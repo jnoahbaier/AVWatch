@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
   MapPin,
-  Calendar,
   CheckCircle,
   ChevronDown,
   CarFront,
@@ -147,6 +146,7 @@ export default function Home() {
   const [reportHasMore, setReportHasMore] = useState(false);
   const [reportInitialLoading, setReportInitialLoading] = useState(true);
   const [reportLoadingMore, setReportLoadingMore] = useState(false);
+  const [mobileShowAll, setMobileShowAll] = useState(false);
   const [addressQuery, setAddressQuery] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
@@ -570,7 +570,7 @@ export default function Home() {
                 /* Success state */
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                   {/* Header */}
-                  <div className="bg-[#5B9DFF] px-8 py-8 text-center">
+                  <div className="bg-[#3A72D9] px-8 py-8 text-center">
                     <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
                       <CheckCircle className="w-8 h-8 text-white" />
                     </div>
@@ -592,31 +592,31 @@ export default function Home() {
                       {/* Step 1 — completed */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#3A72D9] text-white flex items-center justify-center text-sm font-bold shrink-0">
                             1
                           </div>
-                          <div className="w-0.5 h-6 bg-slate-200 mt-1" />
+                          <div className="w-0.5 h-6 bg-[#5B9DFF]/40 mt-1" />
                         </div>
                         <div className="pb-4 pt-1">
                           <p className="font-semibold text-slate-800 text-sm flex items-center gap-2">
                             Report received
                             <span className="text-xs font-medium text-[#5B9DFF] bg-blue-50 px-2 py-0.5 rounded-full">Done</span>
                           </p>
-                          <p className="text-slate-500 text-xs mt-0.5">Your report is stored securely in our database.</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Your report is stored in our database.</p>
                         </div>
                       </div>
 
-                      {/* Step 2 */}
+                      {/* Step 2 — up next */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-blue-50 border-2 border-[#5B9DFF] text-[#5B9DFF] flex items-center justify-center text-sm font-bold shrink-0">
                             2
                           </div>
                           <div className="w-0.5 h-6 bg-slate-200 mt-1" />
                         </div>
                         <div className="pb-4 pt-1">
-                          <p className="font-semibold text-slate-400 text-sm">Reviewed by our team</p>
-                          <p className="text-slate-400 text-xs mt-0.5">Our team checks the report for accuracy and completeness.</p>
+                          <p className="font-semibold text-slate-700 text-sm">Reviewed by our team</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Our team checks the report for accuracy and completeness.</p>
                         </div>
                       </div>
 
@@ -700,7 +700,7 @@ export default function Home() {
                                   value as Exclude<ReportFormData['incident_type'], undefined>
                                 )
                               }
-                              className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition ${
+                              className={`flex items-center gap-2 p-2.5 sm:p-3.5 rounded-xl border-2 cursor-pointer transition ${
                                 watchedType === value
                                   ? 'border-[#5B9DFF] bg-blue-50'
                                   : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -723,7 +723,7 @@ export default function Home() {
                                 })()}
                               </span>
                               <span
-                                className={`font-medium text-sm text-left ${
+                                className={`font-medium text-xs sm:text-sm text-left leading-tight ${
                                   watchedType === value
                                     ? 'text-blue-700'
                                     : 'text-slate-700'
@@ -735,7 +735,7 @@ export default function Home() {
                           );
                         })}
                       </div>
-                      {watchedType && ['sudden_behavior', 'accessibility', 'other'].includes(watchedType) && (
+                      {watchedType && ['sudden_behavior', 'accessibility'].includes(watchedType) && (
                         <p className="mt-3 text-sm leading-relaxed text-slate-600">
                           {INCIDENT_TYPE_HELP_TEXT[watchedType]}
                         </p>
@@ -915,12 +915,11 @@ export default function Home() {
                       <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
                       <input type="hidden" {...register('city')} />
 
-                      <div className="flex items-center gap-2 mt-3">
-                        <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                      <div className="mt-3">
                         <input
                           type="datetime-local"
                           {...register('occurred_at')}
-                          className="flex-1 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -1279,15 +1278,32 @@ export default function Home() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {reportItems.map((item) => (
-                  <div key={item.id}>
+                {reportItems.map((item, index) => (
+                  <div key={item.id} className={!mobileShowAll && index >= 3 ? 'hidden sm:block' : ''}>
                     <BulletinCard item={item} />
                   </div>
                 ))}
               </div>
 
-              {reportHasMore && (
-                <div className="mt-10 flex justify-center">
+              <div className="mt-10 flex justify-center gap-3">
+                {/* Mobile show more/less toggle */}
+                {!mobileShowAll && reportItems.length > 3 && (
+                  <button
+                    onClick={() => setMobileShowAll(true)}
+                    className="sm:hidden inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
+                  >
+                    Show more
+                  </button>
+                )}
+                {mobileShowAll && (
+                  <button
+                    onClick={() => setMobileShowAll(false)}
+                    className="sm:hidden inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
+                  >
+                    Show less
+                  </button>
+                )}
+                {reportHasMore && (
                   <button
                     onClick={loadMoreReports}
                     disabled={reportLoadingMore}
@@ -1295,8 +1311,21 @@ export default function Home() {
                   >
                     {reportLoadingMore ? 'Loading…' : 'Load more incidents'}
                   </button>
-                </div>
-              )}
+                )}
+                {reportItems.length > REPORTS_PAGE && (
+                  <button
+                    onClick={() => {
+                      setReportItems(prev => prev.slice(0, REPORTS_PAGE));
+                      setReportOffset(0);
+                      setReportHasMore(true);
+                      setMobileShowAll(false);
+                    }}
+                    className="hidden sm:inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
+                  >
+                    Show less
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -1404,12 +1433,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─────────────────────── FOOTER ─────────────────────── */}
-      <footer className="bg-white border-t border-slate-200 py-8">
-          <p className="text-center text-xs text-slate-400">
-            © {new Date().getFullYear()} AV Watch · Built for safer autonomy
-          </p>
-      </footer>
     </div>
   );
 }

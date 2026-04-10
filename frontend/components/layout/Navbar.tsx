@@ -67,7 +67,7 @@ export function Navbar() {
             )}
             <a
               href="/#report"
-              className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-md transition"
+              className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-lg transition"
             >
               Report
             </a>
@@ -112,7 +112,7 @@ export function Navbar() {
                 <a
                   href="/#report"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block rounded-md bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-2.5 text-center text-sm font-semibold text-white transition"
+                  className="block rounded-lg bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-2.5 text-center text-sm font-semibold text-white transition"
                 >
                   Report an Incident
                 </a>
