@@ -176,9 +176,11 @@ async def _gemini_narrative(item: BulletinItem, descriptions: list[str]) -> str:
     prompt = (
         f"You are an analyst for AVWatch, a platform that tracks real-world autonomous vehicle incidents.\n"
         f"{count} community members independently reported a {company} {incident_type} near {location}.\n\n"
-        f"Their descriptions (personal details removed):\n{report_lines}\n\n"
+        f"Their descriptions:\n{report_lines}\n\n"
         f"Write a neutral, factual 2–3 sentence summary of what likely happened based on these reports. "
         f"Be concise and objective. Do not speculate beyond what is reported. "
+        f"IMPORTANT: Remove any personal details (names, contact info, license plates, or identifying information) — "
+        f"describe only the vehicle behavior and general circumstances. "
         f"Output only the summary text with no titles or headers."
     )
 

@@ -132,10 +132,7 @@ def _make_title(company: str, incident_type: str) -> str:
 def _make_summary(count: int, company: str, incident_type: str) -> str:
     co = _COMPANY_LABELS.get(company, company.title())
     tp = _TYPE_LABELS.get(incident_type, incident_type.replace("_", " "))
-    return (
-        f"{count} community members independently reported a {co} {tp}. "
-        "No personal details are shared."
-    )
+    return f"{count} community members independently reported a {co} {tp}."
 
 
 def _majority_value(values: list[Optional[str]], fallback: str) -> str:

@@ -96,13 +96,6 @@ function CommunityModal({
       >
         {/* Header banner */}
         <div className="bg-gradient-to-br from-green-50 to-emerald-100 px-6 pt-8 pb-6 text-center">
-          <span className="text-5xl block mb-3">
-            {item.incident_type === 'collision' ? '💥'
-              : item.incident_type === 'near_miss' ? '⚠️'
-              : item.incident_type === 'blockage' ? '🚧'
-              : item.incident_type === 'sudden_behavior' ? '❗'
-              : '🚗'}
-          </span>
           <h2 className="text-base font-bold text-emerald-800 leading-snug">
             {item.title}
           </h2>
@@ -210,15 +203,8 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
             ? 'bg-gradient-to-br from-green-50 to-emerald-100'
             : 'bg-gradient-to-br from-slate-100 to-slate-200'
         }`}>
-          <span className="text-5xl mb-3">
-            {item.incident_type === 'collision' ? '💥'
-              : item.incident_type === 'near_miss' ? '⚠️'
-              : item.incident_type === 'blockage' ? '🚧'
-              : item.incident_type === 'sudden_behavior' ? '❗'
-              : '🚗'}
-          </span>
-          <p className={`text-sm font-semibold text-center line-clamp-2 ${isCommunity ? 'text-emerald-700' : 'text-slate-600'}`}>
-            {item.title}
+          <p className={`text-sm font-semibold text-center line-clamp-3 ${isCommunity ? 'text-emerald-700' : 'text-slate-600'}`}>
+            {item.summary}
           </p>
         </div>
       )}
