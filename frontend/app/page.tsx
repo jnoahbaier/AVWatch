@@ -21,8 +21,8 @@ import {
   Map,
   TriangleAlert,
   TrafficCone,
-  ShieldAlert,
-  HeartPulse,
+  SprayCan,
+  Accessibility,
   CircleHelp,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -49,14 +49,14 @@ const INCIDENT_ICONS = {
   sudden_behavior: CarFront,
   blockage: TrafficCone,
   collision: TriangleAlert,
-  injury: HeartPulse,
-  vandalism: ShieldAlert,
+  accessibility: Accessibility,
+  vandalism: SprayCan,
   other: CircleHelp,
 };
 
 const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-400';
 const REPORTER_CONTEXT_OPTIONS = [
-  { value: 'directly_involved', label: 'I was directly involved' },
+  { value: 'directly_involved', label: 'Directly involved' },
   { value: 'bystander', label: 'I was a bystander' },
 ] as const;
 const emptyToUndefined = (value: unknown) =>
@@ -65,7 +65,7 @@ const emptyToUndefined = (value: unknown) =>
 const reportSchema = z.object({
   incident_type: z.enum([
     'collision',
-    'injury',
+    'accessibility',
     'sudden_behavior',
     'blockage',
     'vandalism',
@@ -521,20 +521,18 @@ export default function Home() {
 
             {/* ── LEFT: copy + imagery ── */}
             <div className="pt-4 flex flex-col">
-              <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
-                Witnessed an<br />
-                <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
-              </h1>
+                <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
+                  Witnessed an<br />
+                  <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
+                </h1>
 
-              <p className="text-xl text-slate-600 mb-4 md:mb-8 max-w-lg leading-relaxed">
-                Help make autonomous driving safer for everyone. Report
-                incidents in under 30 seconds.
-              </p>
+                <p className="text-xl text-slate-600 mb-3 leading-relaxed">
+                  Report it here to make autonomous driving safer for everyone.
+                </p>
 
-              {/* Trust indicators */}
-              <div className="hidden md:flex flex-wrap gap-3 mb-10">
+              {/* Trust indicators — desktop only */}
+              <div className="hidden md:flex flex-wrap gap-3 mt-2">
                 {[
-                  // { icon: GraduationCap, label: 'UC Berkeley Research' },
                   { icon: UserX, label: 'Fully anonymous' },
                   { icon: ShieldCheck, label: 'No account needed' },
                 ].map(({ icon: Icon, label }) => (
@@ -551,7 +549,7 @@ export default function Home() {
               {/* AV car imagery — drives in from left on scroll (desktop only) */}
               <div
                 ref={carRef}
-                className={`hidden md:block relative mt-6 lg:mt-16 lg:-mr-32 lg:-translate-y-16 xl:-translate-y-20 transition-all duration-[1100ms] ease-out ${
+                className={`hidden md:block relative mt-20 lg:mt-24 lg:-mr-32 lg:-translate-y-16 xl:-translate-y-20 transition-all duration-[1100ms] ease-out ${
                   carInView
                     ? 'translate-x-0 opacity-100'
                     : 'lg:-translate-x-full opacity-0'
@@ -564,11 +562,10 @@ export default function Home() {
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
               </div>
-
             </div>
 
             {/* ── RIGHT: Report Form ── */}
-            <div className="lg:sticky lg:top-24">
+            <div id="report-form" className="lg:sticky lg:top-24">
               {isSuccess ? (
                 /* Success state */
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
@@ -646,7 +643,7 @@ export default function Home() {
                         </div>
                         <div className="pt-1">
                           <p className="font-semibold text-slate-400 text-sm">Shared with regulators</p>
-                          <p className="text-slate-400 text-xs mt-0.5">Validated reports are forwarded to the CA DMV and relevant agencies.</p>
+                          <p className="text-slate-400 text-xs mt-0.5">Validated reports are forwarded to relevant agencies.</p>
                         </div>
                       </div>
                     </div>
@@ -656,7 +653,7 @@ export default function Home() {
                       <a
                         href="#reports"
                         onClick={handleReset}
-                        className="block w-full px-5 py-3 bg-[#5B9DFF] hover:bg-blue-600 text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
+                        className="block w-full px-5 py-3 bg-[#5B9DFF] hover:bg-[#3A72D9] text-white rounded-xl font-semibold text-sm text-center transition shadow-sm"
                       >
                         View Recent Incidents
                       </a>
@@ -685,7 +682,7 @@ export default function Home() {
 
                     {/* Section 1: What happened */}
                     <div ref={incidentSectionRef} className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">
                         What happened? <span className="text-red-500">*</span>
                       </p>
                       <input type="hidden" {...register('incident_type')} />
@@ -720,9 +717,7 @@ export default function Home() {
                                   const Icon = INCIDENT_ICONS[value as keyof typeof INCIDENT_ICONS];
                                   return (
                                     <Icon
-                                      className={`h-5.5 w-5.5 ${
-                                        watchedType === value ? 'text-[#5B9DFF]' : 'text-[#5B9DFF]'
-                                      }`}
+                                      className={`h-5.5 w-5.5 text-[#5B9DFF]${value === 'vandalism' ? ' -scale-x-100' : ''}`}
                                     />
                                   );
                                 })()}
@@ -740,8 +735,8 @@ export default function Home() {
                           );
                         })}
                       </div>
-                      {watchedType && ['sudden_behavior', 'other'].includes(watchedType) && (
-                        <p className="mt-3 text-sm leading-relaxed text-slate-500">
+                      {watchedType && ['sudden_behavior', 'accessibility', 'other'].includes(watchedType) && (
+                        <p className="mt-3 text-sm leading-relaxed text-slate-600">
                           {INCIDENT_TYPE_HELP_TEXT[watchedType]}
                         </p>
                       )}
@@ -769,7 +764,7 @@ export default function Home() {
 
                     {/* Section 2: Location & time */}
                     <div ref={locationSectionRef} className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">
                         Where &amp; when? <span className="text-red-500">*</span>
                       </p>
 
@@ -787,7 +782,7 @@ export default function Home() {
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition ${
                               locationMethod === id
                                 ? 'bg-blue-50 text-blue-700 border-b-2 border-[#5B9DFF]'
-                                : 'text-slate-500 hover:bg-slate-50'
+                                : 'text-slate-600 hover:bg-slate-50'
                             }`}
                           >
                             <Icon className="w-3.5 h-3.5" />
@@ -932,14 +927,14 @@ export default function Home() {
                     
                     {/* Section 3: Reporter context */}
                     <div ref={reporterSectionRef} className="px-6 pt-6 pb-8">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">
                         Which best describes you? <span className="text-red-500">*</span>
                       </p>
                       <Controller
                         name="reporter_context"
                         control={control}
                         render={({ field }) => (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex gap-2">
                             {REPORTER_CONTEXT_OPTIONS.map(({ value, label }) => (
                               <button
                                 key={value}
@@ -971,7 +966,7 @@ export default function Home() {
                           Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                         </p>
                         <input type="hidden" {...register('av_company')} />
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex gap-2 flex-wrap">
                           {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
                             <button
                               key={value}
@@ -1014,7 +1009,7 @@ export default function Home() {
 
                     {/* Section 4: Upload content */}
                     <div className="p-6">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-3">
                         Upload content <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                       </p>
                       <div className="flex gap-2">
@@ -1175,7 +1170,7 @@ export default function Home() {
                         className={`w-full py-4 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 ${
                           isSubmitting || !watchedType || !hasLocation || !watchedReporterContext || !isCertified
                             ? 'bg-slate-100 cursor-not-allowed text-slate-400'
-                            : 'bg-[#5B9DFF] hover:bg-blue-600 text-white shadow-md shadow-[#5B9DFF]/20'
+                            : 'bg-[#5B9DFF] hover:bg-[#3A72D9] text-white shadow-md shadow-[#5B9DFF]/20'
                         }`}
                       >
                         {isSubmitting && (
@@ -1196,7 +1191,7 @@ export default function Home() {
       <div className="bg-white border-t border-b border-slate-100 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
           <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-            An independent research project by the
+            An independent research project from the
           </span>
           <div className="hidden sm:block h-4 w-px bg-slate-200" />
           <a
@@ -1245,7 +1240,7 @@ export default function Home() {
                 {/* Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them. */}
                 Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles.
               </p>
-              <p>
+              <p className="hidden lg:block">
                 AV Watch is built by a team of independent researchers at UC Berkeley&apos;s School of Information.
               </p>
             </div>
@@ -1257,11 +1252,8 @@ export default function Home() {
       <section id="reports" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 text-xs font-semibold uppercase tracking-wider mb-4">
-              Community Reports
-            </span>
             <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
-              Recent Incidents
+              Recent Reports
             </h2>
             <p className="text-slate-500">
               {/* Autonomous Vehicle incidents from real community reports. */}
@@ -1272,7 +1264,7 @@ export default function Home() {
           {reportInitialLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className={`rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse${i >= 3 ? ' hidden sm:block' : ''}`}>
+                <div key={i} className="rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse">
                   <div className="h-44 bg-slate-200" />
                   <div className="p-5 space-y-3">
                     <div className="h-3 w-24 rounded bg-slate-200" />
@@ -1287,8 +1279,8 @@ export default function Home() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {reportItems.map((item, index) => (
-                  <div key={item.id} className={index >= 3 ? 'hidden sm:block' : ''}>
+                {reportItems.map((item) => (
+                  <div key={item.id}>
                     <BulletinCard item={item} />
                   </div>
                 ))}
@@ -1312,11 +1304,8 @@ export default function Home() {
 
       {/* ─────────────────────── NEWS HEADLINES ─────────────────────── */}
       <section id="news" className="py-20 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-600 text-xs font-semibold uppercase tracking-wider mb-4">
-              Latest Coverage
-            </span>
             <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
               In the News
             </h2>
@@ -1351,14 +1340,11 @@ export default function Home() {
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-[#8FC0FF]/28 blur-3xl pointer-events-none" />
         <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-[#2F6FE0]/22 blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
             {/* Left: Mission */}
             <div>
-              <span className="inline-flex items-center px-3 py-1.5 rounded-full border border-blue-400/40 bg-[#5B9DFF]/30 text-blue-100 text-xs font-semibold uppercase tracking-wider mb-6">
-                Our Mission
-              </span>
               <h2 className="text-3xl font-bold text-white mb-5">
                 About AV Watch
               </h2>
@@ -1385,7 +1371,7 @@ export default function Home() {
                   Get in touch
                 </h3>
                 <p className="mt-2 text-blue-100 text-base leading-relaxed">
-                  For questions, feedback, or research-related inquiries, contact
+                  For feedback and inquiries, contact
                   the team at{' '}
                   <a
                     href="mailto:avwatch@ischool.berkeley.edu"

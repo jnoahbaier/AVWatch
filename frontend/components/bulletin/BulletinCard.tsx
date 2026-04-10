@@ -108,7 +108,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
       <div className="flex flex-1 flex-col p-5">
 
         {/* Company badge + incident type + community tag + age */}
-        <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             {item.av_company && (
               <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${companyColor}`}>

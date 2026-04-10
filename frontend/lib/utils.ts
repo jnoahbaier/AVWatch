@@ -51,7 +51,7 @@ export function formatRelativeTime(date: string | Date): string {
  */
 export const INCIDENT_TYPE_LABELS: Record<string, string> = {
   collision: 'Collision',
-  injury: 'Injury',
+  accessibility: 'Accessibility',
   sudden_behavior: 'Reckless Driving',
   blockage: 'Blocking Traffic',
   vandalism: 'Vandalism',
@@ -62,8 +62,8 @@ export const INCIDENT_TYPE_ORDER = [
   'sudden_behavior',
   'blockage',
   'collision',
-  'injury',
   'vandalism',
+  'accessibility',
   'other',
 ] as const;
 
@@ -74,8 +74,8 @@ export const INCIDENT_TYPE_HELP_TEXT: Record<string, string> = {
     'Examples: blocking a lane, crosswalk, bike lane, driveway, or loading zone.',
   collision:
     'Examples: contact with another vehicle, a person, a cyclist, an object, or property.',
-  injury:
-    'Examples: any reported physical injury, even if the vehicle did not make direct contact.',
+  accessibility:
+    'Examples: unable to access a pickup or drop-off location due to AV positioning, AV blocking a wheelchair ramp or accessible pedestrian signal, or failure to accommodate passengers with mobility needs.',
   vandalism:
     'Examples: graffiti, broken windows, tampering, thrown objects, or deliberate damage.',
   other:
@@ -106,7 +106,7 @@ export const REPORT_COMPANY_OPTIONS: { value: string; label: string }[] = [
   { value: 'waymo', label: 'Waymo' },
   { value: 'zoox', label: 'Zoox' },
   { value: 'tesla', label: 'Tesla' },
-  { value: 'unknown', label: 'Not sure' },
+  { value: 'unknown', label: 'Unsure' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -126,7 +126,7 @@ export const REPORTER_TYPE_LABELS: Record<string, string> = {
  */
 export const INCIDENT_TYPE_COLORS: Record<string, string> = {
   collision: '#ef4444',
-  injury: '#f97316',
+  accessibility: '#f97316',
   sudden_behavior: '#eab308',
   blockage: '#6366f1',
   vandalism: '#dc2626',

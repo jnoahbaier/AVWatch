@@ -16,38 +16,42 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  // Admin routes have their own layout — don't render the public navbar
   if (pathname?.startsWith('/admin')) return null;
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-xl shadow-sm">
+    <header className="fixed top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-14 items-center justify-between">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
+          {/* Logo group */}
+          <Link href="/" className="flex items-center gap-3">
             <Image
-              //src="/navbar_logo.png"
-              src="/navbar_logo_alt_ucb.png"
-              alt="AV Watch logo"
-              width={200}
-              height={50}
-              className="h-[42px] w-auto object-contain"
+              src="/navbar_logo.png"
+              alt="AV Watch"
+              width={160}
+              height={40}
+              className="h-[32px] w-auto object-contain"
               priority
             />
-            {/* <span className="mt-px pl-0 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500 sm:text-[11px]">
-              A UC Berkeley project
-            </span> */}
+            <div className="flex items-center self-center border-l border-slate-200 pl-3 flex-shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/Berkeley I School Logo Blue.png"
+                alt="UC Berkeley School of Information"
+                className="w-auto block h-[24px] sm:h-[26px]"
+                style={{ transform: 'translateY(0px)' }}
+              />
+            </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex md:items-center md:gap-1">
-            {navigation.map((item) => (
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-6">
+            {navigation.map((item) =>
               item.href.startsWith('/') && !item.href.startsWith('/#') ? (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#2C3E50] hover:bg-slate-100 transition rounded-lg"
+                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition"
                 >
                   {item.name}
                 </Link>
@@ -55,49 +59,41 @@ export function Navbar() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#2C3E50] hover:bg-slate-100 transition rounded-lg"
+                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition"
                 >
                   {item.name}
                 </a>
               )
-            ))}
-          </div>
-
-          {/* Report Button */}
-          <div className="hidden md:flex items-center">
+            )}
             <a
               href="/#report"
-              className="rounded-lg bg-[#5B9DFF] hover:bg-[#3A72D9] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#5B9DFF]/20 transition"
+              className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-md transition"
             >
-              Report Incident
+              Report
             </a>
           </div>
 
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-[#2C3E50] transition"
+            className="md:hidden p-2 text-slate-400 hover:text-[#2C3E50] transition"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile nav */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-100">
-            <div className="flex flex-col gap-1">
-              {navigation.map((item) => (
+          <div className="md:hidden pb-4 border-t border-slate-100">
+            <div className="flex flex-col gap-0.5 pt-2">
+              {navigation.map((item) =>
                 item.href.startsWith('/') && !item.href.startsWith('/#') ? (
                   <Link
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-[#2C3E50] transition"
+                    className="rounded-md px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#2C3E50] transition"
                   >
                     {item.name}
                   </Link>
@@ -106,19 +102,21 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-slate-600 hover:bg-slate-100 hover:text-[#2C3E50] transition"
+                    className="rounded-md px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#2C3E50] transition"
                   >
                     {item.name}
                   </a>
                 )
-              ))}
-              <a
-                href="/#report"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-xl bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-3 text-center text-base font-semibold text-white shadow-md shadow-[#5B9DFF]/20 transition"
-              >
-                Report Incident →
-              </a>
+              )}
+              <div className="pt-2 px-1">
+                <a
+                  href="/#report"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block rounded-md bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-2.5 text-center text-sm font-semibold text-white transition"
+                >
+                  Report an Incident
+                </a>
+              </div>
             </div>
           </div>
         )}

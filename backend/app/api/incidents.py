@@ -74,7 +74,7 @@ class LocationInput(BaseModel):
 
 class IncidentCreate(BaseModel):
     incident_type: Literal[
-        "collision", "injury", "near_miss", "sudden_behavior", "blockage", "vandalism", "other"
+        "collision", "accessibility", "near_miss", "sudden_behavior", "blockage", "vandalism", "other"
     ] = Field(..., description="Type of incident")
     av_company: Literal["waymo", "cruise", "zoox", "tesla", "other", "unknown"] = Field(
         default="unknown", description="AV company involved"
