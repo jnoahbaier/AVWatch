@@ -41,15 +41,20 @@ export function LocationMapPicker({ onLocationSelect, selectedLat, selectedLng }
       (mapboxgl as unknown as { accessToken: string }).accessToken =
         process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '';
 
+      const validLng =
+        selectedLng != null && !isNaN(selectedLng) ? selectedLng : -122.4194;
+      const validLat =
+        selectedLat != null && !isNaN(selectedLat) ? selectedLat : 37.7749;
+
       map = new mapboxgl.Map({
         container: mapContainer.current!,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [selectedLng ?? -122.4194, selectedLat ?? 37.7749],
+        center: [validLng, validLat],
         zoom: 13,
       });
       mapRef.current = map;
 
-      if (selectedLat != null && selectedLng != null) {
+      if (selectedLat != null && !isNaN(selectedLat) && selectedLng != null && !isNaN(selectedLng)) {
         markerRef.current = new mapboxgl.Marker({ color: '#3b82f6' })
           .setLngLat([selectedLng, selectedLat])
           .addTo(map);
