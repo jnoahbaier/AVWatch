@@ -1341,18 +1341,13 @@ export default function Home() {
       {/* ─────────────────────── NEWS HEADLINES ─────────────────────── */}
       <section id="news" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
-                In the News
-              </h2>
-              <p className="text-slate-500">
-                The latest coverage on autonomous vehicle incidents and policy.
-              </p>
-            </div>
-            <Link href="/news" className="shrink-0 text-sm font-medium text-[#5B9DFF] hover:text-[#3A72D9] transition">
-              See all news →
-            </Link>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
+              In the News
+            </h2>
+            <p className="text-slate-500">
+              The latest coverage on autonomous vehicle incidents and policy.
+            </p>
           </div>
           <NewsHeadlines />
         </div>
