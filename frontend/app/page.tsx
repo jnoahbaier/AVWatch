@@ -571,7 +571,7 @@ export default function Home() {
                 /* Success state */
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                   {/* Header */}
-                  <div className="bg-[#3A72D9] px-8 py-8 text-center">
+                  <div className="bg-[#5B9DFF] px-8 py-8 text-center">
                     <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
                       <CheckCircle className="w-8 h-8 text-white" />
                     </div>
@@ -593,7 +593,7 @@ export default function Home() {
                       {/* Step 1 — completed */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-[#3A72D9] text-white flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-[#5B9DFF] text-white flex items-center justify-center text-sm font-bold shrink-0">
                             1
                           </div>
                           <div className="w-0.5 h-6 bg-[#5B9DFF]/40 mt-1" />
@@ -610,7 +610,7 @@ export default function Home() {
                       {/* Step 2 — up next */}
                       <div className="flex gap-4 items-start">
                         <div className="flex flex-col items-center">
-                          <div className="w-9 h-9 rounded-full bg-blue-50 border-2 border-[#5B9DFF] text-[#5B9DFF] flex items-center justify-center text-sm font-bold shrink-0">
+                          <div className="w-9 h-9 rounded-full border-2 border-[#5B9DFF] text-[#5B9DFF] flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: '#E6F0FA' }}>
                             2
                           </div>
                           <div className="w-0.5 h-6 bg-slate-200 mt-1" />

@@ -515,25 +515,25 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-[#2C3E50]">
       {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-[#415A73] bg-[#2C3E50]/80 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Image src="/navbar_logo.png" alt="AV Watch" width={120} height={30} className="h-[24px] w-auto object-contain brightness-0 invert" />
-            <span className="text-white font-semibold">Admin</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-300 text-sm">Reports Queue</span>
+            <Image src="/navbar_logo.png" alt="AV Watch" width={120} height={30} className="h-[24px] w-auto object-contain" />
+            <span className="text-[#2C3E50] font-semibold">Admin</span>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-500 text-sm">Reports Queue</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-slate-400 text-sm hidden sm:block">{session?.user?.email}</span>
             <a
               href="/admin/settings"
-              className="text-slate-400 hover:text-white text-sm transition-colors"
+              className="text-slate-500 hover:text-[#2C3E50] text-sm transition-colors"
             >
               Settings
             </a>
             <button
               onClick={() => signOut({ callbackUrl: '/admin/login' })}
-              className="text-slate-400 hover:text-white text-sm transition-colors"
+              className="text-slate-500 hover:text-[#2C3E50] text-sm transition-colors"
             >
               Sign out
             </button>
