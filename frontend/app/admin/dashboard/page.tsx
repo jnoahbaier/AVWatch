@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
 
@@ -62,6 +62,35 @@ const REPORTER_TYPE_LABELS: Record<string, string> = {
   directly_involved: 'Directly involved',
   bystander: 'Bystander',
 };
+
+// ─── IP chip helpers ──────────────────────────────────────────────────────────
+
+/** Deterministic hue from the first 6 hex chars of the hash → same IP always same color. */
+function ipHue(hash: string): number {
+  return parseInt(hash.slice(0, 6), 16) % 360;
+}
+
+function IpChip({ hash, count }: { hash: string | null; count: number }) {
+  if (!hash) return <span className="text-slate-700">—</span>;
+  const hue = ipHue(hash);
+  const color = `hsl(${hue},55%,58%)`;
+  const bg = `hsl(${hue},40%,20%)`;
+  return (
+    <span className="inline-flex items-center gap-1" title={hash}>
+      <span
+        className="inline-block font-mono text-xs px-1.5 py-0.5 rounded"
+        style={{ color, backgroundColor: bg }}
+      >
+        {hash.slice(0, 8)}
+      </span>
+      {count > 1 && (
+        <span className="text-[10px] font-semibold text-orange-400" title={`${count} reports from this IP in current view`}>
+          ×{count}
+        </span>
+      )}
+    </span>
+  );
+}
 
 // ─── Detail Modal ─────────────────────────────────────────────────────────────
 
@@ -146,13 +175,30 @@ function DetailModal({
                   : '—',
               },
               { label: 'Lat / Lng', value: `${incident.latitude.toFixed(5)}, ${incident.longitude.toFixed(5)}` },
-              { label: 'IP hash', value: incident.reporter_ip_hash ? incident.reporter_ip_hash.slice(0, 12) + '…' : '—' },
             ].map(({ label, value }) => (
               <div key={label} className="bg-slate-800/50 rounded-lg p-3">
                 <p className="text-slate-500 text-xs mb-0.5">{label}</p>
                 <p className="text-slate-200 font-mono text-xs break-all">{value}</p>
               </div>
             ))}
+            <div className="bg-slate-800/50 rounded-lg p-3 col-span-2">
+              <p className="text-slate-500 text-xs mb-1.5">IP hash</p>
+              {incident.reporter_ip_hash ? (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className="font-mono text-xs px-2 py-1 rounded"
+                    style={{
+                      color: `hsl(${ipHue(incident.reporter_ip_hash)},55%,58%)`,
+                      backgroundColor: `hsl(${ipHue(incident.reporter_ip_hash)},40%,20%)`,
+                    }}
+                  >
+                    {incident.reporter_ip_hash}
+                  </span>
+                </div>
+              ) : (
+                <p className="text-slate-500 italic text-xs">Not captured</p>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -405,6 +451,17 @@ export default function AdminDashboard() {
   // Toast
   const [toast, setToast] = useState('');
 
+  // Count how many reports in the current page share each IP — used for duplicate badge
+  const ipCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const inc of incidents) {
+      if (inc.reporter_ip_hash) {
+        counts.set(inc.reporter_ip_hash, (counts.get(inc.reporter_ip_hash) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [incidents]);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 3000);
@@ -646,8 +703,8 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3 text-slate-400 max-w-[180px] truncate">
                         {inc.address ?? `${inc.city}`}
                       </td>
-                      <td className="px-4 py-3 font-mono text-slate-500 text-xs whitespace-nowrap">
-                        {inc.reporter_ip_hash ? inc.reporter_ip_hash.slice(0, 8) + '…' : <span className="text-slate-700">—</span>}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <IpChip hash={inc.reporter_ip_hash} count={ipCounts.get(inc.reporter_ip_hash ?? '') ?? 1} />
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs border ${statusMeta.color}`}>
