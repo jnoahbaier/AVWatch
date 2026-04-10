@@ -26,7 +26,7 @@ export function Navbar() {
           {/* Logo group */}
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/navbar_logo.png"
+              src="/navbar_logo_final.png"
               alt="AV Watch"
               width={160}
               height={40}
