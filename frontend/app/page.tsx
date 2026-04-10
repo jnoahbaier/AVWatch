@@ -170,6 +170,22 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
+  // Eagerly preload the LocationMapPicker + mapbox-gl bundles in the background
+  // so "Pin on Map" opens instantly instead of waiting for a cold download.
+  useEffect(() => {
+    const preload = () => {
+      import('@/components/LocationMapPicker').catch(() => {});
+      import('mapbox-gl').catch(() => {});
+    };
+    if ('requestIdleCallback' in window) {
+      const id = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(preload);
+      return () => (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(id);
+    } else {
+      const t = setTimeout(preload, 2000);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   // Fetch initial 6 reports
   useEffect(() => {
     async function fetchReports() {
@@ -889,8 +905,10 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* Map pinpoint */}
-                      {locationMethod === 'map' && (
+                      {/* Map pinpoint — always mounted so the map stays initialised;
+                          hidden via CSS when another method is active so Mapbox
+                          keeps its dimensions and doesn't need to reload. */}
+                      <div className={locationMethod === 'map' ? '' : 'hidden'}>
                         <LocationMapPicker
                           onLocationSelect={(lat, lng, address, city) => {
                             setValue('latitude', lat);
@@ -902,7 +920,7 @@ export default function Home() {
                           selectedLat={watchedLat}
                           selectedLng={watchedLng}
                         />
-                      )}
+                      </div>
 
                       {/* Confirmed address pill */}
                       {watchedAddress && locationStatus === 'success' && locationMethod !== 'address' && (

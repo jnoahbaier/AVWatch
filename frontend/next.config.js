@@ -28,7 +28,7 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    // In production the Python backend is on Railway; locally it's on port 8000.
+    // In production the Python backend is on Render; locally it's on port 8000.
     // If NEXT_PUBLIC_API_URL is not set (e.g. Vercel with no backend), skip the rewrite.
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     if (!apiUrl || apiUrl === '') return [];

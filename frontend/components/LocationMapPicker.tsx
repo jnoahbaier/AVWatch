@@ -66,9 +66,20 @@ export function LocationMapPicker({ onLocationSelect, selectedLat, selectedLng }
         }
         reverseGeocode(lat, lng);
       });
+
+      // When the parent hides us with display:none and later reveals us,
+      // the canvas stays 0×0 until Mapbox is told to resize.
+      // A ResizeObserver on the container fires as soon as it becomes visible.
+      const ro = new ResizeObserver(() => {
+        if (mapRef.current) mapRef.current.resize();
+      });
+      if (mapContainer.current) ro.observe(mapContainer.current);
+      (map as unknown as { _ro?: ResizeObserver })._ro = ro; // stash for cleanup
     })();
 
     return () => {
+      const ro = (mapRef.current as unknown as { _ro?: ResizeObserver } | null)?._ro;
+      ro?.disconnect();
       mapRef.current?.remove();
       mapRef.current = null;
       markerRef.current = null;
