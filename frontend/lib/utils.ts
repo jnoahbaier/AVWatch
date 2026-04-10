@@ -75,7 +75,7 @@ export const INCIDENT_TYPE_HELP_TEXT: Record<string, string> = {
   collision:
     'Examples: contact with another vehicle, a person, a cyclist, an object, or property.',
   accessibility:
-    'Examples: AV blocking a pickup/drop-off spot, wheelchair ramp, or accessible crossing; or failure to accommodate passengers with mobility needs.',
+    'Examples: AV stopping too far from the curb, inability to be picked up or dropped off at your location, or failure to accommodate passengers with mobility needs.',
   vandalism:
     'Examples: graffiti, broken windows, tampering, thrown objects, or deliberate damage.',
   other:

@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { formatDate } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -517,9 +518,7 @@ export default function AdminDashboard() {
       <header className="sticky top-0 z-10 border-b border-[#415A73] bg-[#2C3E50]/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 bg-[#5B9DFF] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">AV</span>
-            </div>
+            <Image src="/navbar_logo.png" alt="AV Watch" width={120} height={30} className="h-[24px] w-auto object-contain" />
             <span className="text-white font-semibold">Admin</span>
             <span className="text-slate-600">/</span>
             <span className="text-slate-300 text-sm">Reports Queue</span>

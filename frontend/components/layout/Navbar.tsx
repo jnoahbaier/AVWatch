@@ -69,7 +69,7 @@ export function Navbar() {
               href="/#report"
               className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-lg transition"
             >
-              Report
+              Report an Incident
             </a>
           </div>
 

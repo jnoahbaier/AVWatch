@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { Controller, type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -531,7 +532,7 @@ export default function Home() {
                 </p>
 
               {/* Trust indicators — desktop only */}
-              <div className="hidden md:flex flex-wrap gap-3 mt-2">
+              <div className="flex flex-wrap gap-3 mt-2">
                 {[
                   { icon: UserX, label: 'Fully anonymous' },
                   { icon: ShieldCheck, label: 'No account needed' },
@@ -1286,40 +1287,46 @@ export default function Home() {
               </div>
 
               <div className="mt-10 flex justify-center gap-3">
-                {/* Mobile show more/less toggle */}
-                {!mobileShowAll && reportItems.length > 3 && (
-                  <button
-                    onClick={() => setMobileShowAll(true)}
-                    className="sm:hidden inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
-                  >
-                    Show more
-                  </button>
-                )}
-                {mobileShowAll && (
-                  <button
-                    onClick={() => setMobileShowAll(false)}
-                    className="sm:hidden inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
-                  >
-                    Show less
-                  </button>
-                )}
+                {/* Mobile: single button — reveal hidden cards first, then load more */}
+                <div className="sm:hidden">
+                  {!mobileShowAll ? (
+                    <button
+                      onClick={() => setMobileShowAll(true)}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
+                    >
+                      Show more
+                    </button>
+                  ) : reportHasMore ? (
+                    <button
+                      onClick={loadMoreReports}
+                      disabled={reportLoadingMore}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition disabled:opacity-50"
+                    >
+                      {reportLoadingMore ? 'Loading…' : 'Load more incidents'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setMobileShowAll(false); setReportItems(prev => prev.slice(0, REPORTS_PAGE)); setReportOffset(0); setReportHasMore(true); }}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
+                    >
+                      Show less
+                    </button>
+                  )}
+                </div>
+
+                {/* Desktop: load more + show less */}
                 {reportHasMore && (
                   <button
                     onClick={loadMoreReports}
                     disabled={reportLoadingMore}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition disabled:opacity-50"
+                    className="hidden sm:inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition disabled:opacity-50"
                   >
                     {reportLoadingMore ? 'Loading…' : 'Load more incidents'}
                   </button>
                 )}
                 {reportItems.length > REPORTS_PAGE && (
                   <button
-                    onClick={() => {
-                      setReportItems(prev => prev.slice(0, REPORTS_PAGE));
-                      setReportOffset(0);
-                      setReportHasMore(true);
-                      setMobileShowAll(false);
-                    }}
+                    onClick={() => { setReportItems(prev => prev.slice(0, REPORTS_PAGE)); setReportOffset(0); setReportHasMore(true); setMobileShowAll(false); }}
                     className="hidden sm:inline-flex items-center gap-2 px-6 py-3 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-[#5B9DFF] transition"
                   >
                     Show less
@@ -1334,14 +1341,18 @@ export default function Home() {
       {/* ─────────────────────── NEWS HEADLINES ─────────────────────── */}
       <section id="news" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
-              In the News
-            </h2>
-            <p className="text-slate-500">
-              {/* Recent news on autonomous vehicles. */}
-              The latest coverage on autonomous vehicle incidents and policy.
-            </p>
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
+                In the News
+              </h2>
+              <p className="text-slate-500">
+                The latest coverage on autonomous vehicle incidents and policy.
+              </p>
+            </div>
+            <Link href="/news" className="shrink-0 text-sm font-medium text-[#5B9DFF] hover:text-[#3A72D9] transition">
+              See all news →
+            </Link>
           </div>
           <NewsHeadlines />
         </div>
@@ -1384,16 +1395,14 @@ export default function Home() {
                 self-driving technology.
               </p>
               <p className="text-blue-100 text-lg leading-relaxed mt-4">
-                Learn more about the project and team{' '}
                 <a
                   href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline underline-offset-2 text-white hover:text-blue-200 transition font-medium"
                 >
-                  here
+                  Learn more about the project and team →
                 </a>
-                .
               </p>
               <div className="mt-8">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-100">
