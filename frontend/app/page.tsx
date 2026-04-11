@@ -1261,7 +1261,7 @@ export default function Home() {
                 AV Watch is the world’s first platform dedicated to autonomous vehicle incident reporting from anyone, anywhere. By bringing together the voices of our communities, we empower them to better understand what really happens on our roads. 
               </p>
               <p className="hidden lg:block">
-                AV Watch is built by a team of independent researchers at UC Berkeley&apos;s School of Information.
+                AV Watch is built by a team of independent researchers at the UC Berkeley School of Information.
               </p>
             </div>
           </div>
