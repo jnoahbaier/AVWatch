@@ -1401,7 +1401,7 @@ export default function Home() {
             {/* Left: Mission */}
             <div>
               <h2 className="text-3xl font-bold text-white mb-5">
-                About AVWatch
+                About AV Watch
               </h2>
               <p className="text-blue-100 text-lg leading-relaxed">
                 AV Watch is an independent, community-driven platform for
