@@ -159,6 +159,63 @@ def _majority_value(values: list[Optional[str]], fallback: str) -> str:
     return fallback
 
 
+# ── Pre-generation of AI narrative ───────────────────────────────────────────
+
+async def _generate_and_store_narrative(
+    item: BulletinItem,
+    descriptions: list[str],
+) -> None:
+    """
+    Call Gemini to generate a narrative summary and store it directly on the
+    BulletinItem. Called at clustering time so the summary is ready before any
+    user opens the card.
+    """
+    if not descriptions or not settings.GEMINI_API_KEY:
+        return
+
+    company = item.av_company or "an autonomous vehicle"
+    incident_type = (item.incident_type or "incident").replace("_", " ")
+    location = item.location_text or "an unknown location"
+    count = len(descriptions)
+    report_lines = "\n".join(f"- {d}" for d in descriptions[:10])
+
+    prompt = (
+        f"You are an analyst for AVWatch, a platform that tracks real-world autonomous vehicle incidents.\n"
+        f"{count} community members independently reported a {company} {incident_type} near {location}.\n\n"
+        f"Their descriptions:\n{report_lines}\n\n"
+        f"Write a neutral, factual 2–3 sentence summary of what likely happened based on these reports. "
+        f"Be concise and objective. Do not speculate beyond what is reported. "
+        f"IMPORTANT: Remove any personal details (names, contact info, license plates, or identifying information) — "
+        f"describe only the vehicle behavior and general circumstances. "
+        f"Output only the summary text with no titles or headers."
+    )
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            resp = await client.post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+                params={"key": settings.GEMINI_API_KEY},
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": 512},
+                },
+                headers={"Content-Type": "application/json"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            text = (
+                data.get("candidates", [{}])[0]
+                .get("content", {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+            ).strip()
+            if text:
+                item.summary = text
+                logger.info(f"Pre-generated narrative for bulletin item {item.id}")
+    except Exception as exc:
+        logger.warning(f"Narrative pre-generation failed for {item.id}: {exc} — keeping template summary")
+
+
 # ── Core clustering logic ─────────────────────────────────────────────────────
 
 class UserReportClusteringService:
@@ -345,6 +402,9 @@ class UserReportClusteringService:
             )
             db.add(bulletin_item)
             await db.flush()
+
+            # Pre-generate and store the AI narrative now so it's instant for users
+            await _generate_and_store_narrative(bulletin_item, descriptions)
 
             for r, _ in cluster_reports:
                 r.status = "corroborated"

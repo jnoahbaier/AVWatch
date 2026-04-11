@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ExternalLink, MapPin, Users, X } from 'lucide-react';
 
 export interface BulletinItem {
@@ -67,16 +67,9 @@ function CommunityModal({
   item: BulletinItem;
   onClose: () => void;
 }) {
-  const [narrative, setNarrative] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`/api/bulletin/${item.id}/narrative`)
-      .then((r) => r.json())
-      .then((d) => setNarrative(d.narrative ?? item.summary))
-      .catch(() => setNarrative(item.summary))
-      .finally(() => setLoading(false));
-  }, [item.id, item.summary]);
+  // Summary is pre-generated at clustering time and stored in the DB —
+  // no API call needed, just use item.summary directly.
+  const narrative = item.summary;
 
   const companyColor =
     COMPANY_COLORS[item.av_company?.toLowerCase() ?? ''] ?? COMPANY_COLORS.unknown;
@@ -132,17 +125,7 @@ function CommunityModal({
 
           {/* AI narrative */}
           <div className="text-sm text-slate-700 leading-relaxed min-h-[60px]">
-            {loading ? (
-              <div className="flex items-center gap-2 text-slate-400 text-xs">
-                <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                Generating summary…
-              </div>
-            ) : (
-              narrative
-            )}
+            {narrative}
           </div>
 
           {/* Footer stats */}
