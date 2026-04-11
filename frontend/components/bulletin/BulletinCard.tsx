@@ -180,6 +180,10 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
 
   const isCommunity = item.source_platform === 'community';
   const hasUserReports = item.user_report_count > 0;
+  const displaySummary = item.summary
+    .replace(/Individual reports are anonymized\.\s*/gi, '')
+    .replace(/No personal details are shared\.?\s*/gi, '')
+    .trim();
 
   const cardContent = (
     <div className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md hover:border-blue-200 cursor-pointer h-full">
@@ -204,7 +208,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
             : 'bg-gradient-to-br from-slate-100 to-slate-200'
         }`}>
           <p className={`text-sm font-semibold text-center line-clamp-3 ${isCommunity ? 'text-emerald-700' : 'text-slate-600'}`}>
-            {item.summary}
+            {displaySummary}
           </p>
         </div>
       )}
@@ -242,7 +246,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
 
         {/* Summary */}
         <p className="line-clamp-2 text-xs text-slate-500 flex-1 leading-relaxed">
-          {item.summary}
+          {displaySummary}
         </p>
 
         {/* Location */}
