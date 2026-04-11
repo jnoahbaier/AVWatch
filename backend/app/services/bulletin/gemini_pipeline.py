@@ -39,32 +39,41 @@ KNOWN_INCIDENT_TYPES = [
 
 # The classification prompt sent to Gemini for each post
 RELEVANCE_PROMPT = """You are a strict incident analyst for AV Watch, a platform that tracks
-real-world autonomous vehicle (AV) safety incidents and problematic behavior.
+real-world autonomous vehicle (AV) on-road events — both problematic AND noteworthy behavior.
 
 Your job is to read a Reddit post and decide:
-1. Is this post reporting a REAL, SPECIFIC AV INCIDENT or problematic event?
+1. Is this post reporting a REAL, SPECIFIC, ON-ROAD AV EVENT that happened to a vehicle on a
+   public road?
 
-   A post IS relevant ONLY if it describes a specific on-road event such as:
-   - COLLISION / CRASH: an AV was involved in a collision or near-miss with another vehicle,
-     cyclist, or pedestrian
+   A post IS relevant if it describes a specific on-road event, including:
+   - COLLISION / CRASH: an AV was involved in a collision or near-miss
    - SUDDEN / ERRATIC BEHAVIOR: unexpected braking, swerving, freezing, or dangerous maneuvers
    - BLOCKAGE: AV blocked traffic, an intersection, emergency vehicles, or a driveway
    - VANDALISM / OBSTRUCTION: a human vandalizing, attacking, or physically obstructing an AV
    - BEING PULLED OVER / CITED: an AV stopped by police or authorities
    - STRANDING PASSENGERS: AV left passengers stranded mid-trip or in an unsafe location
    - FLEET-WIDE FAILURE: multiple AVs simultaneously failing or behaving abnormally
+   - NOTABLE ON-ROAD BEHAVIOR: any other specific thing an AV did on a public road, even if
+     the outcome was positive (e.g. "AV slowed for a deer", "Waymo correctly yielded for a
+     cyclist", "robotaxi handled a strange road situation well")
 
-   A post is NOT relevant if it is:
-   - News about service launches, expansions, or new cities (e.g. "Waymo launches in Nashville")
-   - General positive experiences or scenic/interesting rides with no safety concern
-   - Business news, funding, partnerships, or earnings
-   - Product/feature announcements or software updates
-   - Opinion pieces, polls, or hypothetical discussions
-   - A funny or quirky moment with no safety or operational problem
-   - Clearly fictional or satirical
+   AUTOMATIC REJECTION — a post is NEVER relevant if it is ANY of the following. These must
+   ALWAYS be marked is_relevant=false, no exceptions:
+   - ANY announcement that a company is launching, expanding, or starting service in a new city
+     or region (e.g. "Waymo launches in Nashville", "Cruise expanding to Austin", "Zoox begins
+     service in Miami") — these are corporate press releases, NOT on-road incidents
+   - Business news of any kind: funding rounds, partnerships, earnings, acquisitions, IPOs
+   - Product or feature announcements, software updates, or hardware reveals
+   - A scenic, entertaining, or pleasant ride experience with no specific behavioral event
+   - Opinion pieces, predictions, polls, or hypothetical discussions about AVs
+   - General news articles about the AV industry without a specific on-road event
+   - Clearly fictional, satirical, or joke posts
 
-   When in doubt, lean toward NOT relevant. Only flag posts that describe a concrete problem
-   or safety event involving a specific AV on a public road.
+   KEY DISTINCTION: Ask yourself — "Did something specific happen to an AV on a road?"
+   If yes → likely relevant. If the post is about what a company announced or plans to do →
+   ALWAYS not relevant, send it to the News section instead.
+
+   When in doubt, lean toward NOT relevant.
 
 2. If it IS relevant, extract structured data.
 
