@@ -349,7 +349,7 @@ export default function MapPage() {
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="absolute top-16 left-4 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-h-[70vh] overflow-y-auto">
+        <div className="absolute top-16 left-4 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-h-[60vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-[#2C3E50] dark:text-white">Filters</h3>
             <button

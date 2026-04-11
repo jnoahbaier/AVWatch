@@ -14,7 +14,6 @@ import {
   Upload,
   Camera,
   X,
-  GraduationCap,
   Users,
   EyeOff,
   LockOpen,
@@ -586,7 +585,7 @@ export default function Home() {
             </div>
 
             {/* ── RIGHT: Report Form ── */}
-            <div id="report-form" className="lg:sticky lg:top-24">
+            <div id="report-form" className="md:sticky md:top-24">
               {isSuccess ? (
                 /* Success state */
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
@@ -867,7 +866,7 @@ export default function Home() {
                                 }}
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
                                 onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-                                placeholder="e.g. Market St & 5th, San Francisco"
+                                placeholder="e.g. Market St & 5th, SF"
                                 className="flex-1 bg-transparent text-[#2C3E50] placeholder-slate-400 text-sm outline-none"
                               />
                               {isGeocoding && <Loader2 className="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" />}
@@ -981,7 +980,7 @@ export default function Home() {
                       )}
 
                       <div className="mt-6 -mx-6 border-t border-slate-100 px-6 pt-6">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-600">
                           Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                         </p>
                         <input type="hidden" {...register('av_company')} />
@@ -1109,7 +1108,7 @@ export default function Home() {
                       <details ref={optionalDetailsRef} className="group rounded-xl border border-slate-200 bg-slate-50/60">
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                               Additional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
@@ -1123,7 +1122,7 @@ export default function Home() {
                         </summary>
                         <div className="border-t border-slate-200 p-4 space-y-5">
                           <div>
-                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-600">
                               Contact <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                             </p>
                             <div className="space-y-2">
@@ -1189,7 +1188,7 @@ export default function Home() {
                         }}
                         className={`w-full py-4 rounded-xl font-semibold text-base transition flex items-center justify-center gap-2 ${
                           isSubmitting || !watchedType || !hasLocation || !watchedReporterContext || !isCertified
-                            ? 'bg-slate-100 cursor-not-allowed text-slate-400'
+                            ? 'bg-slate-200 cursor-not-allowed text-slate-500'
                             : 'bg-[#5B9DFF] hover:bg-[#3A72D9] text-white shadow-md shadow-[#5B9DFF]/20'
                         }`}
                       >

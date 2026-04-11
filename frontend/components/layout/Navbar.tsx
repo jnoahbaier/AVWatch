@@ -76,7 +76,7 @@ export function Navbar() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden p-2 text-slate-400 hover:text-[#2C3E50] transition"
+            className="md:hidden p-3 -mr-1 text-slate-400 hover:text-[#2C3E50] transition"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
