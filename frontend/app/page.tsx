@@ -548,7 +548,7 @@ export default function Home() {
                 </p>
 
               {/* Trust indicators — desktop only */}
-              <div className="flex flex-wrap gap-3 mt-2">
+              <div className="hidden md:flex flex-wrap gap-3 mt-2">
                 {[
                   { icon: EyeOff, label: 'Anonymous' },
                   { icon: LockOpen, label: 'No account needed' },
