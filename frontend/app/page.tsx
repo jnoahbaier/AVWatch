@@ -25,6 +25,7 @@ import {
   Accessibility,
   CircleHelp,
   Calendar,
+  ArrowDown,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -556,7 +557,7 @@ export default function Home() {
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#5B9DFF] hover:bg-[#3A72D9] text-white font-semibold text-base shadow-md transition-colors"
                 >
                   Report an Incident Now
-                  <ChevronDown className="w-4 h-4" />
+                  <ArrowDown className="w-4 h-4" />
                 </button>
               </div>
 
@@ -947,7 +948,7 @@ export default function Home() {
                       <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
                       <input type="hidden" {...register('city')} />
 
-                      <div className="mt-3 relative min-w-0 overflow-hidden">
+                      <div className="mt-3 relative min-w-0">
                         <input
                           id="occurred-at-input"
                           type="datetime-local"
@@ -1018,7 +1019,7 @@ export default function Home() {
                                   'other_av_company'
                                 )
                               }
-                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                              className={`inline-flex items-center px-3 py-1.5 rounded-full border-2 text-sm font-medium transition select-none ${
                                 watchedCompany === value
                                   ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                   : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
