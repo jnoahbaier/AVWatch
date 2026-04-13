@@ -948,17 +948,17 @@ export default function Home() {
                       <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
                       <input type="hidden" {...register('city')} />
 
-                      <div className="mt-3 flex items-center gap-2 min-w-0">
+                      <div className="mt-3 flex items-center min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-[#5B9DFF] focus-within:border-transparent">
                         <input
                           id="occurred-at-input"
                           type="datetime-local"
                           {...register('occurred_at')}
-                          className="flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                          className="flex-1 min-w-0 px-3 py-2.5 bg-transparent text-[#2C3E50] text-sm outline-none"
                         />
                         <label
                           htmlFor="occurred-at-input"
                           aria-label="Open date picker"
-                          className="shrink-0 flex items-center text-slate-400 hover:text-[#5B9DFF] transition-colors cursor-pointer"
+                          className="shrink-0 pr-3 flex items-center text-slate-400 hover:text-[#5B9DFF] transition-colors cursor-pointer"
                         >
                           <Calendar className="w-4 h-4" />
                         </label>
