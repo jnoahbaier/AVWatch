@@ -45,6 +45,13 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   display: none;
 }
 
+/* Force datetime-local to respect parent width on iOS Safari */
+input[type="datetime-local"] {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* Incident type badge styles */
 @layer components {
   .badge-collision {
