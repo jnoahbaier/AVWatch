@@ -539,7 +539,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-6 lg:gap-16 items-start">
 
             {/* ── LEFT: copy + imagery ── */}
-            <div className="pt-4 flex flex-col min-h-[calc(100vh-7rem)] lg:min-h-0">
+            <div className="pt-4 flex flex-col min-h-[calc(100svh-7rem)] lg:min-h-0">
                 <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
                   Witnessed an<br />
                   <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
@@ -1019,7 +1019,7 @@ export default function Home() {
                                   'other_av_company'
                                 )
                               }
-                              className={`inline-flex items-center px-3 py-1.5 rounded-full border-2 text-sm font-medium transition select-none ${
+                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
                                 watchedCompany === value
                                   ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                   : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
