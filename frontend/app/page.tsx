@@ -24,6 +24,7 @@ import {
   SprayCan,
   Accessibility,
   CircleHelp,
+  Calendar,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -537,7 +538,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-6 lg:gap-16 items-start">
 
             {/* ── LEFT: copy + imagery ── */}
-            <div className="pt-4 flex flex-col">
+            <div className="pt-4 flex flex-col min-h-[calc(100vh-7rem)] lg:min-h-0">
                 <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
                   Witnessed an<br />
                   <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
@@ -546,6 +547,18 @@ export default function Home() {
                 <p className="text-xl text-slate-600 mb-3 leading-relaxed">
                   Report it here to make autonomous driving safer for everyone.
                 </p>
+
+              {/* Mobile CTA — vertically and horizontally centered in remaining viewport space */}
+              <div className="lg:hidden flex-1 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('report-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#5B9DFF] hover:bg-[#3A72D9] text-white font-semibold text-base shadow-md transition-colors"
+                >
+                  Report an Incident Now
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
 
               {/* Trust indicators — desktop only */}
               <div className="hidden md:flex flex-wrap gap-3 mt-2">
@@ -934,12 +947,20 @@ export default function Home() {
                       <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
                       <input type="hidden" {...register('city')} />
 
-                      <div className="mt-3">
+                      <div className="mt-3 relative min-w-0 overflow-hidden">
                         <input
+                          id="occurred-at-input"
                           type="datetime-local"
                           {...register('occurred_at')}
-                          className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
+                          className="w-full min-w-0 pl-3 pr-10 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-[#2C3E50] text-sm focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                         />
+                        <label
+                          htmlFor="occurred-at-input"
+                          aria-label="Open date picker"
+                          className="absolute inset-y-0 right-2 flex items-center text-slate-400 hover:text-[#5B9DFF] transition-colors cursor-pointer"
+                        >
+                          <Calendar className="w-4 h-4" />
+                        </label>
                       </div>
                     </div>
                     

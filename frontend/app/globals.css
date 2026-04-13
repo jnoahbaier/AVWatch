@@ -40,6 +40,11 @@ body {
   background: #2563eb;
 }
 
+/* Hide native datetime-local calendar icon — we render our own */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
 /* Incident type badge styles */
 @layer components {
   .badge-collision {
