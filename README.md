@@ -1,99 +1,90 @@
-# 🚗 AV Watch
+# AV Watch
 
-**A Transparent Platform for Autonomous Vehicle Accountability**
+**A Community Platform for Autonomous Vehicle Accountability**
 
-AV Watch is a community-driven platform that enables pedestrians, cyclists, and drivers to report autonomous vehicle incidents, fostering transparency and accountability in cities where robotaxis operate.
+AV Watch makes it easy for pedestrians, cyclists, drivers, and riders to report autonomous vehicle incidents — and aggregates related reports from Reddit and the broader web into a single, lightweight feed. Built by the UC Berkeley School of Information.
+
+Live at [avwatch.org](https://www.avwatch.org)
 
 ---
 
-## 🎯 Mission
+## What It Does
 
-We believe AV companies can make transportation safer and more accessible, but only if they are held accountable by—and foster trust with—the communities they operate in.
+AVWatch is a single-page site with three core functions:
 
-## ✨ Features
+1. **Report** — A simple embedded form lets anyone submit an AV incident in under a minute. Geolocation auto-fills your location. Optional photo/video upload. No account required.
 
-- **📱 Incident Reporting** — Submit reports via mobile or web with geolocation, photos, and incident details
-- **🗺️ Interactive Map** — Explore incidents across the Bay Area with filtering by type, company, and date
-- **📊 Data Dashboard** — City and company-level views with heatmaps and trend analysis
-- **🔗 Open Data** — Aggregated public data from NHTSA, CPUC, and CA DMV alongside community reports
+2. **Recent Incidents** — A bulletin board showing the most credible recent incidents, sourced from two places:
+   - **Reddit** — Hourly scraper pulls from 6 subreddits (`waymo`, `SelfDrivingCars`, `robotaxi`, `sanfrancisco`, `bayarea`, `teslamotors`). Gemini AI filters for real on-road incidents and extracts structured data (company, type, location, summary).
+   - **Community** — When 3+ reports from distinct IP addresses describe the same event (within 500m and 2 hours), a community bulletin card is automatically created. Gemini synthesizes the reports into a neutral summary.
 
-## 🚀 Quick Start
+3. **News** — A lightweight feed of recent AV-related news headlines.
 
-### Prerequisites
+---
 
-- Node.js 20+
-- Mapbox account ([Get token](https://account.mapbox.com/))
+## Anti-Spam & Trust
 
-### Development Setup
+- IP hashing at submission time (SHA-256, never raw IP stored)
+- Rate limiting: max 5 submissions per IP per 10 minutes
+- Community cards require 3+ **distinct** IP addresses describing the same event
+- Gemini semantic similarity check confirms reports describe the same incident before a card is created
+- Admin dashboard for the team to validate, discard, or flag reports
 
-```bash
-# Clone the repository
-git clone https://github.com/your-org/avwatch.git
-cd avwatch
+---
 
-# Frontend
-cd frontend
-npm install
-
-# Create .env.local with your keys
-echo "NEXT_PUBLIC_SUPABASE_URL=https://tmhoogcagflhizyghakp.supabase.co" >> .env.local
-echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key" >> .env.local
-echo "NEXT_PUBLIC_MAPBOX_TOKEN=your-mapbox-token" >> .env.local
-
-npm run dev
-```
-
-Visit `http://localhost:3000` for the application.
-
-### Supabase Project
-
-- **Dashboard**: [supabase.com/dashboard/project/tmhoogcagflhizyghakp](https://supabase.com/dashboard/project/tmhoogcagflhizyghakp)
-- **API URL**: `https://tmhoogcagflhizyghakp.supabase.co`
-
-## 📁 Project Structure
-
-```
-avwatch/
-├── frontend/          # Next.js 14 application
-├── backend/           # FastAPI Python API
-├── data/              # Raw data files (gitignored)
-├── docs/              # Documentation & research
-└── docker-compose.yml # Local development stack
-```
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14, React 18, Tailwind CSS, Mapbox GL, Recharts |
-| Backend | Supabase (PostgreSQL + PostGIS, Edge Functions, Auth) |
-| Data Sync | pg_cron, NHTSA SGO API |
-| CI/CD | GitHub Actions, Vercel |
+| Frontend | Next.js 14, React 18, Tailwind CSS |
+| Backend | FastAPI (Python), PostgreSQL + PostGIS |
+| AI | Gemini 2.5 Flash (incident classification + narrative generation) |
+| Storage | Supabase (DB + media uploads) |
+| Hosting | Vercel (frontend) + Railway (backend) |
+| Analytics | PostHog |
 
-## 📊 Data Sources
+---
 
-- [NHTSA Standing General Order](https://www.nhtsa.gov/laws-regulations/standing-general-order-crash-reporting) — Crash reports
-- [CA DMV Autonomous Vehicle Reports](https://www.dmv.ca.gov/portal/vehicle-industry-services/autonomous-vehicles/) — Collision & disengagement reports
-- [CPUC Quarterly Reports](https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/quarterly-reporting) — Operational data
+## Project Structure
 
-## 👥 Team
+```
+avwatch/
+├── frontend/      # Next.js 14 app (single-page, avwatch.org)
+├── backend/       # FastAPI Python API (Railway)
+├── docs/          # Documentation
+└── mobile/        # React Native app (future)
+```
 
-- **Noah Baier** — Backend Engineer & Data Scientist
-- **Monica Paz Parra** — UX Designer & Frontend Lead
-- **Evan Haas** — User Researcher & Product Manager
+---
+
+## Local Development
+
+```bash
+# Frontend
+cd frontend
+npm install
+cp .env.example .env.local   # fill in Supabase + backend URL
+npm run dev                  # http://localhost:3000
+
+# Backend
+cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env         # fill in DB + Gemini + Reddit keys
+uvicorn app.main:app --reload
+```
+
+---
+
+## Team
+
+- **Noah Baier** — Backend & Infrastructure
+- **Monica Paz Parra** — UX & Frontend
+- **Evan Haas** — Product & User Research
 - **Joshua Mussman** — Research Lead
 
 **Advisor:** Dr. Morgan Ames, UC Berkeley School of Information
 
-## 📄 License
-
-MIT License — see [LICENSE](LICENSE) for details.
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
 ---
 
-*Built with ❤️ at UC Berkeley School of Information*
-
+*Built at UC Berkeley School of Information*
