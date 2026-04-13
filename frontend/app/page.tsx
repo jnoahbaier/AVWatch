@@ -599,7 +599,7 @@ export default function Home() {
             </div>
 
             {/* ── RIGHT: Report Form ── */}
-            <div id="report-form" className="md:sticky md:top-24">
+            <div id="report-form" className="md:sticky md:top-24 scroll-mt-20">
               {isSuccess ? (
                 /* Success state */
                 <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
