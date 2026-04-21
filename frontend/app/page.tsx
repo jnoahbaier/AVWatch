@@ -1731,7 +1731,7 @@ export default function Home() {
                       type="date"
                       value={reportFilters.dateFrom}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-2 appearance-none`}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-2`}
                       title="From date"
                       placeholder="From"
                     />
@@ -1739,7 +1739,7 @@ export default function Home() {
                       type="date"
                       value={reportFilters.dateTo}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-2 appearance-none`}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-2`}
                       title="To date"
                     />
                   </div>
