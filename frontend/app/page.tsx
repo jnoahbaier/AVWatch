@@ -1727,7 +1727,7 @@ export default function Home() {
                 <div>
                   <label className={lbl}>Date range</label>
                   <div className="flex flex-col gap-1.5">
-                    <div className={`relative ${ctrl(!!reportFilters.dateFrom)}`}>
+                    <div className={`relative flex items-center ${ctrl(!!reportFilters.dateFrom)}`}>
                       <input
                         type="date"
                         value={reportFilters.dateFrom}
@@ -1735,12 +1735,13 @@ export default function Home() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         title="From date"
                       />
-                      <span className="px-3 py-2.5 text-sm block truncate text-slate-400 pointer-events-none">
+                      <span className="flex-1 px-3 py-2.5 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateFrom || 'From date'}
                       </span>
+                      <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" />
                     </div>
                     <span className="text-center text-sm text-slate-400">to</span>
-                    <div className={`relative ${ctrl(!!reportFilters.dateTo)}`}>
+                    <div className={`relative flex items-center ${ctrl(!!reportFilters.dateTo)}`}>
                       <input
                         type="date"
                         value={reportFilters.dateTo}
@@ -1748,9 +1749,10 @@ export default function Home() {
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         title="To date"
                       />
-                      <span className="px-3 py-2.5 text-sm block truncate text-slate-400 pointer-events-none">
+                      <span className="flex-1 px-3 py-2.5 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateTo || 'To date'}
                       </span>
+                      <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" />
                     </div>
                   </div>
                 </div>
