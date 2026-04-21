@@ -1637,22 +1637,22 @@ export default function Home() {
                     />
                   </div>
                 </div>
-                <div>
+                <div className="shrink-0">
                   <label className={lbl}>Company</label>
                   <select
                     value={reportFilters.avCompany}
                     onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2 cursor-pointer`}
+                    className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2 cursor-pointer w-[148px]`}
                   >
                     {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </div>
-                <div>
+                <div className="shrink-0">
                   <label className={lbl}>Incident type</label>
                   <select
                     value={reportFilters.incidentType}
                     onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2 cursor-pointer`}
+                    className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2 cursor-pointer w-[168px]`}
                   >
                     {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
@@ -1680,7 +1680,7 @@ export default function Home() {
                 {activeCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition self-end"
+                    className="flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition self-end h-[38px]"
                   >
                     <X className="h-3.5 w-3.5" />
                     Clear
@@ -1803,11 +1803,9 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                {!reportInitialLoading && activeCount > 0 && (
+                {!reportInitialLoading && activeCount > 0 && reportItems.length > 0 && (
                   <p className="mt-2 text-xs text-slate-500">
-                    {reportItems.length === 0
-                      ? 'No reports match these filters'
-                      : `${reportTotal} ${reportTotal === 1 ? 'report' : 'reports'} found`}
+                    {`${reportTotal} ${reportTotal === 1 ? 'report' : 'reports'} found`}
                   </p>
                 )}
               </div>
