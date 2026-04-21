@@ -320,6 +320,7 @@ export default function Home() {
 
   // Recent reports inline state
   const [reportItems, setReportItems] = useState<BulletinItem[]>([]);
+  const [reportTotal, setReportTotal] = useState(0);
   const [reportOffset, setReportOffset] = useState(0);
   const [reportHasMore, setReportHasMore] = useState(false);
   const [reportInitialLoading, setReportInitialLoading] = useState(true);
@@ -397,6 +398,7 @@ export default function Home() {
         const data = await res.json();
         if (reportFetchId.current !== fetchId) return;
         setReportItems(data.items ?? []);
+        setReportTotal(data.total ?? 0);
         setReportHasMore(data.has_more ?? false);
       } catch {
         // silent — section just stays empty
@@ -1678,7 +1680,7 @@ export default function Home() {
                 {activeCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-400 hover:text-red-500 hover:border-red-200 transition self-end"
+                    className="flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition self-end"
                   >
                     <X className="h-3.5 w-3.5" />
                     Clear
@@ -1805,7 +1807,7 @@ export default function Home() {
                   <p className="mt-2 text-xs text-slate-500">
                     {reportItems.length === 0
                       ? 'No reports match these filters'
-                      : `${reportItems.length}${reportHasMore ? '+' : ''} ${reportItems.length === 1 ? 'report' : 'reports'} found`}
+                      : `${reportTotal} ${reportTotal === 1 ? 'report' : 'reports'} found`}
                   </p>
                 )}
               </div>
@@ -1827,7 +1829,7 @@ export default function Home() {
               ))}
             </div>
           ) : reportItems.length === 0 ? (
-            <p className="text-slate-400 text-sm">No reports yet.</p>
+            <p className="text-slate-400 text-sm">{countReportFilters(reportFilters) > 0 ? 'No reports match these filters.' : 'No reports yet.'}</p>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
