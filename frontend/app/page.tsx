@@ -1690,7 +1690,7 @@ export default function Home() {
 
             // Mobile: 2-column grid with labels
             const mobileFilters = (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 w-full min-w-0">
                 <div>
                   <label className={lbl}>Location</label>
                   <div className="relative">
@@ -1726,12 +1726,12 @@ export default function Home() {
                 </div>
                 <div>
                   <label className={lbl}>Date range</label>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 w-full min-w-0 overflow-hidden">
                     <input
                       type="date"
                       value={reportFilters.dateFrom}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2.5`}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2.5 max-w-full min-w-0`}
                       title="From date"
                     />
                     <span className="text-center text-sm text-slate-400">to</span>
@@ -1739,7 +1739,7 @@ export default function Home() {
                       type="date"
                       value={reportFilters.dateTo}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2.5`}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2.5 max-w-full min-w-0`}
                       title="To date"
                     />
                   </div>
@@ -1774,8 +1774,8 @@ export default function Home() {
                     <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showMobileFilters ? 'rotate-180' : ''}`} />
                   </button>
                   {showMobileFilters && (
-                    <div className="px-4 pb-5 border-t border-slate-100">
-                      <div className="pt-4">
+                    <div className="px-4 pb-5 border-t border-slate-100 overflow-hidden">
+                      <div className="pt-4 w-full min-w-0">
                         {mobileFilters}
                       </div>
                     </div>
