@@ -1617,7 +1617,7 @@ export default function Home() {
 
             const lbl = 'block text-xs font-medium text-slate-600 mb-1';
             const ctrl = (active: boolean) =>
-              `w-full rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
+              `w-full h-10 rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
                 active ? 'border-[#5B9DFF]/50 bg-blue-50 text-[#5B9DFF]' : 'border-slate-200'
               }`;
 
@@ -1677,6 +1677,14 @@ export default function Home() {
                     />
                   </div>
                 </div>
+                <button
+                  onClick={clearFilters}
+                  aria-hidden={activeCount === 0}
+                  className={`flex items-center gap-1.5 h-10 rounded-xl border border-red-100 bg-red-50 px-3 text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition self-end ${activeCount === 0 ? 'invisible pointer-events-none' : ''}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                  Clear
+                </button>
               </div>
             );
 
@@ -1752,26 +1760,19 @@ export default function Home() {
               <div className="mb-8">
                 {/* Mobile: single card with toggle header */}
                 <div className={`sm:hidden rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showMobileFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
-                  <div className={`flex items-center transition-colors ${showMobileFilters ? 'bg-slate-50' : ''}`}>
-                    <button
-                      onClick={() => setShowMobileFilters((v) => !v)}
-                      className={`flex-1 flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showMobileFilters ? '' : 'hover:bg-slate-50'}`}
-                    >
-                      <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
-                      <span className="flex-1 text-left">Filter reports</span>
-                      {activeCount > 0 && (
-                        <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
-                          {activeCount}
-                        </span>
-                      )}
-                      <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showMobileFilters ? 'rotate-180' : ''}`} />
-                    </button>
+                  <button
+                    onClick={() => setShowMobileFilters((v) => !v)}
+                    className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showMobileFilters ? 'bg-slate-50' : 'hover:bg-slate-50'}`}
+                  >
+                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
+                    <span className="flex-1 text-left">Filter reports</span>
                     {activeCount > 0 && (
-                      <button onClick={clearFilters} className="pr-4 text-xs font-medium text-red-400 hover:text-red-600 transition shrink-0">
-                        Clear
-                      </button>
+                      <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
+                        {activeCount}
+                      </span>
                     )}
-                  </div>
+                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showMobileFilters ? 'rotate-180' : ''}`} />
+                  </button>
                   {showMobileFilters && (
                     <div className="px-4 pb-5 border-t border-slate-100">
                       <div className="pt-4">
@@ -1782,26 +1783,19 @@ export default function Home() {
                 </div>
                 {/* Desktop */}
                 <div className={`hidden sm:block rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showDesktopFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
-                  <div className={`flex items-center transition-colors ${showDesktopFilters ? 'bg-slate-50 border-b border-slate-100' : ''}`}>
-                    <button
-                      onClick={() => setShowDesktopFilters((v) => !v)}
-                      className={`flex-1 flex items-center gap-2 px-5 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showDesktopFilters ? '' : 'hover:bg-slate-50'}`}
-                    >
-                      <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
-                      <span className="flex-1 text-left">Filter reports</span>
-                      {activeCount > 0 && (
-                        <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
-                          {activeCount}
-                        </span>
-                      )}
-                      <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showDesktopFilters ? 'rotate-180' : ''}`} />
-                    </button>
+                  <button
+                    onClick={() => setShowDesktopFilters((v) => !v)}
+                    className={`w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showDesktopFilters ? 'bg-slate-50 border-b border-slate-100' : 'hover:bg-slate-50'}`}
+                  >
+                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
+                    <span className="flex-1 text-left">Filter reports</span>
                     {activeCount > 0 && (
-                      <button onClick={clearFilters} className="pr-5 text-xs font-medium text-red-400 hover:text-red-600 transition shrink-0">
-                        Clear
-                      </button>
+                      <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
+                        {activeCount}
+                      </span>
                     )}
-                  </div>
+                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showDesktopFilters ? 'rotate-180' : ''}`} />
+                  </button>
                   {showDesktopFilters && (
                     <div className="px-5 py-4">
                       {desktopFilters}
