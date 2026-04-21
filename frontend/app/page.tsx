@@ -1704,43 +1704,43 @@ export default function Home() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={lbl}>Company</label>
-                    <select
-                      value={reportFilters.avCompany}
-                      onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2.5 cursor-pointer`}
-                    >
-                      {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={lbl}>Incident type</label>
-                    <select
-                      value={reportFilters.incidentType}
-                      onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2.5 cursor-pointer`}
-                    >
-                      {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={lbl}>From date</label>
+                <div>
+                  <label className={lbl}>Company</label>
+                  <select
+                    value={reportFilters.avCompany}
+                    onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
+                    className={`${ctrl(!!reportFilters.avCompany)} px-3 cursor-pointer`}
+                  >
+                    {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={lbl}>Incident type</label>
+                  <select
+                    value={reportFilters.incidentType}
+                    onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
+                    className={`${ctrl(!!reportFilters.incidentType)} px-3 cursor-pointer`}
+                  >
+                    {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={lbl}>Date range</label>
+                  <div className="grid grid-cols-2 gap-2">
                     <input
                       type="date"
                       value={reportFilters.dateFrom}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2.5`}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-2 appearance-none`}
+                      title="From date"
+                      placeholder="From"
                     />
-                  </div>
-                  <div>
-                    <label className={lbl}>To date</label>
                     <input
                       type="date"
                       value={reportFilters.dateTo}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2.5`}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-2 appearance-none`}
+                      title="To date"
                     />
                   </div>
                 </div>
