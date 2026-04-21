@@ -1726,20 +1726,20 @@ export default function Home() {
                 </div>
                 <div>
                   <label className={lbl}>Date range</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex flex-col gap-1.5">
                     <input
                       type="date"
                       value={reportFilters.dateFrom}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-2`}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-3`}
                       title="From date"
-                      placeholder="From"
                     />
+                    <span className="text-center text-sm text-slate-400">to</span>
                     <input
                       type="date"
                       value={reportFilters.dateTo}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-2`}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-3`}
                       title="To date"
                     />
                   </div>
