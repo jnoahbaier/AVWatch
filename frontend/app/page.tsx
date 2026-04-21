@@ -1617,7 +1617,7 @@ export default function Home() {
 
             const lbl = 'block text-xs font-medium text-slate-600 mb-1';
             const ctrl = (active: boolean) =>
-              `w-full h-10 rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
+              `w-full rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
                 active ? 'border-[#5B9DFF]/50 bg-blue-50 text-[#5B9DFF]' : 'border-slate-200'
               }`;
 
@@ -1709,7 +1709,7 @@ export default function Home() {
                   <select
                     value={reportFilters.avCompany}
                     onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.avCompany)} px-3 cursor-pointer`}
+                    className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2.5 cursor-pointer`}
                   >
                     {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
@@ -1719,7 +1719,7 @@ export default function Home() {
                   <select
                     value={reportFilters.incidentType}
                     onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.incidentType)} px-3 cursor-pointer`}
+                    className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2.5 cursor-pointer`}
                   >
                     {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
@@ -1731,7 +1731,7 @@ export default function Home() {
                       type="date"
                       value={reportFilters.dateFrom}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-3`}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2.5`}
                       title="From date"
                     />
                     <span className="text-center text-sm text-slate-400">to</span>
@@ -1739,7 +1739,7 @@ export default function Home() {
                       type="date"
                       value={reportFilters.dateTo}
                       onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-3`}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2.5`}
                       title="To date"
                     />
                   </div>
