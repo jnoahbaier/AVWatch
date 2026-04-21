@@ -79,7 +79,7 @@ uvicorn app.main:app --reload
 ## Team
 
 - **Noah Baier** — Backend & Infrastructure
-- **Monica Paz Parra** — UX & Frontend
+- **Monica Paz Parra** — UX Design & Frontend
 - **Evan Haas** — Product & User Research
 - **Joshua Mussman** — Research Lead
 
