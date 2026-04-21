@@ -1726,22 +1726,32 @@ export default function Home() {
                 </div>
                 <div>
                   <label className={lbl}>Date range</label>
-                  <div className="flex flex-col gap-1.5 w-full min-w-0 overflow-hidden">
-                    <input
-                      type="date"
-                      value={reportFilters.dateFrom}
-                      onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2.5 max-w-full min-w-0`}
-                      title="From date"
-                    />
+                  <div className="flex flex-col gap-1.5">
+                    <div className={`relative ${ctrl(!!reportFilters.dateFrom)}`}>
+                      <input
+                        type="date"
+                        value={reportFilters.dateFrom}
+                        onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="From date"
+                      />
+                      <span className="px-3 py-2.5 text-sm block truncate text-slate-400 pointer-events-none">
+                        {reportFilters.dateFrom || 'From date'}
+                      </span>
+                    </div>
                     <span className="text-center text-sm text-slate-400">to</span>
-                    <input
-                      type="date"
-                      value={reportFilters.dateTo}
-                      onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2.5 max-w-full min-w-0`}
-                      title="To date"
-                    />
+                    <div className={`relative ${ctrl(!!reportFilters.dateTo)}`}>
+                      <input
+                        type="date"
+                        value={reportFilters.dateTo}
+                        onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="To date"
+                      />
+                      <span className="px-3 py-2.5 text-sm block truncate text-slate-400 pointer-events-none">
+                        {reportFilters.dateTo || 'To date'}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 {activeCount > 0 && (
