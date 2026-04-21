@@ -7,12 +7,13 @@ the frontend just reads finished, clean results.
 """
 
 import logging
+from datetime import date, datetime, time as dtime
 from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -65,6 +66,11 @@ async def list_bulletin_items(
     hot_only: bool = Query(default=False),
     av_company: Optional[str] = Query(default=None),
     incident_type: Optional[str] = Query(default=None),
+    location: Optional[str] = Query(default=None),
+    date_from: Optional[str] = Query(default=None),
+    date_to: Optional[str] = Query(default=None),
+    source_platform: Optional[str] = Query(default=None),
+    community_backed: bool = Query(default=False),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -82,6 +88,22 @@ async def list_bulletin_items(
         stmt = stmt.where(BulletinItem.av_company == av_company.lower())
     if incident_type:
         stmt = stmt.where(BulletinItem.incident_type == incident_type.lower())
+    if location:
+        stmt = stmt.where(BulletinItem.location_text.ilike(f"%{location}%"))
+    if date_from:
+        try:
+            stmt = stmt.where(BulletinItem.first_seen_at >= datetime.combine(date.fromisoformat(date_from), dtime.min))
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            stmt = stmt.where(BulletinItem.first_seen_at <= datetime.combine(date.fromisoformat(date_to), dtime.max))
+        except ValueError:
+            pass
+    if source_platform:
+        stmt = stmt.where(BulletinItem.source_platform == source_platform.lower())
+    if community_backed:
+        stmt = stmt.where(func.jsonb_array_length(BulletinItem.user_report_ids) > 0)
 
     # Hot items first, then by recency
     stmt = stmt.order_by(
@@ -97,6 +119,22 @@ async def list_bulletin_items(
         count_stmt = count_stmt.where(BulletinItem.av_company == av_company.lower())
     if incident_type:
         count_stmt = count_stmt.where(BulletinItem.incident_type == incident_type.lower())
+    if location:
+        count_stmt = count_stmt.where(BulletinItem.location_text.ilike(f"%{location}%"))
+    if date_from:
+        try:
+            count_stmt = count_stmt.where(BulletinItem.first_seen_at >= datetime.combine(date.fromisoformat(date_from), dtime.min))
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            count_stmt = count_stmt.where(BulletinItem.first_seen_at <= datetime.combine(date.fromisoformat(date_to), dtime.max))
+        except ValueError:
+            pass
+    if source_platform:
+        count_stmt = count_stmt.where(BulletinItem.source_platform == source_platform.lower())
+    if community_backed:
+        count_stmt = count_stmt.where(func.jsonb_array_length(BulletinItem.user_report_ids) > 0)
 
     total_result = await db.execute(count_stmt)
     total = len(total_result.fetchall())

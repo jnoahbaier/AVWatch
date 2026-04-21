@@ -26,6 +26,8 @@ import {
   CircleHelp,
   Calendar,
   ArrowDown,
+  Filter,
+  ExternalLink,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -46,6 +48,60 @@ const LocationMapPicker = dynamic(
 
 const BULLETIN_API = '/api/bulletin';
 const REPORTS_PAGE = 6;
+
+interface ReportFilters {
+  location: string;
+  dateFrom: string;
+  dateTo: string;
+  avCompany: string;
+  incidentType: string;
+}
+
+const DEFAULT_REPORT_FILTERS: ReportFilters = {
+  location: '',
+  dateFrom: '',
+  dateTo: '',
+  avCompany: '',
+  incidentType: '',
+};
+
+const FILTER_COMPANIES = [
+  { value: '', label: 'All companies' },
+  { value: 'waymo', label: 'Waymo' },
+  { value: 'zoox', label: 'Zoox' },
+  { value: 'tesla', label: 'Tesla' },
+  { value: 'other', label: 'Other' },
+  { value: 'unknown', label: 'Unsure' },
+];
+
+const FILTER_INCIDENT_TYPES = [
+  { value: '', label: 'All incident types' },
+  { value: 'reckless_driving', label: 'Reckless Driving' },
+  { value: 'blocking_traffic', label: 'Blocking Traffic' },
+  { value: 'collision', label: 'Collision' },
+  { value: 'vandalism', label: 'Vandalism' },
+  { value: 'accessbility_issue', label: 'Accessibility Issue' },
+  { value: 'other', label: 'Other' },
+];
+
+function buildReportParams(offset: number, filters: ReportFilters): string {
+  const p = new URLSearchParams({ limit: String(REPORTS_PAGE), offset: String(offset) });
+  if (filters.location) p.set('location', filters.location);
+  if (filters.dateFrom) p.set('date_from', filters.dateFrom);
+  if (filters.dateTo) p.set('date_to', filters.dateTo);
+  if (filters.avCompany) p.set('av_company', filters.avCompany);
+  if (filters.incidentType) p.set('incident_type', filters.incidentType);
+  return p.toString();
+}
+
+function countReportFilters(f: ReportFilters): number {
+  let n = 0;
+  if (f.location) n++;
+  if (f.dateFrom || f.dateTo) n++;
+  if (f.avCompany) n++;
+  if (f.incidentType) n++;
+  return n;
+}
 
 const INCIDENT_ICONS = {
   sudden_behavior: CarFront,
@@ -121,6 +177,125 @@ function getLocalDateTimeValue(date = new Date()) {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
+const PIPELINE_STEPS = [
+  { title: 'Report received', desc: 'Stored securely in our database.' },
+  { title: 'Reviewed by our team', desc: 'Checked for accuracy and completeness.' },
+  { title: 'Corroborated', desc: 'Linked with nearby reports to build credibility.' },
+  { title: 'Shared with regulators', desc: 'Validated reports forwarded to relevant agencies.' },
+];
+
+// ── BulletinRow: news-style compact row for the homepage reports list ──────
+
+const BULLETIN_COMPANY_COLORS: Record<string, string> = {
+  waymo:    'bg-blue-50 text-blue-700 border border-blue-200',
+  zoox:     'bg-purple-50 text-purple-700 border border-purple-200',
+  cruise:   'bg-orange-50 text-orange-700 border border-orange-200',
+  tesla:    'bg-red-50 text-red-700 border border-red-200',
+  unknown:  'bg-slate-50 text-slate-600 border border-slate-200',
+};
+
+const BULLETIN_COMPANY_FALLBACK_BG: Record<string, string> = {
+  waymo:    'bg-blue-100 text-blue-600',
+  zoox:     'bg-purple-100 text-purple-600',
+  cruise:   'bg-orange-100 text-orange-600',
+  tesla:    'bg-red-100 text-red-600',
+};
+
+function bulletinTimeAgo(iso: string | null): string {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function BulletinRow({ item }: { item: BulletinItem }) {
+  const isCommunity = item.source_platform === 'community';
+  const company = item.av_company?.toLowerCase() ?? '';
+  const badgeClass = BULLETIN_COMPANY_COLORS[company] ?? BULLETIN_COMPANY_COLORS.unknown;
+  const fallbackBg = BULLETIN_COMPANY_FALLBACK_BG[company] ?? 'bg-slate-100 text-slate-500';
+  const initial = company ? company[0].toUpperCase() : '?';
+  const age = bulletinTimeAgo(item.first_seen_at);
+
+  const inner = (
+    <div className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-slate-50 sm:gap-4 sm:py-4">
+      {/* Thumbnail */}
+      <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg sm:h-14 sm:w-14 ${item.image_url ? 'bg-slate-100' : fallbackBg}`}>
+        {item.image_url ? (
+          <img
+            src={item.image_url}
+            alt=""
+            className="h-full w-full object-cover"
+            loading="lazy"
+            onError={(e) => {
+              const el = e.currentTarget as HTMLImageElement;
+              el.style.display = 'none';
+              el.parentElement!.classList.add(...fallbackBg.split(' '));
+              el.parentElement!.innerHTML = `<span class="text-lg font-bold">${initial}</span>`;
+            }}
+          />
+        ) : (
+          <span className="text-lg font-bold">{initial}</span>
+        )}
+      </div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <div className="mb-1 flex items-center gap-2 flex-wrap">
+          {item.av_company && (
+            <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${badgeClass}`}>
+              {item.av_company.charAt(0).toUpperCase() + item.av_company.slice(1)}
+            </span>
+          )}
+          {isCommunity && (
+            <span className="inline-block rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Community
+            </span>
+          )}
+          {age && <span className="text-xs text-slate-400">{age}</span>}
+        </div>
+        <p className="line-clamp-2 text-sm font-semibold text-[#2C3E50] group-hover:text-[#5B9DFF] transition leading-snug">
+          {item.title}
+        </p>
+        {item.location_text && (
+          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400 truncate">
+            <MapPin className="h-3 w-3 shrink-0" />
+            {item.location_text}
+          </p>
+        )}
+      </div>
+
+      {/* Arrow */}
+      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:text-[#5B9DFF]" />
+    </div>
+  );
+
+  if (item.source_url) {
+    return (
+      <a href={item.source_url} target="_blank" rel="noopener noreferrer">
+        {inner}
+      </a>
+    );
+  }
+
+  return <div>{inner}</div>;
+}
+
+function BulletinRowSkeleton() {
+  return (
+    <div className="flex items-center gap-3 py-3 sm:gap-4 sm:py-4 animate-pulse">
+      <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-200 sm:h-14 sm:w-14" />
+      <div className="flex-1 space-y-2">
+        <div className="h-3 w-20 rounded bg-slate-200" />
+        <div className="h-4 w-full rounded bg-slate-200" />
+        <div className="h-4 w-3/4 rounded bg-slate-200" />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -150,6 +325,12 @@ export default function Home() {
   const [reportInitialLoading, setReportInitialLoading] = useState(true);
   const [reportLoadingMore, setReportLoadingMore] = useState(false);
   const [mobileShowAll, setMobileShowAll] = useState(false);
+  const [reportFilters, setReportFilters] = useState<ReportFilters>(DEFAULT_REPORT_FILTERS);
+  const [reportLocationInput, setReportLocationInput] = useState('');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const reportFetchId = useRef(0);
+  const [pipelinePhase, setPipelinePhase] = useState(0);
   const [addressQuery, setAddressQuery] = useState('');
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodeError, setGeocodeError] = useState<string | null>(null);
@@ -188,28 +369,49 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch initial 6 reports
+  // Debounce location filter
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setReportFilters((prev) => ({ ...prev, location: reportLocationInput }));
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [reportLocationInput]);
+
+  // Pipeline step animation: 0–3 active, 4 = all done pause
+  // useEffect(() => {
+  //   const delay = pipelinePhase === 4 ? 1200 : 1800;
+  //   const t = setTimeout(() => setPipelinePhase((p) => (p + 1) % 5), delay);
+  //   return () => clearTimeout(t);
+  // }, [pipelinePhase]);
+
+  // Fetch reports (re-runs when filters change)
+  useEffect(() => {
+    const fetchId = ++reportFetchId.current;
+    setReportInitialLoading(true);
+    setReportItems([]);
+    setReportOffset(0);
+    setMobileShowAll(false);
     async function fetchReports() {
       try {
-        const res = await fetch(`${BULLETIN_API}?limit=${REPORTS_PAGE}&offset=0`);
+        const res = await fetch(`${BULLETIN_API}?${buildReportParams(0, reportFilters)}`);
         const data = await res.json();
+        if (reportFetchId.current !== fetchId) return;
         setReportItems(data.items ?? []);
         setReportHasMore(data.has_more ?? false);
       } catch {
         // silent — section just stays empty
       } finally {
-        setReportInitialLoading(false);
+        if (reportFetchId.current === fetchId) setReportInitialLoading(false);
       }
     }
     fetchReports();
-  }, []);
+  }, [reportFilters]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadMoreReports() {
     setReportLoadingMore(true);
     const nextOffset = reportOffset + REPORTS_PAGE;
     try {
-      const res = await fetch(`${BULLETIN_API}?limit=${REPORTS_PAGE}&offset=${nextOffset}`);
+      const res = await fetch(`${BULLETIN_API}?${buildReportParams(nextOffset, reportFilters)}`);
       const data = await res.json();
       setReportItems((prev) => [...prev, ...(data.items ?? [])]);
       setReportOffset(nextOffset);
@@ -1250,6 +1452,110 @@ export default function Home() {
         </div>
       </div>
 
+      {false && (
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-blue-50/40 to-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-[#2C3E50]">
+              What happens to your report?
+            </h2>
+            <p className="mt-2 text-slate-500 text-sm">
+              Every submission goes through our verification pipeline.
+            </p>
+          </div>
+
+          {/* Desktop: horizontal steps */}
+          <div className="hidden md:flex items-start">
+            {PIPELINE_STEPS.map((step, i) => {
+              const state = pipelinePhase === 4 ? 'done' : i < pipelinePhase ? 'done' : i === pipelinePhase ? 'active' : 'pending';
+              const lineActive = pipelinePhase === 4 ? true : pipelinePhase > i;
+              return (
+                <div key={i} className="contents">
+                  <div className="flex flex-col items-center text-center flex-1 min-w-0 px-2">
+                    {/* Circle */}
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500 mb-3 ${
+                      state === 'done'
+                        ? 'bg-emerald-500 shadow-md shadow-emerald-200 scale-100'
+                        : state === 'active'
+                        ? 'bg-[#5B9DFF] shadow-lg shadow-[#5B9DFF]/30 scale-110'
+                        : 'bg-white border-2 border-slate-200'
+                    }`}>
+                      {state === 'done' ? (
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      ) : (
+                        <span className={`text-sm font-bold transition-colors duration-300 ${state === 'active' ? 'text-white' : 'text-slate-400'}`}>
+                          {i + 1}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-sm font-semibold leading-snug transition-colors duration-300 ${
+                      state === 'pending' ? 'text-slate-400' : 'text-[#2C3E50]'
+                    }`}>
+                      {step.title}
+                    </p>
+                    <p className={`mt-1 text-xs leading-relaxed transition-colors duration-300 ${
+                      state === 'pending' ? 'text-slate-300' : 'text-slate-500'
+                    }`}>
+                      {step.desc}
+                    </p>
+                  </div>
+                  {i < 3 && (
+                    <div className="relative h-0.5 flex-1 self-start mt-[22px] shrink-0 mx-1">
+                      <div className="absolute inset-0 bg-slate-200 rounded-full" />
+                      <div className={`absolute inset-y-0 left-0 rounded-full bg-[#5B9DFF] transition-all duration-700 ${lineActive ? 'right-0' : 'right-full'}`} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile: vertical steps */}
+          <div className="md:hidden space-y-1">
+            {PIPELINE_STEPS.map((step, i) => {
+              const state = pipelinePhase === 4 ? 'done' : i < pipelinePhase ? 'done' : i === pipelinePhase ? 'active' : 'pending';
+              const lineActive = pipelinePhase === 4 ? true : pipelinePhase > i;
+              return (
+                <div key={i} className="flex gap-4 items-start">
+                  <div className="flex flex-col items-center shrink-0">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
+                      state === 'done'
+                        ? 'bg-emerald-500 shadow-md shadow-emerald-200'
+                        : state === 'active'
+                        ? 'bg-[#5B9DFF] shadow-lg shadow-[#5B9DFF]/30 scale-110'
+                        : 'bg-white border-2 border-slate-200'
+                    }`}>
+                      {state === 'done' ? (
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      ) : (
+                        <span className={`text-sm font-bold ${state === 'active' ? 'text-white' : 'text-slate-400'}`}>
+                          {i + 1}
+                        </span>
+                      )}
+                    </div>
+                    {i < 3 && (
+                      <div className="relative w-0.5 h-8 mt-1">
+                        <div className="absolute inset-0 bg-slate-200 rounded-full" />
+                        <div className={`absolute inset-x-0 top-0 rounded-full bg-[#5B9DFF] transition-all duration-700 ${lineActive ? 'bottom-0' : 'bottom-full'}`} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pb-4 pt-1.5">
+                    <p className={`text-sm font-semibold transition-colors duration-300 ${state === 'pending' ? 'text-slate-400' : 'text-[#2C3E50]'}`}>
+                      {step.title}
+                    </p>
+                    <p className={`text-xs mt-0.5 transition-colors duration-300 ${state === 'pending' ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {step.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+      )}
+
       {/* ─────────────────────── WHY IT MATTERS ─────────────────────── */}
       <section
         className="relative py-16 lg:py-28 border-t border-b border-slate-200 overflow-hidden"
@@ -1274,7 +1580,7 @@ export default function Home() {
 
             <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
               <p>
-                Yet there is no simple, fast way for people to report what they witness on the road.{' '}
+                Yet there is no simple, quick way for people to report what they witness on the road.{' '}
                 <span className="font-semibold text-[#2C3E50]">AV Watch changes that.</span>
               </p>
               <p>
@@ -1293,15 +1599,219 @@ export default function Home() {
       {/* ─────────────────────── RECENT REPORTS ─────────────────────── */}
       <section id="reports" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-10">
+          <div className="mb-6">
             <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
               Recent Reports
             </h2>
             <p className="text-slate-500">
-              {/* Autonomous Vehicle incidents from real community reports. */}
               Incidents reported by the community.
             </p>
           </div>
+
+          {/* ── Filters ── */}
+          {(() => {
+            const activeCount = countReportFilters(reportFilters);
+            const clearFilters = () => { setReportFilters(DEFAULT_REPORT_FILTERS); setReportLocationInput(''); };
+
+            const lbl = 'block text-xs font-medium text-slate-600 mb-1';
+            const ctrl = (active: boolean) =>
+              `w-full rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
+                active ? 'border-[#5B9DFF]/50 bg-blue-50 text-[#5B9DFF]' : 'border-slate-200'
+              }`;
+
+            // Desktop: labeled fields in a flex row
+            const desktopFilters = (
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="flex-1 min-w-[180px]">
+                  <label className={lbl}>Location</label>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="City or neighborhood…"
+                      value={reportLocationInput}
+                      onChange={(e) => setReportLocationInput(e.target.value)}
+                      className={`${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2 placeholder:text-slate-400`}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={lbl}>Company</label>
+                  <select
+                    value={reportFilters.avCompany}
+                    onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
+                    className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2 cursor-pointer`}
+                  >
+                    {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={lbl}>Incident type</label>
+                  <select
+                    value={reportFilters.incidentType}
+                    onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
+                    className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2 cursor-pointer`}
+                  >
+                    {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className={lbl}>Date range</label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="date"
+                      value={reportFilters.dateFrom}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2 w-[132px]`}
+                      title="From date"
+                    />
+                    <span className="text-slate-400 text-s shrink-0">to</span>
+                    <input
+                      type="date"
+                      value={reportFilters.dateTo}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2 w-[132px]`}
+                      title="To date"
+                    />
+                  </div>
+                </div>
+                {activeCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 hover:text-[#5B9DFF] hover:border-[#5B9DFF]/40 transition self-end"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Clear
+                  </button>
+                )}
+              </div>
+            );
+
+            // Mobile: 2-column grid with labels
+            const mobileFilters = (
+              <div className="flex flex-col gap-3">
+                <div>
+                  <label className={lbl}>Location</label>
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="City or neighborhood…"
+                      value={reportLocationInput}
+                      onChange={(e) => setReportLocationInput(e.target.value)}
+                      className={`${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2.5 placeholder:text-slate-400`}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={lbl}>Company</label>
+                    <select
+                      value={reportFilters.avCompany}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
+                      className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2.5 cursor-pointer`}
+                    >
+                      {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={lbl}>Incident type</label>
+                    <select
+                      value={reportFilters.incidentType}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
+                      className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2.5 cursor-pointer`}
+                    >
+                      {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={lbl}>From date</label>
+                    <input
+                      type="date"
+                      value={reportFilters.dateFrom}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
+                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2.5`}
+                    />
+                  </div>
+                  <div>
+                    <label className={lbl}>To date</label>
+                    <input
+                      type="date"
+                      value={reportFilters.dateTo}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
+                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2.5`}
+                    />
+                  </div>
+                </div>
+                {activeCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center justify-center gap-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-500 hover:text-[#5B9DFF] hover:border-[#5B9DFF]/40 transition"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+            );
+
+            return (
+              <div className="mb-8">
+                {/* Mobile: single card with toggle header */}
+                <div className={`sm:hidden rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showMobileFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
+                  <button
+                    onClick={() => setShowMobileFilters((v) => !v)}
+                    className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showMobileFilters ? 'bg-slate-50' : 'hover:bg-slate-50'}`}
+                  >
+                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
+                    <span className="flex-1 text-left">Filter reports</span>
+                    {activeCount > 0 && (
+                      <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
+                        {activeCount}
+                      </span>
+                    )}
+                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showMobileFilters ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showMobileFilters && (
+                    <div className="px-4 pb-5 border-t border-slate-100">
+                      <div className="pt-4">
+                        {mobileFilters}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* Desktop */}
+                <div className={`hidden sm:block rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showDesktopFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
+                  <button
+                    onClick={() => setShowDesktopFilters((v) => !v)}
+                    className={`w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showDesktopFilters ? 'bg-slate-50 border-b border-slate-100' : 'hover:bg-slate-50'}`}
+                  >
+                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
+                    <span className="flex-1 text-left">Filter reports</span>
+                    {activeCount > 0 && (
+                      <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
+                        {activeCount}
+                      </span>
+                    )}
+                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showDesktopFilters ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showDesktopFilters && (
+                    <div className="px-5 py-4">
+                      {desktopFilters}
+                    </div>
+                  )}
+                </div>
+                {!reportInitialLoading && activeCount > 0 && (
+                  <p className="mt-2 text-xs text-slate-500">
+                    {reportItems.length === 0
+                      ? 'No reports match these filters'
+                      : `${reportItems.length}${reportHasMore ? '+' : ''} ${reportItems.length === 1 ? 'report' : 'reports'} found`}
+                  </p>
+                )}
+              </div>
+            );
+          })()}
+
 
           {reportInitialLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -1380,8 +1890,9 @@ export default function Home() {
         </div>
       </section>
 
+
       {/* ─────────────────────── NEWS HEADLINES ─────────────────────── */}
-      <section id="news" className="py-20 bg-white">
+      {/* <section id="news" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
@@ -1393,7 +1904,7 @@ export default function Home() {
           </div>
           <NewsHeadlines />
         </div>
-      </section>
+      </section> */}
 
       {/* ─────────────────────── ABOUT SECTION ─────────────────────── */}
       <section
