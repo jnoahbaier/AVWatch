@@ -16,13 +16,25 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '6', 10), 50);
   const offset = parseInt(searchParams.get('offset') ?? '0', 10);
+  const avCompany = searchParams.get('av_company');
+  const incidentType = searchParams.get('incident_type');
+  const location = searchParams.get('location');
+  const dateFrom = searchParams.get('date_from');
+  const dateTo = searchParams.get('date_to');
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('bulletin_items')
     .select('*', { count: 'exact' })
     .in('status', ['active', 'published'])
-    .order('first_seen_at', { ascending: false })
-    .range(offset, offset + limit - 1);
+    .order('first_seen_at', { ascending: false });
+
+  if (avCompany) query = query.eq('av_company', avCompany.toLowerCase());
+  if (incidentType) query = query.eq('incident_type', incidentType.toLowerCase());
+  if (location) query = query.ilike('location_text', `%${location}%`);
+  if (dateFrom) query = query.gte('first_seen_at', `${dateFrom}T00:00:00`);
+  if (dateTo) query = query.lte('first_seen_at', `${dateTo}T23:59:59`);
+
+  const { data, error, count } = await query.range(offset, offset + limit - 1);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

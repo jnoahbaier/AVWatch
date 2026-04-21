@@ -1678,7 +1678,7 @@ export default function Home() {
                 {activeCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 hover:text-[#5B9DFF] hover:border-[#5B9DFF]/40 transition self-end"
+                    className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-400 hover:text-red-500 hover:border-red-200 transition self-end"
                   >
                     <X className="h-3.5 w-3.5" />
                     Clear
