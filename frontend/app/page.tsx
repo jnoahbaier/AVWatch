@@ -1633,48 +1633,72 @@ export default function Home() {
                       placeholder="City or neighborhood…"
                       value={reportLocationInput}
                       onChange={(e) => setReportLocationInput(e.target.value)}
-                      className={`${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2 placeholder:text-slate-400`}
+                      className={`${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2 h-[38px] placeholder:text-slate-400`}
                     />
                   </div>
                 </div>
                 <div className="shrink-0">
                   <label className={lbl}>Company</label>
-                  <select
-                    value={reportFilters.avCompany}
-                    onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2 cursor-pointer w-[148px]`}
-                  >
-                    {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-                  </select>
+                  <div className={`relative flex items-center w-[148px] h-[38px] ${ctrl(!!reportFilters.avCompany)}`}>
+                    <select
+                      value={reportFilters.avCompany}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    >
+                      {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                    </select>
+                    <span className="flex-1 px-3 text-sm truncate pointer-events-none">
+                      {FILTER_COMPANIES.find(c => c.value === reportFilters.avCompany)?.label ?? 'All companies'}
+                    </span>
+                    <ChevronDown className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div className="shrink-0">
                   <label className={lbl}>Incident type</label>
-                  <select
-                    value={reportFilters.incidentType}
-                    onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2 cursor-pointer w-[168px]`}
-                  >
-                    {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
+                  <div className={`relative flex items-center w-[168px] h-[38px] ${ctrl(!!reportFilters.incidentType)}`}>
+                    <select
+                      value={reportFilters.incidentType}
+                      onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    >
+                      {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    </select>
+                    <span className="flex-1 px-3 text-sm truncate pointer-events-none">
+                      {FILTER_INCIDENT_TYPES.find(t => t.value === reportFilters.incidentType)?.label ?? 'All incident types'}
+                    </span>
+                    <ChevronDown className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div>
                   <label className={lbl}>Date range</label>
                   <div className="flex items-center gap-1.5">
-                    <input
-                      type="date"
-                      value={reportFilters.dateFrom}
-                      onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateFrom)} px-3 py-2 w-[132px]`}
-                      title="From date"
-                    />
-                    <span className="text-slate-400 text-s shrink-0">to</span>
-                    <input
-                      type="date"
-                      value={reportFilters.dateTo}
-                      onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                      className={`${ctrl(!!reportFilters.dateTo)} px-3 py-2 w-[132px]`}
-                      title="To date"
-                    />
+                    <div className={`relative flex items-center w-[132px] h-[38px] ${ctrl(!!reportFilters.dateFrom)}`}>
+                      <input
+                        type="date"
+                        value={reportFilters.dateFrom}
+                        onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="From date"
+                      />
+                      <span className="flex-1 px-3 text-sm truncate pointer-events-none text-slate-400">
+                        {reportFilters.dateFrom || 'From'}
+                      </span>
+                      <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    </div>
+                    <span className="text-slate-400 text-sm shrink-0">to</span>
+                    <div className={`relative flex items-center w-[132px] h-[38px] ${ctrl(!!reportFilters.dateTo)}`}>
+                      <input
+                        type="date"
+                        value={reportFilters.dateTo}
+                        onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        title="To date"
+                      />
+                      <span className="flex-1 px-3 text-sm truncate pointer-events-none text-slate-400">
+                        {reportFilters.dateTo || 'To'}
+                      </span>
+                      <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
                 <button
