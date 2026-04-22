@@ -76,11 +76,11 @@ const FILTER_COMPANIES = [
 
 const FILTER_INCIDENT_TYPES = [
   { value: '', label: 'All incident types' },
-  { value: 'reckless_driving', label: 'Reckless Driving' },
-  { value: 'blocking_traffic', label: 'Blocking Traffic' },
+  { value: 'sudden_behavior', label: 'Reckless Driving' },
+  { value: 'blockage', label: 'Blocking Traffic' },
   { value: 'collision', label: 'Collision' },
   { value: 'vandalism', label: 'Vandalism' },
-  { value: 'accessbility_issue', label: 'Accessibility Issue' },
+  { value: 'accessibility_issue', label: 'Accessibility Issue' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -743,7 +743,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-6 lg:gap-16 items-start">
 
             {/* ── LEFT: copy + imagery ── */}
-            <div className="pt-4 flex flex-col min-h-[calc(100svh-7rem)] lg:min-h-0">
+            <div className="pt-4 flex flex-col min-h-[calc(100svh-7rem)] sm:min-h-0 lg:min-h-0">
                 <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
                   Witnessed an<br />
                   <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
@@ -753,8 +753,8 @@ export default function Home() {
                   Report it here to make autonomous driving safer for everyone.
                 </p>
 
-              {/* Mobile CTA — vertically and horizontally centered in remaining viewport space */}
-              <div className="lg:hidden flex-1 flex items-center justify-center">
+              {/* Mobile CTA — only on small screens where form is below the fold */}
+              <div className="sm:hidden flex-1 flex items-center justify-center">
                 <button
                   type="button"
                   onClick={() => document.getElementById('report-form')?.scrollIntoView({ behavior: 'smooth' })}
@@ -766,7 +766,7 @@ export default function Home() {
               </div>
 
               {/* Trust indicators — desktop only */}
-              <div className="hidden md:flex flex-wrap gap-3 mt-2">
+              <div className="hidden lg:flex flex-wrap gap-3 mt-2">
                 {[
                   { icon: EyeOff, label: 'Anonymous' },
                   { icon: LockOpen, label: 'No account needed' },
@@ -787,7 +787,7 @@ export default function Home() {
               {/* AV car imagery — drives in from left on scroll (desktop only) */}
               <div
                 ref={carRef}
-                className={`hidden md:block relative mt-20 lg:mt-24 lg:-mr-32 lg:-translate-y-16 xl:-translate-y-20 transition-all duration-[1100ms] ease-out ${
+                className={`hidden lg:block relative mt-20 lg:mt-24 lg:-mr-32 lg:-translate-y-16 xl:-translate-y-20 transition-all duration-[1100ms] ease-out ${
                   carInView
                     ? 'translate-x-0 opacity-100'
                     : 'lg:-translate-x-full opacity-0'

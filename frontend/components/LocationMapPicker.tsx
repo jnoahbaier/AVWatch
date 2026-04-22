@@ -94,10 +94,26 @@ export function LocationMapPicker({ onLocationSelect, selectedLat, selectedLng }
 
   return (
     <div className="space-y-1.5">
-      <div
-        ref={mapContainer}
-        className="w-full h-44 rounded-xl overflow-hidden border border-slate-200"
-      />
+      <div className="relative">
+        <div
+          ref={mapContainer}
+          className="w-full h-44 rounded-xl overflow-hidden border border-slate-200"
+        />
+        <div className="absolute bottom-2 right-2 flex flex-col gap-0.5 z-10">
+          <button
+            type="button"
+            onClick={() => mapRef.current?.zoomIn()}
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm text-base leading-none font-medium"
+            aria-label="Zoom in"
+          >+</button>
+          <button
+            type="button"
+            onClick={() => mapRef.current?.zoomOut()}
+            className="w-7 h-7 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm text-base leading-none font-medium"
+            aria-label="Zoom out"
+          >−</button>
+        </div>
+      </div>
       <p className="text-xs text-slate-400 text-center">Tap anywhere on the map to pin the incident location</p>
     </div>
   );
