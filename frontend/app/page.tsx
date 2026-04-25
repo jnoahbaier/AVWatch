@@ -46,7 +46,10 @@ const LocationMapPicker = dynamic(
   { ssr: false }
 );
 
-const BULLETIN_API = '/api/bulletin';
+// Use FastAPI backend directly (same as /bulletin page) to support all filters including source_platform.
+// Falls back to the Next.js Supabase proxy if the env var is not set.
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const BULLETIN_API = BACKEND_URL ? `${BACKEND_URL}/api/bulletin` : '/api/bulletin';
 const REPORTS_PAGE = 6;
 
 interface ReportFilters {
@@ -55,6 +58,7 @@ interface ReportFilters {
   dateTo: string;
   avCompany: string;
   incidentType: string;
+  sourcePlatform: string;
 }
 
 const DEFAULT_REPORT_FILTERS: ReportFilters = {
@@ -63,6 +67,7 @@ const DEFAULT_REPORT_FILTERS: ReportFilters = {
   dateTo: '',
   avCompany: '',
   incidentType: '',
+  sourcePlatform: 'community',
 };
 
 const FILTER_COMPANIES = [
@@ -91,6 +96,7 @@ function buildReportParams(offset: number, filters: ReportFilters): string {
   if (filters.dateTo) p.set('date_to', filters.dateTo);
   if (filters.avCompany) p.set('av_company', filters.avCompany);
   if (filters.incidentType) p.set('incident_type', filters.incidentType);
+  if (filters.sourcePlatform) p.set('source_platform', filters.sourcePlatform);
   return p.toString();
 }
 
@@ -1601,13 +1607,41 @@ export default function Home() {
       {/* ─────────────────────── RECENT REPORTS ─────────────────────── */}
       <section id="reports" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
-              Recent Reports
-            </h2>
-            <p className="text-slate-500">
-              Incidents reported by the community.
-            </p>
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-[#2C3E50] mb-2">
+                Recent Reports
+              </h2>
+              <p className="text-slate-500">
+                {reportFilters.sourcePlatform === 'community'
+                  ? 'Incidents submitted directly by AV Watch users.'
+                  : 'Incidents aggregated from Reddit communities.'}
+              </p>
+            </div>
+
+            {/* Source toggle */}
+            <div className="flex shrink-0 items-center gap-1 p-1 rounded-xl bg-slate-200/70 self-start sm:self-auto">
+              <button
+                onClick={() => setReportFilters((p) => ({ ...p, sourcePlatform: 'community' }))}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  reportFilters.sourcePlatform === 'community'
+                    ? 'bg-white text-[#2C3E50] shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                AV Watch
+              </button>
+              <button
+                onClick={() => setReportFilters((p) => ({ ...p, sourcePlatform: 'reddit' }))}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  reportFilters.sourcePlatform === 'reddit'
+                    ? 'bg-white text-[#2C3E50] shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Reddit
+              </button>
+            </div>
           </div>
 
           {/* ── Filters ── */}
@@ -1862,7 +1896,13 @@ export default function Home() {
               ))}
             </div>
           ) : reportItems.length === 0 ? (
-            <p className="text-slate-400 text-sm">{countReportFilters(reportFilters) > 0 ? 'No reports match these filters.' : 'No reports yet.'}</p>
+            <p className="text-slate-400 text-sm">
+              {countReportFilters(reportFilters) > 0
+                ? 'No reports match these filters.'
+                : reportFilters.sourcePlatform === 'community'
+                ? 'No community reports yet — be the first to submit one above!'
+                : 'No Reddit reports yet. Check back soon.'}
+            </p>
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
   const location = searchParams.get('location');
   const dateFrom = searchParams.get('date_from');
   const dateTo = searchParams.get('date_to');
+  const sourcePlatform = searchParams.get('source_platform');
 
   let query = supabase
     .from('bulletin_items')
@@ -33,6 +34,7 @@ export async function GET(req: NextRequest) {
   if (location) query = query.ilike('location_text', `%${location}%`);
   if (dateFrom) query = query.gte('first_seen_at', `${dateFrom}T00:00:00`);
   if (dateTo) query = query.lte('first_seen_at', `${dateTo}T23:59:59`);
+  if (sourcePlatform) query = query.eq('source_platform', sourcePlatform.toLowerCase());
 
   const { data, error, count } = await query.range(offset, offset + limit - 1);
 

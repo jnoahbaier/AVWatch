@@ -21,7 +21,7 @@ const DEFAULT_FILTERS: Filters = {
   location: '',
   dateFrom: '',
   dateTo: '',
-  sourcePlatform: '',
+  sourcePlatform: 'community',
   communityBacked: false,
   avCompany: '',
   incidentType: '',
@@ -343,14 +343,41 @@ export default function BulletinPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* Page header */}
-        <div className="py-10 pb-6">
-          <h1 className="text-3xl font-bold text-[#2C3E50] tracking-tight">
-            Recent Reports
-          </h1>
-          <p className="mt-2 text-slate-500 text-sm max-w-xl">
-            Autonomous vehicle incidents from real community reports.
-            Updated every hour.
-          </p>
+        <div className="py-10 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#2C3E50] tracking-tight">
+              Recent Reports
+            </h1>
+            <p className="mt-2 text-slate-500 text-sm max-w-xl">
+              {filters.sourcePlatform === 'community'
+                ? 'Incidents submitted directly by AV Watch users.'
+                : 'Incidents aggregated from Reddit communities. Updated hourly.'}
+            </p>
+          </div>
+
+          {/* Source toggle */}
+          <div className="flex shrink-0 items-center gap-1 p-1 rounded-xl bg-slate-200/70 self-start sm:self-auto">
+            <button
+              onClick={() => setFilters((p) => ({ ...p, sourcePlatform: 'community' }))}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                filters.sourcePlatform === 'community'
+                  ? 'bg-white text-[#2C3E50] shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              AV Watch
+            </button>
+            <button
+              onClick={() => setFilters((p) => ({ ...p, sourcePlatform: 'reddit' }))}
+              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                filters.sourcePlatform === 'reddit'
+                  ? 'bg-white text-[#2C3E50] shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Reddit
+            </button>
+          </div>
         </div>
 
         {/* Filters */}

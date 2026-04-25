@@ -11,7 +11,7 @@ from uuid import UUID
 
 import re
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, File
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, UploadFile, File
 from geoalchemy2 import WKTElement
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.incident import Incident
 from app.models.blocked_ip import BlockedIP
+from app.services.bulletin.individual_report_card import generate_card_for_report
 
 # ---------------------------------------------------------------------------
 # Simple in-memory rate limiter: max 5 submissions per IP per 10 minutes
@@ -110,6 +111,7 @@ class IncidentCreate(BaseModel):
 async def create_incident(
     incident: IncidentCreate,
     request: Request,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -154,6 +156,11 @@ async def create_incident(
     )
     db.add(incident_obj)
     await db.flush()
+    await db.commit()  # commit now so the background task can find this incident by ID
+
+    # Immediately create a bulletin card for this report (Gemini runs async)
+    background_tasks.add_task(generate_card_for_report, str(incident_obj.id))
+
     return {
         "message": "Incident reported successfully",
         "id": str(incident_obj.id),
