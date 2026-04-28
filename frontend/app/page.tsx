@@ -1651,7 +1651,7 @@ export default function Home() {
 
             const lbl = 'block text-xs font-medium text-slate-600 mb-1';
             const ctrl = (active: boolean) =>
-              `w-full rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
+              `rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
                 active ? 'border-[#5B9DFF]/50 bg-blue-50 text-[#5B9DFF]' : 'border-slate-200'
               }`;
 
@@ -1667,13 +1667,13 @@ export default function Home() {
                       placeholder="City or neighborhood…"
                       value={reportLocationInput}
                       onChange={(e) => setReportLocationInput(e.target.value)}
-                      className={`${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2 h-[38px] placeholder:text-slate-400`}
+                      className={`w-full ${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2 h-[38px] placeholder:text-slate-400`}
                     />
                   </div>
                 </div>
                 <div className="shrink-0">
                   <label className={lbl}>Company</label>
-                  <div className={`relative flex items-center w-[148px] h-[38px] ${ctrl(!!reportFilters.avCompany)}`}>
+                  <div className={`relative flex items-center w-[168px] h-[38px] ${ctrl(!!reportFilters.avCompany)}`}>
                     <select
                       value={reportFilters.avCompany}
                       onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
@@ -1689,7 +1689,7 @@ export default function Home() {
                 </div>
                 <div className="shrink-0">
                   <label className={lbl}>Incident type</label>
-                  <div className={`relative flex items-center w-[168px] h-[38px] ${ctrl(!!reportFilters.incidentType)}`}>
+                  <div className={`relative flex items-center w-[204px] h-[38px] ${ctrl(!!reportFilters.incidentType)}`}>
                     <select
                       value={reportFilters.incidentType}
                       onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
@@ -1706,7 +1706,7 @@ export default function Home() {
                 <div>
                   <label className={lbl}>Date range</label>
                   <div className="flex items-center gap-1.5">
-                    <div className={`relative flex items-center w-[132px] h-[38px] ${ctrl(!!reportFilters.dateFrom)}`}>
+                    <div className={`relative flex items-center w-[144px] h-[38px] ${ctrl(!!reportFilters.dateFrom)}`}>
                       <input
                         type="date"
                         value={reportFilters.dateFrom}
@@ -1720,7 +1720,7 @@ export default function Home() {
                       <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
                     </div>
                     <span className="text-slate-400 text-sm shrink-0">to</span>
-                    <div className={`relative flex items-center w-[132px] h-[38px] ${ctrl(!!reportFilters.dateTo)}`}>
+                    <div className={`relative flex items-center w-[144px] h-[38px] ${ctrl(!!reportFilters.dateTo)}`}>
                       <input
                         type="date"
                         value={reportFilters.dateTo}
@@ -1758,7 +1758,7 @@ export default function Home() {
                       placeholder="City or neighborhood…"
                       value={reportLocationInput}
                       onChange={(e) => setReportLocationInput(e.target.value)}
-                      className={`${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2.5 placeholder:text-slate-400`}
+                      className={`w-full ${ctrl(!!reportFilters.location)} pl-8 pr-3 py-2.5 placeholder:text-slate-400`}
                     />
                   </div>
                 </div>
@@ -1767,7 +1767,7 @@ export default function Home() {
                   <select
                     value={reportFilters.avCompany}
                     onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.avCompany)} px-3 py-2.5 cursor-pointer`}
+                    className={`w-full ${ctrl(!!reportFilters.avCompany)} px-3 py-2.5 cursor-pointer`}
                   >
                     {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
@@ -1777,7 +1777,7 @@ export default function Home() {
                   <select
                     value={reportFilters.incidentType}
                     onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
-                    className={`${ctrl(!!reportFilters.incidentType)} px-3 py-2.5 cursor-pointer`}
+                    className={`w-full ${ctrl(!!reportFilters.incidentType)} px-3 py-2.5 cursor-pointer`}
                   >
                     {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
@@ -1785,7 +1785,7 @@ export default function Home() {
                 <div>
                   <label className={lbl}>Date range</label>
                   <div className="flex flex-col gap-1.5">
-                    <div className={`relative flex items-center ${ctrl(!!reportFilters.dateFrom)}`}>
+                    <div className={`relative flex w-full items-center ${ctrl(!!reportFilters.dateFrom)}`}>
                       <input
                         type="date"
                         value={reportFilters.dateFrom}
@@ -1799,7 +1799,7 @@ export default function Home() {
                       <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" />
                     </div>
                     <span className="text-center text-sm text-slate-400">to</span>
-                    <div className={`relative flex items-center ${ctrl(!!reportFilters.dateTo)}`}>
+                    <div className={`relative flex w-full items-center ${ctrl(!!reportFilters.dateTo)}`}>
                       <input
                         type="date"
                         value={reportFilters.dateTo}
