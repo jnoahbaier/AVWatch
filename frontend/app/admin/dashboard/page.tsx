@@ -7,6 +7,22 @@ import { formatDate } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+interface BulletinCard {
+  id: string;
+  title: string;
+  summary: string;
+  av_company: string | null;
+  incident_type: string | null;
+  location_text: string | null;
+  source_platform: string | null;
+  status: string;
+  signal_count: number;
+  user_report_ids: string[];
+  occurred_at: string | null;
+  first_seen_at: string;
+  image_url: string | null;
+}
+
 interface Incident {
   id: string;
   incident_type: string;
@@ -438,6 +454,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Tab
+  const [activeTab, setActiveTab] = useState<'incidents' | 'bulletin'>('incidents');
+
   // Filters
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -447,6 +466,13 @@ export default function AdminDashboard() {
   const [detailTarget, setDetailTarget] = useState<Incident | null>(null);
   const [discardTarget, setDiscardTarget] = useState<Incident | null>(null);
   const [corrobTarget, setCorrobTarget] = useState<Incident | null>(null);
+
+  // Bulletin cards
+  const [bulletinCards, setBulletinCards] = useState<BulletinCard[]>([]);
+  const [bulletinTotal, setBulletinTotal] = useState(0);
+  const [bulletinLoading, setBulletinLoading] = useState(false);
+  const [bulletinPlatform, setBulletinPlatform] = useState('community');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Toast
   const [toast, setToast] = useState('');
@@ -565,6 +591,34 @@ export default function AdminDashboard() {
     else showToast('Error — could not link reports');
   }
 
+  const fetchBulletin = useCallback(async () => {
+    setBulletinLoading(true);
+    try {
+      const params = new URLSearchParams({ page: '1', page_size: '50' });
+      if (bulletinPlatform) params.set('source_platform', bulletinPlatform);
+      const res = await fetch(`/api/admin/bulletin?${params}`);
+      if (!res.ok) throw new Error('Failed to load bulletin cards');
+      const data = await res.json();
+      setBulletinCards(data.items);
+      setBulletinTotal(data.total);
+    } catch {
+      showToast('Error loading bulletin cards');
+    } finally {
+      setBulletinLoading(false);
+    }
+  }, [bulletinPlatform]);
+
+  useEffect(() => {
+    if (activeTab === 'bulletin') fetchBulletin();
+  }, [activeTab, fetchBulletin]);
+
+  async function handleDeleteCard(id: string) {
+    const res = await fetch(`/api/admin/bulletin/${id}`, { method: 'DELETE' });
+    setDeleteConfirmId(null);
+    if (res.ok) { showToast('Card deleted'); fetchBulletin(); }
+    else showToast('Error — could not delete card');
+  }
+
   // ── Render ───────────────────────────────────────────────────────────────
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -578,7 +632,20 @@ export default function AdminDashboard() {
             <Image src="/navbar_logo_final.png" alt="AV Watch" width={120} height={30} className="h-[24px] w-auto object-contain" />
             <span className="text-[#2C3E50] font-semibold">Admin</span>
             <span className="text-slate-300">/</span>
-            <span className="text-slate-500 text-sm">Reports Queue</span>
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-100">
+              <button
+                onClick={() => setActiveTab('incidents')}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'incidents' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Reports Queue
+              </button>
+              <button
+                onClick={() => setActiveTab('bulletin')}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${activeTab === 'bulletin' ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Bulletin Cards
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-slate-400 text-sm hidden sm:block">{session?.user?.email}</span>
@@ -599,6 +666,101 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* ── Bulletin Cards Tab ─────────────────────────────────────────── */}
+        {activeTab === 'bulletin' && (
+          <div>
+            <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+              <div>
+                <h2 className="text-white font-semibold text-lg">Bulletin Cards</h2>
+                <p className="text-slate-400 text-sm mt-0.5">{bulletinTotal} card{bulletinTotal !== 1 ? 's' : ''} total</p>
+              </div>
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-700/50">
+                {['community', 'reddit', ''].map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setBulletinPlatform(v)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${bulletinPlatform === v ? 'bg-white text-[#2C3E50] shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                  >
+                    {v === 'community' ? 'AV Watch' : v === 'reddit' ? 'Reddit' : 'All'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {bulletinLoading ? (
+              <p className="text-slate-400 text-sm">Loading…</p>
+            ) : bulletinCards.length === 0 ? (
+              <p className="text-slate-500 text-sm py-16 text-center">No bulletin cards found.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {bulletinCards.map((card) => (
+                  <div key={card.id} className="rounded-xl border border-[#415A73] bg-[#34495E] overflow-hidden flex flex-col">
+                    {card.image_url ? (
+                      <div className="h-36 w-full overflow-hidden bg-slate-700">
+                        <img src={card.image_url} alt={card.title} className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="h-36 w-full bg-gradient-to-br from-emerald-900/40 to-emerald-800/20 flex items-center justify-center px-4">
+                        <p className="text-emerald-300 text-xs text-center line-clamp-3">{card.summary}</p>
+                      </div>
+                    )}
+                    <div className="p-4 flex flex-col flex-1 gap-2">
+                      <p className="text-white text-sm font-semibold line-clamp-2 leading-snug">{card.title}</p>
+                      <p className="text-slate-400 text-xs line-clamp-2 flex-1">{card.summary}</p>
+                      <div className="flex flex-wrap gap-1 text-[10px]">
+                        {card.av_company && (
+                          <span className="px-2 py-0.5 rounded-full bg-blue-900/40 text-blue-300 border border-blue-700/40 capitalize">{card.av_company}</span>
+                        )}
+                        {card.source_platform && (
+                          <span className={`px-2 py-0.5 rounded-full border ${card.source_platform === 'community' ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/40' : 'bg-orange-900/30 text-orange-300 border-orange-700/40'}`}>
+                            {card.source_platform === 'community' ? 'AV Watch' : 'Reddit'}
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded-full bg-slate-700 text-slate-400 border border-slate-600">
+                          {card.user_report_ids.length} report{card.user_report_ids.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      {card.location_text && (
+                        <p className="text-slate-500 text-[10px] truncate">📍 {card.location_text}</p>
+                      )}
+                      <div className="pt-2 border-t border-[#415A73] mt-auto">
+                        {deleteConfirmId === card.id ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-red-400 text-xs flex-1">Delete this card?</span>
+                            <button
+                              onClick={() => handleDeleteCard(card.id)}
+                              className="px-2 py-1 rounded bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition-colors"
+                            >
+                              Yes, delete
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="px-2 py-1 rounded bg-slate-600 hover:bg-slate-500 text-slate-200 text-xs transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteConfirmId(card.id)}
+                            className="w-full px-3 py-1.5 rounded-lg bg-red-900/30 hover:bg-red-800/50 text-red-400 text-xs font-medium border border-red-800/40 transition-colors"
+                          >
+                            🗑 Delete card
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Incidents Tab ─────────────────────────────────────────────── */}
+        {activeTab === 'incidents' && <>
+
         {/* Stats */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
@@ -802,6 +964,7 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+        </>}
       </div>
 
       {/* Modals */}

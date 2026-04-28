@@ -20,6 +20,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.admin_allowlist import AdminAllowlist
 from app.models.blocked_ip import BlockedIP
+from app.models.bulletin_item import BulletinItem
 from app.models.incident import Incident
 
 router = APIRouter()
@@ -350,6 +351,90 @@ async def admin_remove_allowlist(email: str, db: AsyncSession = Depends(get_db))
     await db.delete(entry)
     await db.flush()
     return {"message": "Email removed", "email": email}
+
+
+# ============================================================================
+# Bulletin cards
+# ============================================================================
+
+
+@router.get("/bulletin", dependencies=[Depends(require_admin)])
+async def admin_list_bulletin(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200),
+    source_platform: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """List all bulletin cards for admin review."""
+    filters = []
+    if source_platform:
+        filters.append(BulletinItem.source_platform == source_platform.lower())
+
+    count_stmt = select(func.count(BulletinItem.id))
+    for f in filters:
+        count_stmt = count_stmt.where(f)
+    total = (await db.execute(count_stmt)).scalar_one()
+
+    stmt = select(BulletinItem)
+    for f in filters:
+        stmt = stmt.where(f)
+    stmt = stmt.order_by(BulletinItem.first_seen_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    rows = (await db.execute(stmt)).scalars().all()
+
+    items = [
+        {
+            "id": str(item.id),
+            "title": item.title,
+            "summary": item.summary,
+            "av_company": item.av_company,
+            "incident_type": item.incident_type,
+            "location_text": item.location_text,
+            "source_platform": item.source_platform,
+            "status": item.status,
+            "signal_count": item.signal_count,
+            "user_report_ids": item.user_report_ids or [],
+            "occurred_at": item.occurred_at.isoformat() if item.occurred_at else None,
+            "first_seen_at": item.first_seen_at.isoformat(),
+            "image_url": item.image_url,
+        }
+        for item in rows
+    ]
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size if total > 0 else 0,
+    }
+
+
+@router.delete("/bulletin/{card_id}", dependencies=[Depends(require_admin)])
+async def admin_delete_bulletin(card_id: UUID, db: AsyncSession = Depends(get_db)):
+    """
+    Delete a bulletin card and reset any linked incidents so they can
+    generate a fresh card if needed.
+    """
+    result = await db.execute(select(BulletinItem).where(BulletinItem.id == card_id))
+    card = result.scalar_one_or_none()
+    if not card:
+        raise HTTPException(status_code=404, detail="Bulletin card not found")
+
+    # Reset all incidents that were linked to this card
+    report_ids = card.user_report_ids or []
+    for rid in report_ids:
+        try:
+            inc_result = await db.execute(select(Incident).where(Incident.id == UUID(rid)))
+            inc = inc_result.scalar_one_or_none()
+            if inc:
+                inc.matched_bulletin_item_id = None
+                inc.status = "verified"  # back to verified so backfill can re-process
+        except Exception:
+            pass  # malformed UUID — skip
+
+    await db.delete(card)
+    await db.flush()
+    return {"message": "Bulletin card deleted", "id": str(card_id)}
 
 
 # ============================================================================
