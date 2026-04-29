@@ -260,28 +260,29 @@ function BulletinRow({ item }: { item: BulletinItem }) {
               Community
             </span>
           )}
-          {age && <span className="text-xs text-slate-400">{age}</span>}
+          {age && <span className="text-xs text-slate-500">{age}</span>}
         </div>
         <p className="line-clamp-2 text-sm font-semibold text-[#2C3E50] group-hover:text-[#5B9DFF] transition leading-snug">
           {item.title}
         </p>
         {item.location_text && (
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-400 truncate">
-            <MapPin className="h-3 w-3 shrink-0" />
+          <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500 truncate">
+            <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
             {item.location_text}
           </p>
         )}
       </div>
 
       {/* Arrow */}
-      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:text-[#5B9DFF]" />
+      <ExternalLink className="h-4 w-4 shrink-0 text-slate-300 transition group-hover:text-[#5B9DFF]" aria-hidden="true" />
     </div>
   );
 
   if (item.source_url) {
     return (
-      <a href={item.source_url} target="_blank" rel="noopener noreferrer">
+      <a href={item.source_url} target="_blank" rel="noopener noreferrer" aria-label={`${item.title} (opens in new tab)`}>
         {inner}
+        <span className="sr-only">(opens in new tab)</span>
       </a>
     );
   }
@@ -767,7 +768,7 @@ export default function Home() {
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#5B9DFF] hover:bg-[#3A72D9] text-white font-semibold text-base shadow-md transition-colors"
                 >
                   Report an Incident Now
-                  <ArrowDown className="w-4 h-4" />
+                  <ArrowDown className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
 
@@ -816,7 +817,7 @@ export default function Home() {
                   {/* Header */}
                   <div className="bg-[#5B9DFF] px-8 py-8 text-center">
                     <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
-                      <CheckCircle className="w-8 h-8 text-white" />
+                      <CheckCircle className="w-8 h-8 text-white" aria-hidden="true" />
                     </div>
                     <h2 className="text-2xl font-bold text-white mb-1">
                       Thank You!
@@ -922,6 +923,7 @@ export default function Home() {
                       <h2 className="text-lg font-bold text-[#2C3E50]">
                         Report an Incident
                       </h2>
+                      <p className="sr-only">Fields marked with an asterisk (*) are required.</p>
                     </div>
 
                     {/* Section 1: What happened */}
@@ -937,6 +939,7 @@ export default function Home() {
                             <button
                               key={value}
                               type="button"
+                              aria-pressed={watchedType === value}
                               onClick={() =>
                                 toggleChoice(
                                   'incident_type',
@@ -944,7 +947,7 @@ export default function Home() {
                                   value as Exclude<ReportFormData['incident_type'], undefined>
                                 )
                               }
-                              className={`flex items-center gap-2 p-2.5 sm:p-3.5 rounded-xl border-2 cursor-pointer transition ${
+                              className={`flex items-center gap-2 p-2.5 sm:p-3.5 rounded-xl border-2 cursor-pointer transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] ${
                                 watchedType === value
                                   ? 'border-[#5B9DFF] bg-blue-50'
                                   : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -953,6 +956,7 @@ export default function Home() {
                               <span
                                 className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-lg"
                                 style={{ backgroundColor: '#E6F0FA' }}
+                                aria-hidden="true"
                               >
                                 {(() => {
                                   const Icon = INCIDENT_ICONS[value as keyof typeof INCIDENT_ICONS];
@@ -986,6 +990,7 @@ export default function Home() {
                           <textarea
                             {...register('description', { onChange: handleFormInteraction })}
                             rows={3}
+                            aria-describedby={errors.description ? 'desc-error' : undefined}
                             placeholder={
                               watchedType === 'other'
                                 ? 'Tell us what happened'
@@ -994,7 +999,7 @@ export default function Home() {
                             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:border-transparent focus:ring-2 focus:ring-[#5B9DFF] resize-none"
                           />
                           {errors.description && (
-                            <p className="mt-2 text-xs text-red-500">
+                            <p id="desc-error" className="mt-2 text-xs text-red-500">
                               {errors.description.message}
                             </p>
                           )}
@@ -1019,15 +1024,17 @@ export default function Home() {
                           <button
                             key={id}
                             type="button"
+                            aria-pressed={locationMethod === id}
+                            aria-label={label}
                             onClick={() => setLocationMethod(id)}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition ${
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:ring-inset ${
                               locationMethod === id
                                 ? 'bg-blue-50 text-blue-700 border-b-2 border-[#5B9DFF]'
                                 : 'text-slate-600 hover:bg-slate-50'
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">{label}</span>
+                            <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                            <span className="hidden sm:inline" aria-hidden="true">{label}</span>
                           </button>
                         ))}
                       </div>
@@ -1046,11 +1053,11 @@ export default function Home() {
                             }`}
                           >
                             {locationStatus === 'loading' ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                             ) : locationStatus === 'success' ? (
-                              <CheckCircle className="w-4 h-4" />
+                              <CheckCircle className="w-4 h-4" aria-hidden="true" />
                             ) : (
-                              <MapPin className="w-4 h-4" />
+                              <MapPin className="w-4 h-4" aria-hidden="true" />
                             )}
                             {locationStatus === 'success'
                               ? 'Location captured'
@@ -1074,6 +1081,7 @@ export default function Home() {
                               <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
                               <input
                                 type="text"
+                                aria-label="Street address"
                                 value={addressQuery}
                                 onChange={(e) => {
                                   setAddressQuery(e.target.value);
@@ -1162,6 +1170,7 @@ export default function Home() {
                         <input
                           id="occurred-at-input"
                           type="datetime-local"
+                          aria-label="Date and time of incident"
                           {...register('occurred_at')}
                           className="flex-1 min-w-0 px-3 py-2.5 bg-transparent text-[#2C3E50] text-sm outline-none"
                         />
@@ -1184,16 +1193,22 @@ export default function Home() {
                         name="reporter_context"
                         control={control}
                         render={({ field }) => (
-                          <div className="flex gap-2">
+                          <div
+                            className="flex gap-2"
+                            role="group"
+                            aria-label="Which best describes you?"
+                            aria-describedby={errors.reporter_context ? 'reporter-error' : undefined}
+                          >
                             {REPORTER_CONTEXT_OPTIONS.map(({ value, label }) => (
                               <button
                                 key={value}
                                 type="button"
+                                aria-pressed={field.value === value}
                                 onClick={() => {
                                   handleFormInteraction();
                                   field.onChange(field.value === value ? undefined : value);
                                 }}
-                                className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                                className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] ${
                                   field.value === value
                                     ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                     : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
@@ -1206,7 +1221,7 @@ export default function Home() {
                         )}
                       />
                       {errors.reporter_context && (
-                        <p className="mt-2 text-xs text-red-500">
+                        <p id="reporter-error" className="mt-2 text-xs text-red-500">
                           {errors.reporter_context.message}
                         </p>
                       )}
@@ -1216,11 +1231,12 @@ export default function Home() {
                           Which company? <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                         </p>
                         <input type="hidden" {...register('av_company')} />
-                        <div className="flex gap-2 flex-wrap">
+                        <div className="flex gap-2 flex-wrap" role="group" aria-label="Which company?">
                           {REPORT_COMPANY_OPTIONS.map(({ value, label }) => (
                             <button
                               key={value}
                               type="button"
+                              aria-pressed={watchedCompany === value}
                               onClick={() =>
                                 toggleChoice(
                                   'av_company',
@@ -1229,7 +1245,7 @@ export default function Home() {
                                   'other_av_company'
                                 )
                               }
-                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none ${
+                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] ${
                                 watchedCompany === value
                                   ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                   : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
@@ -1244,11 +1260,13 @@ export default function Home() {
                             <input
                               type="text"
                               {...register('other_av_company', { onChange: handleFormInteraction })}
+                              aria-label="Which company?"
+                              aria-describedby={errors.other_av_company ? 'company-other-error' : undefined}
                               placeholder="Tell us which company"
                               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                             />
                             {errors.other_av_company && (
-                              <p className="mt-2 text-xs text-red-500">
+                              <p id="company-other-error" className="mt-2 text-xs text-red-500">
                                 {errors.other_av_company.message}
                               </p>
                             )}
@@ -1265,19 +1283,21 @@ export default function Home() {
                       <div className="flex gap-2">
                         <button
                           type="button"
+                          aria-label="Take photo"
                           onClick={() => cameraInputRef.current?.click()}
                           className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
                         >
-                          <Camera className="w-5 h-5 text-slate-400" />
-                          <span className="text-xs text-slate-500">Take photo</span>
+                          <Camera className="w-5 h-5 text-slate-400" aria-hidden="true" />
+                          <span className="text-xs text-slate-500" aria-hidden="true">Take photo</span>
                         </button>
                         <button
                           type="button"
+                          aria-label="Choose photo or video"
                           onClick={() => fileInputRef.current?.click()}
                           className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
                         >
-                          <Upload className="w-5 h-5 text-slate-400" />
-                          <span className="text-xs text-slate-500">Choose photo / video</span>
+                          <Upload className="w-5 h-5 text-slate-400" aria-hidden="true" />
+                          <span className="text-xs text-slate-500" aria-hidden="true">Choose photo / video</span>
                         </button>
                       </div>
                       <input
@@ -1320,6 +1340,7 @@ export default function Home() {
                               </span>
                               <button
                                 type="button"
+                                aria-label={`Remove ${file.name}`}
                                 onClick={() =>
                                   setSelectedFiles((prev) =>
                                     prev.filter((_, j) => j !== i)
@@ -1327,7 +1348,7 @@ export default function Home() {
                                 }
                                 className="ml-2 text-slate-400 hover:text-red-500 flex-shrink-0"
                               >
-                                <X className="w-4 h-4" />
+                                <X className="w-4 h-4" aria-hidden="true" />
                               </button>
                             </li>
                           ))}
@@ -1348,7 +1369,7 @@ export default function Home() {
                               Add your contact info if we can follow up to verify your report.
                             </p>
                           </div>
-                          <span className="text-slate-400 transition-transform duration-150 group-open:rotate-180 group-open:text-[#5B9DFF]">
+                          <span className="text-slate-400 transition-transform duration-150 group-open:rotate-180 group-open:text-[#5B9DFF]" aria-hidden="true">
                             <ChevronDown className="h-4 w-4" />
                           </span>
                         </summary>
@@ -1362,12 +1383,16 @@ export default function Home() {
                                 type="text"
                                 {...register('contact_name')}
                                 placeholder="Name"
+                                autoComplete="name"
+                                aria-label="Your name"
                                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                               />
                               <input
                                 type="email"
                                 {...register('contact_email')}
                                 placeholder="Email address"
+                                autoComplete="email"
+                                aria-label="Email address"
                                 className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-[#2C3E50] placeholder-slate-400 focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent"
                               />
                             </div>
@@ -1378,7 +1403,7 @@ export default function Home() {
 
                     {/* Error */}
                     {submitError && (
-                      <div className="px-6 py-3 bg-red-50 border-t border-red-200">
+                      <div role="alert" className="px-6 py-3 bg-red-50 border-t border-red-200">
                         <p className="text-sm text-red-600 text-center">
                           {submitError}
                         </p>
@@ -1425,7 +1450,7 @@ export default function Home() {
                         }`}
                       >
                         {isSubmitting && (
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                         )}
                         {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
                       </button>
@@ -1441,7 +1466,7 @@ export default function Home() {
       {/* ─────────────────────── AFFILIATION STRIP ─────────────────────── */}
       <div className="bg-white border-t border-b border-slate-100 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
             An independent research project from the
           </span>
           <div className="hidden sm:block h-4 w-px bg-slate-200" />
@@ -1449,10 +1474,11 @@ export default function Home() {
             href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="UC Berkeley School of Information (opens in new tab)"
           >
             <img
               src="/berkeley-ischool-logo.svg"
-              alt="UC Berkeley School of Information"
+              alt=""
               className="h-12 object-contain opacity-80 hover:opacity-100 transition"
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
@@ -1623,20 +1649,22 @@ export default function Home() {
             <div className="flex shrink-0 items-center gap-1 p-1 rounded-xl bg-slate-200/70 self-start sm:self-auto">
               <button
                 onClick={() => setReportFilters((p) => ({ ...p, sourcePlatform: 'community' }))}
+                aria-pressed={reportFilters.sourcePlatform === 'community'}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   reportFilters.sourcePlatform === 'community'
                     ? 'bg-white text-[#2C3E50] shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
+                    : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
                 AV Watch
               </button>
               <button
                 onClick={() => setReportFilters((p) => ({ ...p, sourcePlatform: 'reddit' }))}
+                aria-pressed={reportFilters.sourcePlatform === 'reddit'}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   reportFilters.sourcePlatform === 'reddit'
                     ? 'bg-white text-[#2C3E50] shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
+                    : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
                 Reddit
@@ -1659,10 +1687,11 @@ export default function Home() {
             const desktopFilters = (
               <div className="flex flex-wrap items-end gap-3">
                 <div className="flex-1 min-w-[180px]">
-                  <label className={lbl}>Location</label>
+                  <label htmlFor="df-location" className={lbl}>Location</label>
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
                     <input
+                      id="df-location"
                       type="text"
                       placeholder="City or neighborhood…"
                       value={reportLocationInput}
@@ -1672,9 +1701,10 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="shrink-0">
-                  <label className={lbl}>Company</label>
+                  <label htmlFor="df-company" className={lbl}>Company</label>
                   <div className={`relative flex items-center w-[168px] h-[38px] ${ctrl(!!reportFilters.avCompany)}`}>
                     <select
+                      id="df-company"
                       value={reportFilters.avCompany}
                       onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -1688,9 +1718,10 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="shrink-0">
-                  <label className={lbl}>Incident type</label>
+                  <label htmlFor="df-incident-type" className={lbl}>Incident type</label>
                   <div className={`relative flex items-center w-[204px] h-[38px] ${ctrl(!!reportFilters.incidentType)}`}>
                     <select
+                      id="df-incident-type"
                       value={reportFilters.incidentType}
                       onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -1709,29 +1740,29 @@ export default function Home() {
                     <div className={`relative flex items-center w-[144px] h-[38px] ${ctrl(!!reportFilters.dateFrom)}`}>
                       <input
                         type="date"
+                        aria-label="From date"
                         value={reportFilters.dateFrom}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        title="From date"
                       />
                       <span className="flex-1 px-3 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateFrom || 'From'}
                       </span>
-                      <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                      <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" aria-hidden="true" />
                     </div>
                     <span className="text-slate-400 text-sm shrink-0">to</span>
                     <div className={`relative flex items-center w-[144px] h-[38px] ${ctrl(!!reportFilters.dateTo)}`}>
                       <input
                         type="date"
+                        aria-label="To date"
                         value={reportFilters.dateTo}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        title="To date"
                       />
                       <span className="flex-1 px-3 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateTo || 'To'}
                       </span>
-                      <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                      <Calendar className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" aria-hidden="true" />
                     </div>
                   </div>
                 </div>
@@ -1740,7 +1771,7 @@ export default function Home() {
                   aria-hidden={activeCount === 0}
                   className={`flex items-center gap-1.5 h-10 rounded-xl border border-red-100 bg-red-50 px-3 text-sm font-medium text-red-400 hover:bg-red-100 hover:text-red-600 hover:border-red-200 transition self-end ${activeCount === 0 ? 'invisible pointer-events-none' : ''}`}
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                   Clear
                 </button>
               </div>
@@ -1750,10 +1781,11 @@ export default function Home() {
             const mobileFilters = (
               <div className="flex flex-col gap-3 w-full min-w-0">
                 <div>
-                  <label className={lbl}>Location</label>
+                  <label htmlFor="mf-location" className={lbl}>Location</label>
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
                     <input
+                      id="mf-location"
                       type="text"
                       placeholder="City or neighborhood…"
                       value={reportLocationInput}
@@ -1763,8 +1795,9 @@ export default function Home() {
                   </div>
                 </div>
                 <div>
-                  <label className={lbl}>Company</label>
+                  <label htmlFor="mf-company" className={lbl}>Company</label>
                   <select
+                    id="mf-company"
                     value={reportFilters.avCompany}
                     onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
                     className={`w-full ${ctrl(!!reportFilters.avCompany)} px-3 py-2.5 cursor-pointer`}
@@ -1773,8 +1806,9 @@ export default function Home() {
                   </select>
                 </div>
                 <div>
-                  <label className={lbl}>Incident type</label>
+                  <label htmlFor="mf-incident-type" className={lbl}>Incident type</label>
                   <select
+                    id="mf-incident-type"
                     value={reportFilters.incidentType}
                     onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
                     className={`w-full ${ctrl(!!reportFilters.incidentType)} px-3 py-2.5 cursor-pointer`}
@@ -1788,29 +1822,29 @@ export default function Home() {
                     <div className={`relative flex w-full items-center ${ctrl(!!reportFilters.dateFrom)}`}>
                       <input
                         type="date"
+                        aria-label="From date"
                         value={reportFilters.dateFrom}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        title="From date"
                       />
                       <span className="flex-1 px-3 py-2.5 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateFrom || 'From date'}
                       </span>
-                      <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                      <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" aria-hidden="true" />
                     </div>
                     <span className="text-center text-sm text-slate-400">to</span>
                     <div className={`relative flex w-full items-center ${ctrl(!!reportFilters.dateTo)}`}>
                       <input
                         type="date"
+                        aria-label="To date"
                         value={reportFilters.dateTo}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        title="To date"
                       />
                       <span className="flex-1 px-3 py-2.5 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateTo || 'To date'}
                       </span>
-                      <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" />
+                      <Calendar className="shrink-0 mr-3 h-4 w-4 text-slate-400 pointer-events-none" aria-hidden="true" />
                     </div>
                   </div>
                 </div>
@@ -1819,7 +1853,7 @@ export default function Home() {
                     onClick={clearFilters}
                     className="flex items-center justify-center gap-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-500 hover:text-[#5B9DFF] hover:border-[#5B9DFF]/40 transition"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
                     Clear all filters
                   </button>
                 )}
@@ -1832,19 +1866,21 @@ export default function Home() {
                 <div className={`sm:hidden rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showMobileFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
                   <button
                     onClick={() => setShowMobileFilters((v) => !v)}
+                    aria-expanded={showMobileFilters}
+                    aria-controls="homepage-mobile-filters"
                     className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showMobileFilters ? 'bg-slate-50' : 'hover:bg-slate-50'}`}
                   >
-                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
+                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" aria-hidden="true" />
                     <span className="flex-1 text-left">Filter reports</span>
                     {activeCount > 0 && (
                       <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
                         {activeCount}
                       </span>
                     )}
-                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showMobileFilters ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showMobileFilters ? 'rotate-180' : ''}`} aria-hidden="true" />
                   </button>
                   {showMobileFilters && (
-                    <div className="px-4 pb-5 border-t border-slate-100 overflow-hidden">
+                    <div id="homepage-mobile-filters" className="px-4 pb-5 border-t border-slate-100 overflow-hidden">
                       <div className="pt-4 w-full min-w-0">
                         {mobileFilters}
                       </div>
@@ -1855,19 +1891,21 @@ export default function Home() {
                 <div className={`hidden sm:block rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showDesktopFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
                   <button
                     onClick={() => setShowDesktopFilters((v) => !v)}
+                    aria-expanded={showDesktopFilters}
+                    aria-controls="homepage-desktop-filters"
                     className={`w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showDesktopFilters ? 'bg-slate-50 border-b border-slate-100' : 'hover:bg-slate-50'}`}
                   >
-                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" />
+                    <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" aria-hidden="true" />
                     <span className="flex-1 text-left">Filter reports</span>
                     {activeCount > 0 && (
                       <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
                         {activeCount}
                       </span>
                     )}
-                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showDesktopFilters ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showDesktopFilters ? 'rotate-180' : ''}`} aria-hidden="true" />
                   </button>
                   {showDesktopFilters && (
-                    <div className="px-5 py-4">
+                    <div id="homepage-desktop-filters" className="px-5 py-4">
                       {desktopFilters}
                     </div>
                   )}
@@ -1896,7 +1934,7 @@ export default function Home() {
               ))}
             </div>
           ) : reportItems.length === 0 ? (
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-600 text-sm">
               {countReportFilters(reportFilters) > 0
                 ? 'No reports match these filters.'
                 : reportFilters.sourcePlatform === 'community'
@@ -2025,6 +2063,7 @@ export default function Home() {
                   className="underline underline-offset-2 text-white hover:text-blue-200 transition font-medium"
                 >
                   Learn more about the project and team →
+                  <span className="sr-only">(opens in new tab)</span>
                 </a>
               </p>
               <div className="mt-8">
@@ -2051,10 +2090,11 @@ export default function Home() {
                 href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="UC Berkeley School of Information (opens in new tab)"
               >
                 <img
                   src="/berkeley-ischool-logo.svg"
-                  alt="UC Berkeley School of Information"
+                  alt=""
                   className="h-28 object-contain brightness-0 invert opacity-90 hover:opacity-100 transition"
                   onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />

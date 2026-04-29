@@ -114,9 +114,10 @@ function FilterControls({
       {/* Row 1: location + date range */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1 min-w-0">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
           <input
             type="text"
+            aria-label="Search by location"
             placeholder="Search by location…"
             value={locationInput}
             onChange={(e) => onLocationInput(e.target.value)}
@@ -126,18 +127,18 @@ function FilterControls({
         <div className="flex items-center gap-1.5 shrink-0">
           <input
             type="date"
+            aria-label="From date"
             value={filters.dateFrom}
             onChange={(e) => onChange('dateFrom', e.target.value)}
             className={`${inputClass} w-36`}
-            title="From date"
           />
-          <span className="text-slate-400 text-xs shrink-0">–</span>
+          <span className="text-slate-400 text-xs shrink-0" aria-hidden="true">–</span>
           <input
             type="date"
+            aria-label="To date"
             value={filters.dateTo}
             onChange={(e) => onChange('dateTo', e.target.value)}
             className={`${inputClass} w-36`}
-            title="To date"
           />
         </div>
       </div>
@@ -145,6 +146,7 @@ function FilterControls({
       {/* Row 2: dropdowns + verified toggle + clear */}
       <div className="flex flex-wrap gap-2 items-center">
         <select
+          aria-label="Filter by company"
           value={filters.avCompany}
           onChange={(e) => onChange('avCompany', e.target.value)}
           className={selectClass}
@@ -155,6 +157,7 @@ function FilterControls({
         </select>
 
         <select
+          aria-label="Filter by incident type"
           value={filters.incidentType}
           onChange={(e) => onChange('incidentType', e.target.value)}
           className={selectClass}
@@ -165,6 +168,7 @@ function FilterControls({
         </select>
 
         <select
+          aria-label="Filter by source"
           value={filters.sourcePlatform}
           onChange={(e) => onChange('sourcePlatform', e.target.value)}
           className={selectClass}
@@ -189,7 +193,7 @@ function FilterControls({
             onClick={onClear}
             className="flex items-center gap-1 h-9 px-3 rounded-lg border border-slate-200 bg-white text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition shrink-0"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
             Clear all
           </button>
         )}
@@ -220,19 +224,21 @@ function FilterBar({
       <div className="flex items-center gap-2 sm:hidden">
         <button
           onClick={() => setMobileOpen((v) => !v)}
-          className="flex items-center gap-2 h-9 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition shadow-sm"
+          aria-expanded={mobileOpen}
+          aria-controls="bulletin-mobile-filters"
+          className="flex items-center gap-2 h-9 px-4 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5B9DFF]"
         >
-          <Filter className="h-4 w-4" />
+          <Filter className="h-4 w-4" aria-hidden="true" />
           Filters
           {activeCount > 0 && (
             <span className="flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold leading-none">
               {activeCount}
             </span>
           )}
-          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
         </button>
         {activeCount > 0 && (
-          <button onClick={onClear} className="text-xs text-slate-400 hover:text-slate-600 transition">
+          <button onClick={onClear} className="text-xs text-slate-500 hover:text-slate-700 transition">
             Clear all
           </button>
         )}
@@ -240,7 +246,7 @@ function FilterBar({
 
       {/* Mobile panel */}
       {mobileOpen && (
-        <div className="sm:hidden mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div id="bulletin-mobile-filters" className="sm:hidden mt-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <FilterControls
             filters={filters}
             locationInput={locationInput}
@@ -359,6 +365,7 @@ export default function BulletinPage() {
           <div className="flex shrink-0 items-center gap-1 p-1 rounded-xl bg-slate-200/70 self-start sm:self-auto">
             <button
               onClick={() => setFilters((p) => ({ ...p, sourcePlatform: 'community' }))}
+              aria-pressed={filters.sourcePlatform === 'community'}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 filters.sourcePlatform === 'community'
                   ? 'bg-white text-[#2C3E50] shadow-sm'
@@ -369,6 +376,7 @@ export default function BulletinPage() {
             </button>
             <button
               onClick={() => setFilters((p) => ({ ...p, sourcePlatform: 'reddit' }))}
+              aria-pressed={filters.sourcePlatform === 'reddit'}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 filters.sourcePlatform === 'reddit'
                   ? 'bg-white text-[#2C3E50] shadow-sm'
@@ -409,8 +417,8 @@ export default function BulletinPage() {
 
         {/* Error */}
         {!isLoading && error && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <AlertCircle className="h-10 w-10 text-slate-300 mb-3" />
+          <div role="alert" className="flex flex-col items-center justify-center py-24 text-center">
+            <AlertCircle className="h-10 w-10 text-slate-300 mb-3" aria-hidden="true" />
             <p className="text-slate-500 font-medium">Could not load reports</p>
             <p className="text-slate-400 text-sm mt-1">{error}</p>
             <button
@@ -462,9 +470,9 @@ export default function BulletinPage() {
                   className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition disabled:opacity-50 shadow-sm"
                 >
                   {isLoadingMore ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   )}
                   {isLoadingMore ? 'Loading…' : `Load more (${total - items.length} remaining)`}
                 </button>
@@ -472,7 +480,7 @@ export default function BulletinPage() {
             )}
 
             {!hasMore && total > PAGE_SIZE && (
-              <p className="mt-10 text-center text-xs text-slate-400">
+              <p className="mt-10 text-center text-xs text-slate-500">
                 All {total} incidents loaded
               </p>
             )}

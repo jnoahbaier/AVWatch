@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ExternalLink, MapPin, Users, X } from 'lucide-react';
 
 export interface BulletinItem {
@@ -67,6 +67,33 @@ function CommunityModal({
   item: BulletinItem;
   onClose: () => void;
 }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab' || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute('disabled'));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   // Summary is pre-generated at clustering time and stored in the DB —
   // no API call needed, just use item.summary directly.
   const narrative = item.summary;
@@ -84,6 +111,10 @@ function CommunityModal({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="community-modal-title"
         className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -96,13 +127,13 @@ function CommunityModal({
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <h2 className="absolute bottom-4 left-6 right-12 text-base font-bold text-white leading-snug drop-shadow">
+            <h2 id="community-modal-title" className="absolute bottom-4 left-6 right-12 text-base font-bold text-white leading-snug drop-shadow">
               {item.title}
             </h2>
           </div>
         ) : (
           <div className="bg-gradient-to-br from-green-50 to-emerald-100 px-6 pt-8 pb-6 text-center">
-            <h2 className="text-base font-bold text-emerald-800 leading-snug">
+            <h2 id="community-modal-title" className="text-base font-bold text-emerald-800 leading-snug">
               {item.title}
             </h2>
           </div>
@@ -110,8 +141,9 @@ function CommunityModal({
 
         {/* Close button */}
         <button
+          ref={closeButtonRef}
           onClick={onClose}
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/70 hover:bg-white text-slate-500 hover:text-slate-800 transition"
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-white/70 hover:bg-white text-slate-500 hover:text-slate-800 transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF]"
           aria-label="Close"
         >
           <X className="h-4 w-4" />
@@ -134,7 +166,7 @@ function CommunityModal({
             <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
               Community
             </span>
-            {age && <span className="text-xs text-slate-400 ml-auto">{age}</span>}
+            {age && <span className="text-xs text-slate-500 ml-auto">{age}</span>}
           </div>
 
           {/* AI narrative */}
@@ -151,7 +183,7 @@ function CommunityModal({
               </div>
             )}
             <div className="flex items-center gap-1 text-emerald-600 font-semibold ml-auto">
-              <Users className="h-3.5 w-3.5" />
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
               {item.user_report_count} community {item.user_report_count === 1 ? 'report' : 'reports'}
             </div>
           </div>
@@ -232,7 +264,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
             )}
           </div>
           {age && (
-            <span className="text-xs text-slate-400 shrink-0">{age}</span>
+            <span className="text-xs text-slate-500 shrink-0">{age}</span>
           )}
         </div>
 
@@ -248,8 +280,8 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
 
         {/* Location */}
         {item.location_text && (
-          <div className="mt-2 flex items-center gap-1 text-xs text-slate-400">
-            <MapPin className="h-3 w-3 shrink-0" />
+          <div className="mt-2 flex items-center gap-1 text-xs text-slate-500">
+            <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
             <span className="truncate">{item.location_text}</span>
           </div>
         )}
@@ -259,12 +291,12 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
           {/* Community cards: only show the community report count */}
           {isCommunity ? (
             <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
-              <Users className="h-3 w-3" />
+              <Users className="h-3 w-3" aria-hidden="true" />
               {item.user_report_count} community {item.user_report_count === 1 ? 'report' : 'reports'}
             </div>
           ) : (
-            <div className="flex items-center gap-1 text-xs text-slate-400">
-              <Users className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-1 text-xs text-slate-500">
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
               <span>
                 {item.signal_count} {item.signal_count === 1 ? 'report' : 'reports'}
               </span>
@@ -284,7 +316,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
               )}
               <div className="flex items-center gap-1 text-xs font-semibold text-[#5B9DFF]">
                 {`r/${item.source_subreddit}`}
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
               </div>
             </div>
           ) : null}
@@ -299,9 +331,11 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
         href={item.source_url}
         target="_blank"
         rel="noopener noreferrer"
+        aria-label={`${item.title} (opens in new tab)`}
         className="block"
       >
         {cardContent}
+        <span className="sr-only">(opens in new tab)</span>
       </a>
     );
   }
@@ -309,9 +343,14 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
   if (isCommunity) {
     return (
       <>
-        <div className="block" onClick={() => setModalOpen(true)}>
+        <button
+          type="button"
+          className="block w-full text-left p-0 bg-transparent border-0 focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded-2xl"
+          onClick={() => setModalOpen(true)}
+          aria-haspopup="dialog"
+        >
           {cardContent}
-        </div>
+        </button>
         {modalOpen && (
           <CommunityModal item={item} onClose={() => setModalOpen(false)} />
         )}

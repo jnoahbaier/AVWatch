@@ -51,7 +51,7 @@ export function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition"
+                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
                 >
                   {item.name}
                 </Link>
@@ -59,7 +59,7 @@ export function Navbar() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition"
+                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
                 >
                   {item.name}
                 </a>
@@ -67,7 +67,7 @@ export function Navbar() {
             )}
             <a
               href="/#report"
-              className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-lg transition"
+              className="text-sm font-semibold text-white bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-1.5 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:ring-offset-2"
             >
               Report an Incident
             </a>
@@ -76,7 +76,10 @@ export function Navbar() {
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden p-3 -mr-1 text-slate-400 hover:text-[#2C3E50] transition"
+            aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav"
+            className="md:hidden p-3 -mr-1 text-slate-400 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -85,7 +88,7 @@ export function Navbar() {
 
         {/* Mobile nav */}
         {mobileMenuOpen && (
-          <div className="md:hidden pb-4 border-t border-slate-100">
+          <div id="mobile-nav" className="md:hidden pb-4 border-t border-slate-100">
             <div className="flex flex-col gap-0.5 pt-2">
               {navigation.map((item) =>
                 item.href.startsWith('/') && !item.href.startsWith('/#') ? (

@@ -323,14 +323,16 @@ export default function MapPage() {
       {/* Filter Toggle Button */}
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+        aria-expanded={showFilters}
+        aria-controls="map-filter-panel"
+        className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <Filter className="w-4 h-4" />
+        <Filter className="w-4 h-4" aria-hidden="true" />
         Filters
         {(filters.incident_types.length < Object.keys(INCIDENT_TYPE_LABELS).length ||
           filters.companies.length < Object.keys(AV_COMPANY_LABELS).length ||
           filters.sources.length < Object.keys(DATA_SOURCE_LABELS).length) && (
-          <span className="w-2 h-2 bg-green-500 rounded-full" />
+          <span className="w-2 h-2 bg-green-500 rounded-full" aria-label="Filters active" />
         )}
       </button>
 
@@ -338,25 +340,27 @@ export default function MapPage() {
       <button
         onClick={loadIncidents}
         disabled={loading}
-        className="absolute top-4 left-32 flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition disabled:opacity-50"
+        aria-label={loading ? 'Loading incidents…' : 'Refresh incidents'}
+        className="absolute top-4 left-32 flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
         ) : (
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-4 h-4" aria-hidden="true" />
         )}
       </button>
 
       {/* Filter Panel */}
       {showFilters && (
-        <div className="absolute top-16 left-4 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-h-[60vh] overflow-y-auto">
+        <div id="map-filter-panel" className="absolute top-16 left-4 w-[calc(100vw-2rem)] sm:w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 max-h-[60vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-[#2C3E50] dark:text-white">Filters</h3>
             <button
               onClick={() => setShowFilters(false)}
+              aria-label="Close filters"
               className="text-slate-400 hover:text-slate-600"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
 
@@ -373,7 +377,7 @@ export default function MapPage() {
                     incident_types: Object.keys(INCIDENT_TYPE_LABELS),
                   }))
                 }
-                className="text-xs text-green-600 hover:text-green-500"
+                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:rounded"
               >
                 Select all
               </button>
@@ -390,6 +394,7 @@ export default function MapPage() {
                   <span
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: INCIDENT_TYPE_COLORS[value] }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-[#2C3E50] dark:group-hover:text-white transition">
                     {label}
@@ -412,7 +417,7 @@ export default function MapPage() {
                     companies: Object.keys(AV_COMPANY_LABELS),
                   }))
                 }
-                className="text-xs text-green-600 hover:text-green-500"
+                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:rounded"
               >
                 Select all
               </button>
@@ -447,7 +452,7 @@ export default function MapPage() {
                     sources: Object.keys(DATA_SOURCE_LABELS),
                   }))
                 }
-                className="text-xs text-green-600 hover:text-green-500"
+                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:rounded"
               >
                 Select all
               </button>
@@ -464,6 +469,7 @@ export default function MapPage() {
                   <span
                     className="w-3 h-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: DATA_SOURCE_COLORS[value] }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-[#2C3E50] dark:group-hover:text-white transition">
                     {label}
@@ -482,7 +488,7 @@ export default function MapPage() {
                 sources: [],
               })
             }
-            className="mt-4 w-full py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg transition"
+            className="mt-4 w-full py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Clear all filters
           </button>
@@ -492,7 +498,7 @@ export default function MapPage() {
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-3">
         <div className="flex items-center gap-2 mb-2">
-          <Layers className="w-4 h-4 text-slate-500" />
+          <Layers className="w-4 h-4 text-slate-500" aria-hidden="true" />
           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
             Legend
           </span>
@@ -503,6 +509,7 @@ export default function MapPage() {
               <span
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: INCIDENT_TYPE_COLORS[value] }}
+                aria-hidden="true"
               />
               <span className="text-xs text-slate-600 dark:text-slate-400">{label}</span>
             </div>

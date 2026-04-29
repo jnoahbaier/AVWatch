@@ -91,10 +91,16 @@ export default function RootLayout({
         {/* Dynamically rendered per-request so the key is always the live env var */}
         <AnalyticsScript />
         <Providers>
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-white focus:text-[#2C3E50] focus:shadow-lg focus:border focus:border-slate-200 focus:text-sm focus:font-medium"
+          >
+            Skip to main content
+          </a>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main id="main-content" className="flex-1">{children}</main>
           <footer className="bg-white border-t border-slate-200 py-8">
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-slate-500">
               © {new Date().getFullYear()} AV Watch · Built for safer autonomy
             </p>
           </footer>
