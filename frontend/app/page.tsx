@@ -784,7 +784,7 @@ export default function Home() {
                     className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm text-slate-700 font-medium"
                   >
                     <span className="flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: '#E6F0FA' }}>
-                      <Icon className="w-3.5 h-3.5 text-[#5B9DFF]" />
+                      <Icon className="w-3.5 h-3.5 text-[#5B9DFF]" aria-hidden="true" />
                     </span>
                     {label}
                   </div>
@@ -822,7 +822,7 @@ export default function Home() {
                     <h2 className="text-2xl font-bold text-white mb-1">
                       Thank You!
                     </h2>
-                    <p className="text-blue-100 text-sm">
+                    <p className="text-white/90 text-sm">
                       Your report has been submitted successfully.
                     </p>
                   </div>
@@ -947,7 +947,7 @@ export default function Home() {
                                   value as Exclude<ReportFormData['incident_type'], undefined>
                                 )
                               }
-                              className={`flex items-center gap-2 p-2.5 sm:p-3.5 rounded-xl border-2 cursor-pointer transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] ${
+                              className={`flex items-center gap-2 p-2.5 sm:p-3.5 rounded-xl border-2 cursor-pointer transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] ${
                                 watchedType === value
                                   ? 'border-[#5B9DFF] bg-blue-50'
                                   : 'border-slate-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -990,6 +990,7 @@ export default function Home() {
                           <textarea
                             {...register('description', { onChange: handleFormInteraction })}
                             rows={3}
+                            aria-label="Description"
                             aria-describedby={errors.description ? 'desc-error' : undefined}
                             placeholder={
                               watchedType === 'other'
@@ -1027,7 +1028,7 @@ export default function Home() {
                             aria-pressed={locationMethod === id}
                             aria-label={label}
                             onClick={() => setLocationMethod(id)}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:ring-inset ${
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] focus-visible:ring-inset ${
                               locationMethod === id
                                 ? 'bg-blue-50 text-blue-700 border-b-2 border-[#5B9DFF]'
                                 : 'text-slate-600 hover:bg-slate-50'
@@ -1078,10 +1079,11 @@ export default function Home() {
                         <div className="space-y-2">
                           <div className="relative">
                             <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-[#5B9DFF] focus-within:border-transparent">
-                              <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <Search className="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden="true" />
                               <input
                                 type="text"
                                 aria-label="Street address"
+                                autoComplete="street-address"
                                 value={addressQuery}
                                 onChange={(e) => {
                                   setAddressQuery(e.target.value);
@@ -1101,9 +1103,9 @@ export default function Home() {
                                 placeholder="e.g. Market St & 5th, SF"
                                 className="flex-1 bg-transparent text-[#2C3E50] placeholder-slate-400 text-sm outline-none"
                               />
-                              {isGeocoding && <Loader2 className="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" />}
+                              {isGeocoding && <Loader2 className="w-4 h-4 text-slate-400 animate-spin flex-shrink-0" aria-hidden="true" />}
                               {locationStatus === 'success' && !isGeocoding && (
-                                <CheckCircle className="w-4 h-4 text-[#5B9DFF] flex-shrink-0" />
+                                <CheckCircle className="w-4 h-4 text-[#5B9DFF] flex-shrink-0" aria-hidden="true" />
                               )}
                             </div>
 
@@ -1117,7 +1119,7 @@ export default function Home() {
                                       onMouseDown={() => applySuggestion(s)}
                                       className="w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-blue-50 transition text-sm border-b border-slate-100 last:border-0"
                                     >
-                                      <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+                                      <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
                                       <span className="text-slate-700 leading-snug">{s.place_name}</span>
                                     </button>
                                   </li>
@@ -1131,7 +1133,7 @@ export default function Home() {
                           )}
                           {locationStatus === 'success' && watchedAddress && locationMethod === 'address' && (
                             <p className="text-xs text-[#5B9DFF] flex items-center gap-1">
-                              <CheckCircle className="w-3 h-3" /> Location set
+                              <CheckCircle className="w-3 h-3" aria-hidden="true" /> Location set
                             </p>
                           )}
                         </div>
@@ -1157,7 +1159,7 @@ export default function Home() {
                       {/* Confirmed address pill */}
                       {watchedAddress && locationStatus === 'success' && locationMethod !== 'address' && (
                         <p className="mt-2 flex items-center gap-1.5 truncate text-xs text-slate-500">
-                          <MapPin className="h-3.5 w-3.5 shrink-0" />
+                          <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                           <span className="truncate">{watchedAddress}</span>
                         </p>
                       )}
@@ -1179,7 +1181,7 @@ export default function Home() {
                           aria-label="Open date picker"
                           className="shrink-0 pr-3 flex items-center text-slate-400 hover:text-[#5B9DFF] transition-colors cursor-pointer"
                         >
-                          <Calendar className="w-4 h-4" />
+                          <Calendar className="w-4 h-4" aria-hidden="true" />
                         </label>
                       </div>
                     </div>
@@ -1208,7 +1210,7 @@ export default function Home() {
                                   handleFormInteraction();
                                   field.onChange(field.value === value ? undefined : value);
                                 }}
-                                className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] ${
+                                className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] ${
                                   field.value === value
                                     ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                     : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
@@ -1245,7 +1247,7 @@ export default function Home() {
                                   'other_av_company'
                                 )
                               }
-                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] ${
+                              className={`inline-flex items-center px-4 py-2 rounded-full border-2 text-sm font-medium transition select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] ${
                                 watchedCompany === value
                                   ? 'border-[#5B9DFF] bg-blue-50 text-blue-700'
                                   : 'border-slate-200 bg-white text-slate-600 hover:border-blue-300'
@@ -1288,7 +1290,7 @@ export default function Home() {
                           className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
                         >
                           <Camera className="w-5 h-5 text-slate-400" aria-hidden="true" />
-                          <span className="text-xs text-slate-500" aria-hidden="true">Take photo</span>
+                          <span className="text-xs text-slate-500">Take photo</span>
                         </button>
                         <button
                           type="button"
@@ -1297,7 +1299,7 @@ export default function Home() {
                           className="flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 transition cursor-pointer"
                         >
                           <Upload className="w-5 h-5 text-slate-400" aria-hidden="true" />
-                          <span className="text-xs text-slate-500" aria-hidden="true">Choose photo / video</span>
+                          <span className="text-xs text-slate-500">Choose photo / video</span>
                         </button>
                       </div>
                       <input
@@ -1679,7 +1681,7 @@ export default function Home() {
 
             const lbl = 'block text-xs font-medium text-slate-600 mb-1';
             const ctrl = (active: boolean) =>
-              `rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent transition-colors ${
+              `rounded-xl border bg-white text-base sm:text-sm text-[#2C3E50] focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:border-transparent focus-within:ring-2 focus-within:ring-[#5B9DFF] focus-within:border-transparent transition-colors ${
                 active ? 'border-[#5B9DFF]/50 bg-blue-50 text-[#5B9DFF]' : 'border-slate-200'
               }`;
 
@@ -1714,7 +1716,7 @@ export default function Home() {
                     <span className="flex-1 px-3 text-sm truncate pointer-events-none">
                       {FILTER_COMPANIES.find(c => c.value === reportFilters.avCompany)?.label ?? 'All companies'}
                     </span>
-                    <ChevronDown className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    <ChevronDown className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" aria-hidden="true" />
                   </div>
                 </div>
                 <div className="shrink-0">
@@ -1731,7 +1733,7 @@ export default function Home() {
                     <span className="flex-1 px-3 text-sm truncate pointer-events-none">
                       {FILTER_INCIDENT_TYPES.find(t => t.value === reportFilters.incidentType)?.label ?? 'All incident types'}
                     </span>
-                    <ChevronDown className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    <ChevronDown className="shrink-0 mr-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" aria-hidden="true" />
                   </div>
                 </div>
                 <div>
@@ -2049,13 +2051,13 @@ export default function Home() {
               <h2 className="text-3xl font-bold text-white mb-5">
                 About AV Watch
               </h2>
-              <p className="text-blue-100 text-lg leading-relaxed">
+              <p className="text-white/90 text-lg leading-relaxed">
                 AV Watch is an independent, community-driven platform for
                 reporting and tracking autonomous vehicle incidents. We believe
                 transparency supports the safe and responsible deployment of
                 self-driving technology.
               </p>
-              <p className="text-blue-100 text-lg leading-relaxed mt-4">
+              <p className="text-white/90 text-lg leading-relaxed mt-4">
                 <a
                   href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
                   target="_blank"
@@ -2067,10 +2069,10 @@ export default function Home() {
                 </a>
               </p>
               <div className="mt-8">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-blue-100">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
                   Get in touch
                 </h3>
-                <p className="mt-2 text-blue-100 text-base leading-relaxed">
+                <p className="mt-2 text-white/90 text-base leading-relaxed">
                   For feedback and inquiries, contact
                   the team at{' '}
                   <a

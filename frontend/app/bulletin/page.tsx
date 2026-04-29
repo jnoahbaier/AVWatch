@@ -238,7 +238,7 @@ function FilterBar({
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
         </button>
         {activeCount > 0 && (
-          <button onClick={onClear} className="text-xs text-slate-500 hover:text-slate-700 transition">
+          <button onClick={onClear} className="text-xs text-slate-500 hover:text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded">
             Clear all
           </button>
         )}
@@ -345,7 +345,7 @@ export default function BulletinPage() {
   const activeCount = countActiveFilters(filters);
 
   return (
-    <main className="min-h-screen bg-slate-50 pt-20 pb-16">
+    <div className="min-h-screen bg-slate-50 pt-20 pb-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* Page header */}
@@ -433,7 +433,7 @@ export default function BulletinPage() {
         {/* Empty */}
         {!isLoading && !error && items.length === 0 && (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <span className="text-5xl mb-4">🔍</span>
+            <span className="text-5xl mb-4" aria-hidden="true">🔍</span>
             <p className="text-slate-500 font-medium">
               {activeCount > 0 ? 'No reports match these filters' : 'No reports yet'}
             </p>
@@ -488,6 +488,6 @@ export default function BulletinPage() {
         )}
 
       </div>
-    </main>
+    </div>
   );
 }

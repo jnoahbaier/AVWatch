@@ -82,7 +82,7 @@ export function Navbar() {
             className="md:hidden p-3 -mr-1 text-slate-400 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
 
