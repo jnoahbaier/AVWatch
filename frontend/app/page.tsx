@@ -292,7 +292,7 @@ function BulletinRow({ item }: { item: BulletinItem }) {
 
 function BulletinRowSkeleton() {
   return (
-    <div className="flex items-center gap-3 py-3 sm:gap-4 sm:py-4 animate-pulse">
+    <div className="flex items-center gap-3 py-3 sm:gap-4 sm:py-4 animate-pulse motion-reduce:animate-none">
       <div className="h-12 w-12 shrink-0 rounded-lg bg-slate-200 sm:h-14 sm:w-14" />
       <div className="flex-1 space-y-2">
         <div className="h-3 w-20 rounded bg-slate-200" />
@@ -322,6 +322,7 @@ export default function Home() {
   const reporterSectionRef = useRef<HTMLDivElement>(null);
   const optionalDetailsRef = useRef<HTMLDetailsElement>(null);
   const certRef = useRef<HTMLLabelElement>(null);
+  const dateTimeInputRef = useRef<HTMLInputElement | null>(null);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
 
@@ -874,8 +875,8 @@ export default function Home() {
                           <div className="w-0.5 h-6 bg-slate-200 mt-1" />
                         </div>
                         <div className="pb-4 pt-1">
-                          <p className="font-semibold text-slate-400 text-sm">Corroborated with similar reports</p>
-                          <p className="text-slate-400 text-xs mt-0.5">Reports near the same location &amp; time are linked together to build credibility.</p>
+                          <p className="font-semibold text-slate-500 text-sm">Corroborated with similar reports</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Reports near the same location &amp; time are linked together to build credibility.</p>
                         </div>
                       </div>
 
@@ -887,8 +888,8 @@ export default function Home() {
                           </div>
                         </div>
                         <div className="pt-1">
-                          <p className="font-semibold text-slate-400 text-sm">Shared with regulators</p>
-                          <p className="text-slate-400 text-xs mt-0.5">Validated reports are forwarded to relevant agencies.</p>
+                          <p className="font-semibold text-slate-500 text-sm">Shared with regulators</p>
+                          <p className="text-slate-500 text-xs mt-0.5">Validated reports are forwarded to relevant agencies.</p>
                         </div>
                       </div>
                     </div>
@@ -1054,7 +1055,7 @@ export default function Home() {
                             }`}
                           >
                             {locationStatus === 'loading' ? (
-                              <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                              <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                             ) : locationStatus === 'success' ? (
                               <CheckCircle className="w-4 h-4" aria-hidden="true" />
                             ) : (
@@ -1168,21 +1169,26 @@ export default function Home() {
                       <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
                       <input type="hidden" {...register('city')} />
 
-                      <div className="mt-3 flex items-center min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-[#5B9DFF] focus-within:border-transparent">
+                      <div className="mt-3 flex items-center rounded-lg border border-slate-200 bg-slate-50 focus-within:ring-2 focus-within:ring-[#5B9DFF] focus-within:border-transparent">
                         <input
                           id="occurred-at-input"
                           type="datetime-local"
                           aria-label="Date and time of incident"
                           {...register('occurred_at')}
+                          ref={(el) => {
+                            register('occurred_at').ref(el);
+                            dateTimeInputRef.current = el;
+                          }}
                           className="flex-1 min-w-0 px-3 py-2.5 bg-transparent text-[#2C3E50] text-sm outline-none"
                         />
-                        <label
-                          htmlFor="occurred-at-input"
+                        <button
+                          type="button"
                           aria-label="Open date picker"
+                          onClick={() => { try { dateTimeInputRef.current?.showPicker(); } catch {} }}
                           className="shrink-0 pr-3 flex items-center text-slate-400 hover:text-[#5B9DFF] transition-colors cursor-pointer"
                         >
                           <Calendar className="w-4 h-4" aria-hidden="true" />
-                        </label>
+                        </button>
                       </div>
                     </div>
                     
@@ -1452,7 +1458,7 @@ export default function Home() {
                         }`}
                       >
                         {isSubmitting && (
-                          <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
+                          <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                         )}
                         {isSubmitting ? (uploadProgress ?? 'Submitting…') : 'Submit Report'}
                       </button>
@@ -1925,7 +1931,7 @@ export default function Home() {
           {reportInitialLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse">
+                <div key={i} className="rounded-2xl bg-white border border-slate-200 overflow-hidden animate-pulse motion-reduce:animate-none">
                   <div className="h-44 bg-slate-200" />
                   <div className="p-5 space-y-3">
                     <div className="h-3 w-24 rounded bg-slate-200" />

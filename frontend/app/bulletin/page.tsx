@@ -410,7 +410,7 @@ export default function BulletinPage() {
         {isLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-72 rounded-2xl border border-slate-200 bg-white animate-pulse" />
+              <div key={i} className="h-72 rounded-2xl border border-slate-200 bg-white animate-pulse motion-reduce:animate-none" />
             ))}
           </div>
         )}
@@ -470,7 +470,7 @@ export default function BulletinPage() {
                   className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition disabled:opacity-50 shadow-sm"
                 >
                   {isLoadingMore ? (
-                    <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <RefreshCw className="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                   ) : (
                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                   )}
