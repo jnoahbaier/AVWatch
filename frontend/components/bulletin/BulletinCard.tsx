@@ -153,8 +153,8 @@ function CommunityModal({
             </h2>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 px-6 pt-8 pb-6 text-center">
-            <h2 id="community-modal-title" className="text-base font-bold text-[#2C3E50] leading-snug">
+          <div className="bg-[#1e3a5f] px-6 pt-8 pb-6 text-center">
+            <h2 id="community-modal-title" className="text-base font-bold text-[#93C5FD] leading-snug">
               {item.title}
             </h2>
           </div>
@@ -255,8 +255,8 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
           />
         </div>
       ) : (
-        <div className="relative h-44 w-full shrink-0 flex flex-col items-center justify-center px-6 bg-gradient-to-br from-blue-50 to-indigo-100">
-          <p className="text-sm font-semibold text-center line-clamp-3 text-[#3A72D9]">
+        <div className="relative h-44 w-full shrink-0 flex flex-col items-center justify-center px-6 bg-[#1e3a5f]">
+          <p className="text-sm font-semibold text-center line-clamp-3 text-[#93C5FD]">
             {displaySummary}
           </p>
         </div>
