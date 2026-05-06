@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { ExternalLink, MapPin, Users, X } from 'lucide-react';
+import { INCIDENT_TYPE_COLORS } from '@/lib/utils';
 
 export interface BulletinItem {
   id: string;
@@ -40,8 +41,10 @@ const COMPANY_COLORS: Record<string, string> = {
 const INCIDENT_TYPE_LABELS: Record<string, string> = {
   collision:        'Collision',
   near_miss:        'Near Miss',
-  sudden_behavior:  'Sudden Behavior',
+  sudden_behavior:  'Reckless Driving',
   blockage:         'Blockage',
+  vandalism:        'Vandalism',
+  accessibility:    'Accessibility Issue',
   other:            'Other',
 };
 
@@ -158,14 +161,17 @@ function CommunityModal({
                 {capitalize(item.av_company)}
               </span>
             )}
-            {incidentLabel && (
-              <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">
+            {incidentLabel && item.incident_type && (
+              <span
+                className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: (INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b') + '18',
+                  color: INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b',
+                }}
+              >
                 {incidentLabel}
               </span>
             )}
-            <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-              Community
-            </span>
             {age && <span className="text-xs text-slate-500 ml-auto">{age}</span>}
           </div>
 
@@ -252,14 +258,15 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
                 {capitalize(item.av_company)}
               </span>
             )}
-            {incidentLabel && (
-              <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">
+            {incidentLabel && item.incident_type && (
+              <span
+                className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: (INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b') + '18',
+                  color: INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b',
+                }}
+              >
                 {incidentLabel}
-              </span>
-            )}
-            {isCommunity && (
-              <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Community
               </span>
             )}
           </div>

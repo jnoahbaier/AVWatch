@@ -85,7 +85,7 @@ const FILTER_INCIDENT_TYPES = [
   { value: 'blockage', label: 'Blocking Traffic' },
   { value: 'collision', label: 'Collision' },
   { value: 'vandalism', label: 'Vandalism' },
-  { value: 'accessibility_issue', label: 'Accessibility Issue' },
+  { value: 'accessibility', label: 'Accessibility Issue' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -337,7 +337,6 @@ export default function Home() {
   const [reportFilters, setReportFilters] = useState<ReportFilters>(DEFAULT_REPORT_FILTERS);
   const [reportLocationInput, setReportLocationInput] = useState('');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
   const reportFetchId = useRef(0);
   const [pipelinePhase, setPipelinePhase] = useState(0);
   const [addressQuery, setAddressQuery] = useState('');
@@ -1896,27 +1895,19 @@ export default function Home() {
                   )}
                 </div>
                 {/* Desktop */}
-                <div className={`hidden sm:block rounded-2xl border bg-white shadow-sm overflow-hidden transition-colors duration-200 ${activeCount > 0 && !showDesktopFilters ? 'border-[#5B9DFF]/50' : 'border-slate-200'}`}>
-                  <button
-                    onClick={() => setShowDesktopFilters((v) => !v)}
-                    aria-expanded={showDesktopFilters}
-                    aria-controls="homepage-desktop-filters"
-                    className={`w-full flex items-center gap-2 px-5 py-3 text-sm font-medium text-[#2C3E50] transition-colors ${showDesktopFilters ? 'bg-slate-50 border-b border-slate-100' : 'hover:bg-slate-50'}`}
-                  >
+                <div className="hidden sm:block rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 bg-slate-50">
                     <Filter className="h-4 w-4 text-[#5B9DFF] shrink-0" aria-hidden="true" />
-                    <span className="flex-1 text-left">Filter reports</span>
+                    <span className="flex-1 text-sm font-medium text-[#2C3E50]">Filter reports</span>
                     {activeCount > 0 && (
                       <span className="flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-[#5B9DFF] text-white text-[10px] font-bold">
                         {activeCount}
                       </span>
                     )}
-                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform duration-200 ${showDesktopFilters ? 'rotate-180' : ''}`} aria-hidden="true" />
-                  </button>
-                  {showDesktopFilters && (
-                    <div id="homepage-desktop-filters" className="px-5 py-4">
-                      {desktopFilters}
-                    </div>
-                  )}
+                  </div>
+                  <div className="px-5 py-4">
+                    {desktopFilters}
+                  </div>
                 </div>
                 {!reportInitialLoading && activeCount > 0 && reportItems.length > 0 && (
                   <p className="mt-2 text-xs text-slate-500">

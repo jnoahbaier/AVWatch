@@ -126,7 +126,8 @@ export const REPORTER_TYPE_LABELS: Record<string, string> = {
  */
 export const INCIDENT_TYPE_COLORS: Record<string, string> = {
   collision: '#ef4444',
-  accessibility: '#f97316',
+  near_miss: '#f97316',
+  accessibility: '#8b5cf6',
   sudden_behavior: '#eab308',
   blockage: '#6366f1',
   vandalism: '#dc2626',

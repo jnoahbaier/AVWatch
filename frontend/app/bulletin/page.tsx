@@ -42,8 +42,10 @@ const INCIDENT_TYPES = [
   { value: '', label: 'All types' },
   { value: 'collision', label: 'Collision' },
   { value: 'near_miss', label: 'Near Miss' },
-  { value: 'sudden_behavior', label: 'Sudden Behavior' },
+  { value: 'sudden_behavior', label: 'Reckless Driving' },
   { value: 'blockage', label: 'Blockage' },
+  { value: 'vandalism', label: 'Vandalism' },
+  { value: 'accessibility', label: 'Accessibility Issue' },
   { value: 'other', label: 'Other' },
 ];
 
