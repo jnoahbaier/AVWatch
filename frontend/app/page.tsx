@@ -1470,172 +1470,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─────────────────────── AFFILIATION STRIP ─────────────────────── */}
-      <div className="bg-white border-t border-b border-slate-100 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-            An independent research project from the
-          </span>
-          <div className="hidden sm:block h-4 w-px bg-slate-200" />
-          <a
-            href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="UC Berkeley School of Information (opens in new tab)"
-          >
-            <img
-              src="/berkeley-ischool-logo.svg"
-              alt=""
-              className="h-12 object-contain opacity-80 hover:opacity-100 transition"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          </a>
-        </div>
-      </div>
-
-      {false && (
-      <section className="py-16 lg:py-24 bg-gradient-to-b from-blue-50/40 to-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl lg:text-3xl font-bold text-[#2C3E50]">
-              What happens to your report?
-            </h2>
-            <p className="mt-2 text-slate-500 text-sm">
-              Every submission goes through our verification pipeline.
-            </p>
-          </div>
-
-          {/* Desktop: horizontal steps */}
-          <div className="hidden md:flex items-start">
-            {PIPELINE_STEPS.map((step, i) => {
-              const state = pipelinePhase === 4 ? 'done' : i < pipelinePhase ? 'done' : i === pipelinePhase ? 'active' : 'pending';
-              const lineActive = pipelinePhase === 4 ? true : pipelinePhase > i;
-              return (
-                <div key={i} className="contents">
-                  <div className="flex flex-col items-center text-center flex-1 min-w-0 px-2">
-                    {/* Circle */}
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500 mb-3 ${
-                      state === 'done'
-                        ? 'bg-emerald-500 shadow-md shadow-emerald-200 scale-100'
-                        : state === 'active'
-                        ? 'bg-[#5B9DFF] shadow-lg shadow-[#5B9DFF]/30 scale-110'
-                        : 'bg-white border-2 border-slate-200'
-                    }`}>
-                      {state === 'done' ? (
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      ) : (
-                        <span className={`text-sm font-bold transition-colors duration-300 ${state === 'active' ? 'text-white' : 'text-slate-400'}`}>
-                          {i + 1}
-                        </span>
-                      )}
-                    </div>
-                    <p className={`text-sm font-semibold leading-snug transition-colors duration-300 ${
-                      state === 'pending' ? 'text-slate-400' : 'text-[#2C3E50]'
-                    }`}>
-                      {step.title}
-                    </p>
-                    <p className={`mt-1 text-xs leading-relaxed transition-colors duration-300 ${
-                      state === 'pending' ? 'text-slate-300' : 'text-slate-500'
-                    }`}>
-                      {step.desc}
-                    </p>
-                  </div>
-                  {i < 3 && (
-                    <div className="relative h-0.5 flex-1 self-start mt-[22px] shrink-0 mx-1">
-                      <div className="absolute inset-0 bg-slate-200 rounded-full" />
-                      <div className={`absolute inset-y-0 left-0 rounded-full bg-[#5B9DFF] transition-all duration-700 ${lineActive ? 'right-0' : 'right-full'}`} />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Mobile: vertical steps */}
-          <div className="md:hidden space-y-1">
-            {PIPELINE_STEPS.map((step, i) => {
-              const state = pipelinePhase === 4 ? 'done' : i < pipelinePhase ? 'done' : i === pipelinePhase ? 'active' : 'pending';
-              const lineActive = pipelinePhase === 4 ? true : pipelinePhase > i;
-              return (
-                <div key={i} className="flex gap-4 items-start">
-                  <div className="flex flex-col items-center shrink-0">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
-                      state === 'done'
-                        ? 'bg-emerald-500 shadow-md shadow-emerald-200'
-                        : state === 'active'
-                        ? 'bg-[#5B9DFF] shadow-lg shadow-[#5B9DFF]/30 scale-110'
-                        : 'bg-white border-2 border-slate-200'
-                    }`}>
-                      {state === 'done' ? (
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      ) : (
-                        <span className={`text-sm font-bold ${state === 'active' ? 'text-white' : 'text-slate-400'}`}>
-                          {i + 1}
-                        </span>
-                      )}
-                    </div>
-                    {i < 3 && (
-                      <div className="relative w-0.5 h-8 mt-1">
-                        <div className="absolute inset-0 bg-slate-200 rounded-full" />
-                        <div className={`absolute inset-x-0 top-0 rounded-full bg-[#5B9DFF] transition-all duration-700 ${lineActive ? 'bottom-0' : 'bottom-full'}`} />
-                      </div>
-                    )}
-                  </div>
-                  <div className="pb-4 pt-1.5">
-                    <p className={`text-sm font-semibold transition-colors duration-300 ${state === 'pending' ? 'text-slate-400' : 'text-[#2C3E50]'}`}>
-                      {step.title}
-                    </p>
-                    <p className={`text-xs mt-0.5 transition-colors duration-300 ${state === 'pending' ? 'text-slate-300' : 'text-slate-500'}`}>
-                      {step.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-      )}
-
-      {/* ─────────────────────── WHY IT MATTERS ─────────────────────── */}
-      <section
-        className="relative py-16 lg:py-28 border-t border-b border-slate-200 overflow-hidden"
-        style={{
-          backgroundImage: 'url(/waymo_bg.webp)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        {/* Mobile: near-opaque white overlay so text is always readable */}
-        <div className="absolute inset-0 bg-white/90 pointer-events-none lg:hidden" />
-        {/* Desktop: left-side gradient — image bleeds in on the right */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/0 pointer-events-none hidden lg:block" />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Text occupies left half only */}
-          <div className="max-w-xl">
-            <h2 className="text-4xl lg:text-5xl font-bold text-[#2C3E50] leading-tight mb-8">
-              Autonomous driving<br />
-              <span className="text-[#5B9DFF]">is expanding fast.</span>
-            </h2>
-
-            <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
-              <p>
-                Yet there is no simple, quick way for people to report what they witness on the road.{' '}
-                <span className="font-semibold text-[#2C3E50]">AV Watch changes that.</span>
-              </p>
-              <p>
-                {/* Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them. */}
-                {/* Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles. */}
-                AV Watch is the world’s first platform dedicated to autonomous vehicle incident reporting from anyone, anywhere. By bringing together the voices of our communities, we empower them to better understand what really happens on our roads. 
-              </p>
-              <p className="hidden lg:block">
-                AV Watch is built by a team of independent researchers at the UC Berkeley School of Information.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ─────────────────────── RECENT REPORTS ─────────────────────── */}
       <section id="reports" className="py-20 bg-slate-50">
@@ -1999,6 +1833,174 @@ export default function Home() {
               </div>
             </>
           )}
+        </div>
+      </section>
+
+
+      {/* ─────────────────────── AFFILIATION STRIP ─────────────────────── */}
+      <div className="bg-white border-t border-b border-slate-100 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            An independent research project from the
+          </span>
+          <div className="hidden sm:block h-4 w-px bg-slate-200" />
+          <a
+            href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="UC Berkeley School of Information (opens in new tab)"
+          >
+            <img
+              src="/berkeley-ischool-logo.svg"
+              alt=""
+              className="h-12 object-contain opacity-80 hover:opacity-100 transition"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </a>
+        </div>
+      </div>
+
+      {false && (
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-blue-50/40 to-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-[#2C3E50]">
+              What happens to your report?
+            </h2>
+            <p className="mt-2 text-slate-500 text-sm">
+              Every submission goes through our verification pipeline.
+            </p>
+          </div>
+
+          {/* Desktop: horizontal steps */}
+          <div className="hidden md:flex items-start">
+            {PIPELINE_STEPS.map((step, i) => {
+              const state = pipelinePhase === 4 ? 'done' : i < pipelinePhase ? 'done' : i === pipelinePhase ? 'active' : 'pending';
+              const lineActive = pipelinePhase === 4 ? true : pipelinePhase > i;
+              return (
+                <div key={i} className="contents">
+                  <div className="flex flex-col items-center text-center flex-1 min-w-0 px-2">
+                    {/* Circle */}
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-500 mb-3 ${
+                      state === 'done'
+                        ? 'bg-emerald-500 shadow-md shadow-emerald-200 scale-100'
+                        : state === 'active'
+                        ? 'bg-[#5B9DFF] shadow-lg shadow-[#5B9DFF]/30 scale-110'
+                        : 'bg-white border-2 border-slate-200'
+                    }`}>
+                      {state === 'done' ? (
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      ) : (
+                        <span className={`text-sm font-bold transition-colors duration-300 ${state === 'active' ? 'text-white' : 'text-slate-400'}`}>
+                          {i + 1}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-sm font-semibold leading-snug transition-colors duration-300 ${
+                      state === 'pending' ? 'text-slate-400' : 'text-[#2C3E50]'
+                    }`}>
+                      {step.title}
+                    </p>
+                    <p className={`mt-1 text-xs leading-relaxed transition-colors duration-300 ${
+                      state === 'pending' ? 'text-slate-300' : 'text-slate-500'
+                    }`}>
+                      {step.desc}
+                    </p>
+                  </div>
+                  {i < 3 && (
+                    <div className="relative h-0.5 flex-1 self-start mt-[22px] shrink-0 mx-1">
+                      <div className="absolute inset-0 bg-slate-200 rounded-full" />
+                      <div className={`absolute inset-y-0 left-0 rounded-full bg-[#5B9DFF] transition-all duration-700 ${lineActive ? 'right-0' : 'right-full'}`} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Mobile: vertical steps */}
+          <div className="md:hidden space-y-1">
+            {PIPELINE_STEPS.map((step, i) => {
+              const state = pipelinePhase === 4 ? 'done' : i < pipelinePhase ? 'done' : i === pipelinePhase ? 'active' : 'pending';
+              const lineActive = pipelinePhase === 4 ? true : pipelinePhase > i;
+              return (
+                <div key={i} className="flex gap-4 items-start">
+                  <div className="flex flex-col items-center shrink-0">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
+                      state === 'done'
+                        ? 'bg-emerald-500 shadow-md shadow-emerald-200'
+                        : state === 'active'
+                        ? 'bg-[#5B9DFF] shadow-lg shadow-[#5B9DFF]/30 scale-110'
+                        : 'bg-white border-2 border-slate-200'
+                    }`}>
+                      {state === 'done' ? (
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      ) : (
+                        <span className={`text-sm font-bold ${state === 'active' ? 'text-white' : 'text-slate-400'}`}>
+                          {i + 1}
+                        </span>
+                      )}
+                    </div>
+                    {i < 3 && (
+                      <div className="relative w-0.5 h-8 mt-1">
+                        <div className="absolute inset-0 bg-slate-200 rounded-full" />
+                        <div className={`absolute inset-x-0 top-0 rounded-full bg-[#5B9DFF] transition-all duration-700 ${lineActive ? 'bottom-0' : 'bottom-full'}`} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pb-4 pt-1.5">
+                    <p className={`text-sm font-semibold transition-colors duration-300 ${state === 'pending' ? 'text-slate-400' : 'text-[#2C3E50]'}`}>
+                      {step.title}
+                    </p>
+                    <p className={`text-xs mt-0.5 transition-colors duration-300 ${state === 'pending' ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {step.desc}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+      )}
+
+      {/* ─────────────────────── WHY IT MATTERS ─────────────────────── */}
+      <section
+        className="relative py-16 lg:py-28 border-t border-b border-slate-200 overflow-hidden"
+        style={{
+          backgroundImage: 'url(/waymo_bg.webp)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Mobile: near-opaque white overlay so text is always readable */}
+        <div className="absolute inset-0 bg-white/90 pointer-events-none lg:hidden" />
+        {/* Desktop: left-side gradient — image bleeds in on the right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/0 pointer-events-none hidden lg:block" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Text occupies left half only */}
+          <div className="max-w-xl">
+            <h2 className="text-4xl lg:text-5xl font-bold text-[#2C3E50] leading-tight mb-8">
+              Autonomous driving<br />
+              <span className="text-[#5B9DFF]">is expanding fast.</span>
+            </h2>
+
+            <div className="space-y-5 text-slate-700 text-lg leading-relaxed">
+              <p>
+                Yet there is no simple, quick way for people to report what they witness on the road.{' '}
+                <span className="font-semibold text-[#2C3E50]">AV Watch changes that.</span>
+              </p>
+              <p>
+                {/* Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them. */}
+                {/* Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles. */}
+                AV Watch is the world’s first platform dedicated to autonomous vehicle incident reporting from anyone, anywhere. By bringing together the voices of our communities, we empower them to better understand what really happens on our roads. 
+              </p>
+              <p className="hidden lg:block">
+                AV Watch is built by a team of independent researchers at the UC Berkeley School of Information.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
