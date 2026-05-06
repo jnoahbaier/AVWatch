@@ -1471,6 +1471,30 @@ export default function Home() {
       </section>
 
 
+      {/* ─────────────────────── AFFILIATION STRIP ─────────────────────── */}
+      <div className="bg-white border-t border-b border-slate-100 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            An independent research project from the
+          </span>
+          <div className="hidden sm:block h-4 w-px bg-slate-200" />
+          <a
+            href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="UC Berkeley School of Information (opens in new tab)"
+          >
+            <img
+              src="/berkeley-ischool-logo.svg"
+              alt=""
+              className="h-12 object-contain opacity-80 hover:opacity-100 transition"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            />
+          </a>
+        </div>
+      </div>
+
+
       {/* ─────────────────────── RECENT REPORTS ─────────────────────── */}
       <section id="reports" className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1836,29 +1860,6 @@ export default function Home() {
         </div>
       </section>
 
-
-      {/* ─────────────────────── AFFILIATION STRIP ─────────────────────── */}
-      <div className="bg-white border-t border-b border-slate-100 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-            An independent research project from the
-          </span>
-          <div className="hidden sm:block h-4 w-px bg-slate-200" />
-          <a
-            href="https://www.ischool.berkeley.edu/projects/2026/av-watch-transparency-platform-autonomous-vehicle-accountability"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="UC Berkeley School of Information (opens in new tab)"
-          >
-            <img
-              src="/berkeley-ischool-logo.svg"
-              alt=""
-              className="h-12 object-contain opacity-80 hover:opacity-100 transition"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          </a>
-        </div>
-      </div>
 
       {false && (
       <section className="py-16 lg:py-24 bg-gradient-to-b from-blue-50/40 to-white">
