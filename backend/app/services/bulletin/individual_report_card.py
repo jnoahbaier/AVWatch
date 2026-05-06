@@ -8,6 +8,7 @@ modal narrative. Filters profanity and strips PII.
 Runs as a FastAPI BackgroundTask — opens its own DB session.
 """
 
+import base64
 import json
 import logging
 from datetime import timedelta
@@ -105,6 +106,102 @@ def _parse_gemini_json(raw: str) -> Optional[dict]:
         return json.loads(raw)
     except json.JSONDecodeError:
         return None
+
+
+async def _check_is_shitpost(incident: Incident) -> tuple[bool, str]:
+    """
+    Ask Gemini to decide whether a submitted report is a shitpost, spam, or
+    obviously fabricated.  Returns (is_shitpost, reason).
+
+    Criteria passed to Gemini:
+      - Physically impossible / absurd scenario (e.g. 35 clowns, magic, animals)
+      - Clearly a test submission ("test", "asdf", etc.)
+      - Excessive profanity or sexually explicit content
+      - Obviously satirical / joke
+      - Personally targeted harassment
+      - Wildly implausible date (e.g. year 0002 or far future)
+
+    If images are attached they are fetched and sent to Gemini's vision model
+    so obviously fake/meme images also get caught.
+
+    On any API error we default to False (give benefit of the doubt).
+    """
+    if not settings.GEMINI_API_KEY:
+        return False, "no gemini key — skipping check"
+
+    description = (incident.description or "").strip()
+    incident_type = incident.incident_type or "other"
+    company = incident.av_company or "unknown"
+
+    text_part = {
+        "text": (
+            "You are a content moderator for AVWatch, a public-interest platform that tracks "
+            "real autonomous vehicle incidents in San Francisco.\n"
+            "A user just submitted the following report. Decide if it is a genuine AV incident "
+            "report or a shitpost / spam / clearly fabricated submission.\n\n"
+            f"Incident type: {incident_type}\n"
+            f"AV Company: {company}\n"
+            f"Occurred at: {incident.occurred_at}\n"
+            f"Description: \"{description or '(none provided)'}\"\n\n"
+            "Flag as a shitpost (is_shitpost: true) if the report:\n"
+            "  • Describes physically impossible or absurd events "
+            "(e.g. clowns emerging from the car, animals driving, supernatural events, "
+            "impossible numbers of people)\n"
+            "  • Is clearly a test submission (e.g. 'test', 'testing!!!', 'asdf', 'hello')\n"
+            "  • Contains excessive profanity, slurs, or sexually explicit content\n"
+            "  • Is obviously satirical, a joke, or targeted harassment of a named individual\n"
+            "  • Has a wildly implausible date (year before 2020 or more than 1 year in the future)\n"
+            "  • Any attached image is a meme, cartoon, unrelated stock photo, or explicit content\n\n"
+            "A report CAN be unusual, minor, or poorly written and still be genuine — only flag "
+            "clear shitposts. When in doubt, do NOT flag it.\n\n"
+            "Respond with ONLY valid JSON, no markdown:\n"
+            "{\"is_shitpost\": true/false, \"reason\": \"one short sentence\"}"
+        )
+    }
+
+    # Build parts list — prepend any images so Gemini sees them before the prompt
+    parts: list[dict] = []
+    for url in (incident.media_urls or [])[:3]:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                img_resp = await client.get(url)
+                img_resp.raise_for_status()
+            mime = img_resp.headers.get("content-type", "image/jpeg").split(";")[0]
+            encoded = base64.b64encode(img_resp.content).decode()
+            parts.append({"inlineData": {"mimeType": mime, "data": encoded}})
+        except Exception as exc:
+            logger.warning(f"Shitpost check: could not fetch image {url}: {exc}")
+
+    parts.append(text_part)
+
+    try:
+        async with httpx.AsyncClient(timeout=25.0) as client:
+            resp = await client.post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+                params={"key": settings.GEMINI_API_KEY},
+                json={
+                    "contents": [{"parts": parts}],
+                    "generationConfig": {"temperature": 0.1, "maxOutputTokens": 150},
+                },
+                headers={"Content-Type": "application/json"},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            candidates = data.get("candidates", [{}])
+            response_parts = candidates[0].get("content", {}).get("parts", [])
+            for p in response_parts:
+                if not p.get("thought", False):
+                    raw = p.get("text", "").strip()
+                    if raw:
+                        parsed = _parse_gemini_json(raw)
+                        if parsed is not None:
+                            is_sp = bool(parsed.get("is_shitpost", False))
+                            reason = parsed.get("reason", "")
+                            return is_sp, reason
+            return False, "could not parse gemini response"
+    except Exception as exc:
+        logger.warning(f"Shitpost check API call failed: {exc} — defaulting to not-shitpost")
+        return False, f"api error: {exc}"
 
 
 DEDUP_WINDOW_HOURS = 4  # how far back to look for a matching card
@@ -213,6 +310,16 @@ async def generate_card_for_report(incident_id: str, max_tokens: int = 1024) -> 
             incident = result.scalar_one_or_none()
             if not incident:
                 logger.warning(f"generate_card_for_report: incident {incident_id} not found")
+                return
+
+            # ── Shitpost / quality gate ──────────────────────────────────────
+            is_shitpost, sp_reason = await _check_is_shitpost(incident)
+            if is_shitpost:
+                incident.status = "rejected"
+                await db.commit()
+                logger.info(
+                    f"Report {incident_id} rejected as shitpost: {sp_reason}"
+                )
                 return
 
             company = incident.av_company or "unknown"

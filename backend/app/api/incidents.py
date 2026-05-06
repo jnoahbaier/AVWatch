@@ -84,6 +84,10 @@ class IncidentCreate(BaseModel):
     location: LocationInput
     occurred_at: datetime
     reporter_type: Optional[str] = None
+    city: Optional[str] = None
+    contact_name: Optional[str] = Field(None, max_length=200)
+    contact_email: Optional[str] = Field(None, max_length=200)
+    media_urls: Optional[List[str]] = []
 
     class Config:
         json_schema_extra = {
@@ -149,8 +153,12 @@ async def create_incident(
         description=incident.description,
         location=point,
         address=incident.location.address,
+        city=incident.city or "San Francisco",
         occurred_at=incident.occurred_at,
         reporter_type=incident.reporter_type,
+        contact_name=incident.contact_name,
+        contact_email=incident.contact_email,
+        media_urls=incident.media_urls or [],
         source="user_report",
         reporter_ip_hash=ip_hash,
     )

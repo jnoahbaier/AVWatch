@@ -1,25 +1,12 @@
+/**
+ * POST /api/incidents/submit
+ *
+ * Thin proxy to the Python backend's POST /api/incidents/ endpoint.
+ * We forward the real client IP via X-Forwarded-For so the backend can
+ * handle rate-limiting, IP hashing, Gemini quality gating, and card
+ * generation — all in one place.
+ */
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { createHash } from 'crypto';
-
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 600_000; // 10 minutes
-
-function clientIpFromRequest(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
-  }
-  const realIp = req.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp.trim();
-  }
-  return 'unknown';
-}
-
-function sha256Hex(input: string): string {
-  return createHash('sha256').update(input, 'utf8').digest('hex');
-}
 
 type SubmitBody = {
   incident_type?: string;
@@ -37,12 +24,10 @@ type SubmitBody = {
 };
 
 export async function POST(req: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!backendUrl) {
     return NextResponse.json(
-      { error: 'Report submission is not configured (missing Supabase service credentials).' },
+      { error: 'Report submission is not configured (missing backend URL).' },
       { status: 503 }
     );
   }
@@ -69,6 +54,7 @@ export async function POST(req: NextRequest) {
     media_urls,
   } = body;
 
+  // Basic validation before hitting the backend
   if (
     typeof incident_type !== 'string' ||
     !incident_type ||
@@ -89,68 +75,48 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const clientIp = clientIpFromRequest(req);
-  const ipHash = sha256Hex(clientIp);
+  // Forward the real client IP so the backend rate-limiter and IP hasher work correctly
+  const forwardedFor =
+    req.headers.get('x-forwarded-for') ||
+    req.headers.get('x-real-ip') ||
+    'unknown';
 
-  const supabase = createClient(supabaseUrl, serviceKey);
+  // Transform flat lat/lng/address into the nested `location` object the backend expects
+  const backendPayload = {
+    incident_type,
+    av_company: av_company || 'unknown',
+    description: description ?? null,
+    location: {
+      latitude,
+      longitude,
+      address: address ?? null,
+    },
+    city: city || 'San Francisco',
+    occurred_at,
+    reporter_type: reporter_type ?? null,
+    contact_name: contact_name ?? null,
+    contact_email: contact_email ?? null,
+    media_urls: media_urls ?? [],
+  };
 
-  const { data: blocked } = await supabase
-    .from('blocked_ips')
-    .select('id')
-    .eq('ip_hash', ipHash)
-    .maybeSingle();
-
-  if (blocked) {
-    return NextResponse.json({ error: 'Submission not allowed.' }, { status: 403 });
-  }
-
-  const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-  const { count, error: countError } = await supabase
-    .from('incidents')
-    .select('*', { count: 'exact', head: true })
-    .eq('reporter_ip_hash', ipHash)
-    .gte('reported_at', since);
-
-  if (countError) {
-    console.error('incidents submit: rate count error', countError);
-    return NextResponse.json({ error: 'Could not verify submission rate. Try again later.' }, { status: 500 });
-  }
-
-  if ((count ?? 0) >= RATE_LIMIT_MAX) {
-    return NextResponse.json(
-      {
-        error:
-          'Too many submissions. Please wait a few minutes before submitting again.',
+  let response: Response;
+  try {
+    response = await fetch(`${backendUrl}/api/incidents/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Forwarded-For': forwardedFor,
       },
-      { status: 429 }
+      body: JSON.stringify(backendPayload),
+    });
+  } catch (err) {
+    console.error('incidents/submit: backend unreachable', err);
+    return NextResponse.json(
+      { error: 'Could not reach the report server. Please try again later.' },
+      { status: 503 }
     );
   }
 
-  const { data, error } = await supabase
-    .from('incidents')
-    .insert({
-      incident_type,
-      av_company: av_company || 'unknown',
-      description: description ?? null,
-      location: `SRID=4326;POINT(${longitude} ${latitude})`,
-      address: address ?? null,
-      city: city || 'San Francisco',
-      occurred_at,
-      reporter_type: reporter_type ?? null,
-      source: 'user_report',
-      status: 'unverified',
-      media_urls: media_urls ?? [],
-      contact_name: contact_name || null,
-      contact_email: contact_email || null,
-      reporter_ip_hash: ipHash,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    console.error('incidents submit: insert error', error);
-    return NextResponse.json({ error: error.message || 'Failed to save report.' }, { status: 500 });
-  }
-
-  return NextResponse.json(data, { status: 201 });
+  const data = await response.json().catch(() => ({}));
+  return NextResponse.json(data, { status: response.status });
 }
