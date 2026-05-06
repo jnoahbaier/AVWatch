@@ -319,6 +319,7 @@ class BulletinPipeline:
         stmt = select(BulletinItem).where(
             and_(
                 BulletinItem.status == "active",
+                BulletinItem.source_platform == "reddit",  # never merge into community cards
                 BulletinItem.av_company == signal.extracted_company,
                 BulletinItem.incident_type == signal.extracted_incident_type,
                 BulletinItem.occurred_at >= time_lower,
