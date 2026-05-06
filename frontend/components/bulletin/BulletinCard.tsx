@@ -340,21 +340,8 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
     </div>
   );
 
-  if (item.source_url) {
-    return (
-      <a
-        href={item.source_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label={`${item.title} (opens in new tab)`}
-        className="block"
-      >
-        {cardContent}
-        <span className="sr-only">(opens in new tab)</span>
-      </a>
-    );
-  }
-
+  // Community cards always open the modal — never follow source_url even if one
+  // exists (can happen when a Reddit item is later reclassified as community).
   if (isCommunity) {
     return (
       <>
@@ -370,6 +357,22 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
           <CommunityModal item={item} onClose={() => setModalOpen(false)} />
         )}
       </>
+    );
+  }
+
+  // Reddit / external cards — link out to source
+  if (item.source_url) {
+    return (
+      <a
+        href={item.source_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${item.title} (opens in new tab)`}
+        className="block"
+      >
+        {cardContent}
+        <span className="sr-only">(opens in new tab)</span>
+      </a>
     );
   }
 
