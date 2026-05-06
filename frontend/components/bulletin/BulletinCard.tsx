@@ -48,15 +48,35 @@ const INCIDENT_TYPE_LABELS: Record<string, string> = {
   other:            'Other',
 };
 
-function timeAgo(iso: string | null): string {
+function formatDate(iso: string | null): string {
   if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+// Tags contain incident types with underscores replaced by spaces (e.g. "sudden behavior").
+// This map lets us recover the canonical key and show a badge for each matched type.
+const TAG_TO_INCIDENT_TYPE: Record<string, string> = {
+  collision:         'collision',
+  'near miss':       'near_miss',
+  'sudden behavior': 'sudden_behavior',
+  blockage:          'blockage',
+  vandalism:         'vandalism',
+  accessibility:     'accessibility',
+  other:             'other',
+};
+
+function incidentTypesFromTags(tags: string[], primaryType: string | null): string[] {
+  const found = tags
+    .map((t) => TAG_TO_INCIDENT_TYPE[t.toLowerCase()])
+    .filter(Boolean) as string[];
+  // Always include the primary incident_type even if not in tags
+  if (primaryType && !found.includes(primaryType)) found.unshift(primaryType);
+  // Deduplicate while preserving order
+  return [...new Set(found)];
 }
 
 function capitalize(s: string): string {
@@ -103,10 +123,8 @@ function CommunityModal({
 
   const companyColor =
     COMPANY_COLORS[item.av_company?.toLowerCase() ?? ''] ?? COMPANY_COLORS.unknown;
-  const incidentLabel = item.incident_type
-    ? INCIDENT_TYPE_LABELS[item.incident_type] ?? capitalize(item.incident_type)
-    : null;
-  const age = timeAgo(item.first_seen_at);
+  const incidentTypes = incidentTypesFromTags(item.tags ?? [], item.incident_type);
+  const formattedDate = formatDate(item.occurred_at ?? item.first_seen_at);
 
   return (
     <div
@@ -154,25 +172,26 @@ function CommunityModal({
 
         {/* Body */}
         <div className="p-6 space-y-4">
-          {/* Badges + age */}
+          {/* Badges + date */}
           <div className="flex items-center gap-2 flex-wrap">
             {item.av_company && (
               <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${companyColor}`}>
                 {capitalize(item.av_company)}
               </span>
             )}
-            {incidentLabel && item.incident_type && (
+            {incidentTypes.map((type) => (
               <span
+                key={type}
                 className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                 style={{
-                  backgroundColor: (INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b') + '18',
-                  color: INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b',
+                  backgroundColor: (INCIDENT_TYPE_COLORS[type] ?? '#64748b') + '18',
+                  color: INCIDENT_TYPE_COLORS[type] ?? '#64748b',
                 }}
               >
-                {incidentLabel}
+                {INCIDENT_TYPE_LABELS[type] ?? capitalize(type)}
               </span>
-            )}
-            {age && <span className="text-xs text-slate-500 ml-auto">{age}</span>}
+            ))}
+            {formattedDate && <span className="text-xs text-slate-500 ml-auto">{formattedDate}</span>}
           </div>
 
           {/* AI narrative */}
@@ -208,10 +227,8 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
 
   const companyColor =
     COMPANY_COLORS[item.av_company?.toLowerCase() ?? ''] ?? COMPANY_COLORS.unknown;
-  const age = timeAgo(item.first_seen_at);
-  const incidentLabel = item.incident_type
-    ? INCIDENT_TYPE_LABELS[item.incident_type] ?? capitalize(item.incident_type)
-    : null;
+  const formattedDate = formatDate(item.occurred_at ?? item.first_seen_at);
+  const incidentTypes = incidentTypesFromTags(item.tags ?? [], item.incident_type);
 
   const isCommunity = item.source_platform === 'community';
   const hasUserReports = item.user_report_count > 0;
@@ -250,7 +267,7 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
 
       <div className="flex flex-1 flex-col p-5">
 
-        {/* Company badge + incident type + community tag + age */}
+        {/* Company badge + incident type(s) + date */}
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap">
             {item.av_company && (
@@ -258,20 +275,21 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
                 {capitalize(item.av_company)}
               </span>
             )}
-            {incidentLabel && item.incident_type && (
+            {incidentTypes.map((type) => (
               <span
+                key={type}
                 className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
                 style={{
-                  backgroundColor: (INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b') + '18',
-                  color: INCIDENT_TYPE_COLORS[item.incident_type] ?? '#64748b',
+                  backgroundColor: (INCIDENT_TYPE_COLORS[type] ?? '#64748b') + '18',
+                  color: INCIDENT_TYPE_COLORS[type] ?? '#64748b',
                 }}
               >
-                {incidentLabel}
+                {INCIDENT_TYPE_LABELS[type] ?? capitalize(type)}
               </span>
-            )}
+            ))}
           </div>
-          {age && (
-            <span className="text-xs text-slate-500 shrink-0">{age}</span>
+          {formattedDate && (
+            <span className="text-xs text-slate-500 shrink-0">{formattedDate}</span>
           )}
         </div>
 
@@ -293,15 +311,9 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
-          {/* Community cards: only show the community report count */}
-          {isCommunity ? (
-            <div className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
-              <Users className="h-3 w-3" aria-hidden="true" />
-              {item.user_report_count} community {item.user_report_count === 1 ? 'report' : 'reports'}
-            </div>
-          ) : (
+        {/* Footer — Reddit cards only */}
+        {!isCommunity && (
+          <div className="mt-4 flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
             <div className="flex items-center gap-1 text-xs text-slate-500">
               <Users className="h-3.5 w-3.5" aria-hidden="true" />
               <span>
@@ -311,23 +323,21 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
                 <span className="ml-2">· ↑ {item.total_upvotes}</span>
               )}
             </div>
-          )}
-
-          {/* Source attribution (Reddit cards only) */}
-          {!isCommunity && item.source_subreddit ? (
-            <div className="flex items-center gap-2">
-              {hasUserReports && (
-                <span className="text-xs text-emerald-600 font-medium">
-                  · 👥 {item.user_report_count}
-                </span>
-              )}
-              <div className="flex items-center gap-1 text-xs font-semibold text-[#5B9DFF]">
-                {`r/${item.source_subreddit}`}
-                <ExternalLink className="h-3 w-3" aria-hidden="true" />
+            {item.source_subreddit && (
+              <div className="flex items-center gap-2">
+                {hasUserReports && (
+                  <span className="text-xs text-emerald-600 font-medium">
+                    · 👥 {item.user_report_count}
+                  </span>
+                )}
+                <div className="flex items-center gap-1 text-xs font-semibold text-[#5B9DFF]">
+                  {`r/${item.source_subreddit}`}
+                  <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
