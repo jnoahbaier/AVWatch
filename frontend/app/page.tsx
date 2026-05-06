@@ -28,6 +28,7 @@ import {
   ArrowDown,
   Filter,
   ExternalLink,
+  Info,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import {
@@ -760,6 +761,19 @@ export default function Home() {
                   Report it here to make autonomous driving safer for everyone.
                 </p>
 
+                {/* <p className="text-xl text-slate-600 mb-2 leading-relaxed">
+                  Anonymously report what you saw, no account needed, and help make autonomous driving safer for everyone.
+                </p> */}
+
+              {/* Warning — mobile only, under subtitle */}
+              <div className="lg:hidden flex items-start gap-2.5 mb-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+                <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-sm text-blue-900 leading-snug">
+                  If the incident requires immediate emergency response,{' '}
+                  <strong>call 911</strong>
+                </p>
+              </div>
+
               {/* Mobile CTA — only on small screens where form is below the fold */}
               <div className="sm:hidden flex-1 flex items-center justify-center">
                 <button
@@ -781,7 +795,7 @@ export default function Home() {
                 ].map(({ icon: Icon, label }) => (
                   <div
                     key={label}
-                    className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-sm text-slate-700 font-medium"
+                    className="flex items-center gap-2 px-3 py-2 rounded-full bg-white border border-slate-200 text-sm text-slate-700 font-medium"
                   >
                     <span className="flex items-center justify-center w-6 h-6 rounded-full" style={{ backgroundColor: '#E6F0FA' }}>
                       <Icon className="w-3.5 h-3.5 text-[#5B9DFF]" aria-hidden="true" />
@@ -789,6 +803,15 @@ export default function Home() {
                     {label}
                   </div>
                 ))}
+              </div>
+
+              {/* Warning — desktop only */}
+              <div className="hidden lg:flex items-start gap-3 mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5">
+                <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-sm text-blue-900 leading-snug">
+                  If the incident requires immediate emergency response,{' '}
+                  <strong className="font-bold">call 911</strong>
+                </p>
               </div>
 
               {/* AV car imagery — drives in from left on scroll (desktop only) */}
@@ -1369,10 +1392,9 @@ export default function Home() {
                         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-                              Additional details <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
+                              Contact information <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
                             </p>
                             <p className="mt-1 text-sm text-slate-500">
-                              {/* Add your contact info if you&apos;d like us to follow up and verify the report. */}
                               Add your contact info if we can follow up to verify your report.
                             </p>
                           </div>
@@ -1382,9 +1404,6 @@ export default function Home() {
                         </summary>
                         <div className="border-t border-slate-200 p-4 space-y-5">
                           <div>
-                            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-600">
-                              Contact <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
-                            </p>
                             <div className="space-y-2">
                               <input
                                 type="text"

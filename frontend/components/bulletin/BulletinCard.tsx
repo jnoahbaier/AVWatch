@@ -153,8 +153,8 @@ function CommunityModal({
             </h2>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-100 px-6 pt-8 pb-6 text-center">
-            <h2 id="community-modal-title" className="text-base font-bold text-emerald-800 leading-snug">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-100 px-6 pt-8 pb-6 text-center">
+            <h2 id="community-modal-title" className="text-base font-bold text-[#2C3E50] leading-snug">
               {item.title}
             </h2>
           </div>
@@ -182,9 +182,10 @@ function CommunityModal({
             {incidentTypes.map((type) => (
               <span
                 key={type}
-                className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                className="inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium"
                 style={{
                   backgroundColor: (INCIDENT_TYPE_COLORS[type] ?? '#64748b') + '18',
+                  borderColor: (INCIDENT_TYPE_COLORS[type] ?? '#64748b') + '40',
                   color: INCIDENT_TYPE_COLORS[type] ?? '#64748b',
                 }}
               >
@@ -254,12 +255,8 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
           />
         </div>
       ) : (
-        <div className={`relative h-44 w-full shrink-0 flex flex-col items-center justify-center px-6 ${
-          isCommunity
-            ? 'bg-gradient-to-br from-green-50 to-emerald-100'
-            : 'bg-gradient-to-br from-slate-100 to-slate-200'
-        }`}>
-          <p className={`text-sm font-semibold text-center line-clamp-3 ${isCommunity ? 'text-emerald-700' : 'text-slate-600'}`}>
+        <div className="relative h-44 w-full shrink-0 flex flex-col items-center justify-center px-6 bg-gradient-to-br from-blue-50 to-indigo-100">
+          <p className="text-sm font-semibold text-center line-clamp-3 text-[#3A72D9]">
             {displaySummary}
           </p>
         </div>
@@ -278,9 +275,10 @@ export function BulletinCard({ item }: { item: BulletinItem }) {
             {incidentTypes.map((type) => (
               <span
                 key={type}
-                className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium"
+                className="inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium"
                 style={{
                   backgroundColor: (INCIDENT_TYPE_COLORS[type] ?? '#64748b') + '18',
+                  borderColor: (INCIDENT_TYPE_COLORS[type] ?? '#64748b') + '40',
                   color: INCIDENT_TYPE_COLORS[type] ?? '#64748b',
                 }}
               >
