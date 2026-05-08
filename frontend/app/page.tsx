@@ -98,6 +98,7 @@ function buildReportParams(offset: number, filters: ReportFilters): string {
   if (filters.avCompany) p.set('av_company', filters.avCompany);
   if (filters.incidentType) p.set('incident_type', filters.incidentType);
   if (filters.sourcePlatform) p.set('source_platform', filters.sourcePlatform);
+  p.set('sort_by', 'occurred_at');
   return p.toString();
 }
 
@@ -721,7 +722,7 @@ export default function Home() {
       {/* ─────────────────────── HERO / REPORT ─────────────────────── */}
       <section
         id="report"
-        className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50"
+        className="relative overflow-x-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50"
       >
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60" />
@@ -766,16 +767,16 @@ export default function Home() {
                 </p> */}
 
               {/* Warning — mobile only, under subtitle */}
-              <div className="lg:hidden flex items-start gap-2.5 mb-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
-                <Info className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-sm text-blue-900 leading-snug">
+              <div className="lg:hidden flex items-start gap-2.5 mb-3 rounded-xl border border-[#5B9DFF] bg-[#5B9DFF]/10 px-4 py-3">
+                <Info className="w-3.5 h-3.5 text-[#5B9DFF] shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-sm text-[#2C3E50] leading-snug">
                   If the incident requires immediate emergency response,{' '}
-                  <strong>call 911</strong>
+                  <strong className="font-bold text-[#5B9DFF]">call 911</strong>
                 </p>
               </div>
 
               {/* Mobile CTA — only on small screens where form is below the fold */}
-              <div className="sm:hidden flex-1 flex items-center justify-center">
+              <div className="sm:hidden flex-1 flex items-center justify-center pb-10">
                 <button
                   type="button"
                   onClick={() => document.getElementById('report-form')?.scrollIntoView({ behavior: 'smooth' })}
@@ -806,11 +807,11 @@ export default function Home() {
               </div>
 
               {/* Warning — desktop only */}
-              <div className="hidden lg:flex items-start gap-3 mt-5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3.5">
-                <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-sm text-blue-900 leading-snug">
+              <div className="hidden lg:flex items-start gap-3 mt-5 rounded-xl border border-[#5B9DFF] bg-[#5B9DFF]/10 px-4 py-3.5">
+                <Info className="w-4 h-4 text-[#5B9DFF] shrink-0 mt-0.5" aria-hidden="true" />
+                <p className="text-sm text-[#2C3E50] leading-snug">
                   If the incident requires immediate emergency response,{' '}
-                  <strong className="font-bold">call 911</strong>
+                  <strong className="font-bold text-[#5B9DFF]">call 911</strong>
                 </p>
               </div>
 
