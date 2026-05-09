@@ -70,6 +70,7 @@ function buildParams(offset: number, filters: Filters): URLSearchParams {
   if (filters.communityBacked) params.set('community_backed', 'true');
   if (filters.avCompany) params.set('av_company', filters.avCompany);
   if (filters.incidentType) params.set('incident_type', filters.incidentType);
+  params.set('sort_by', 'occurred_at');
   return params;
 }
 
