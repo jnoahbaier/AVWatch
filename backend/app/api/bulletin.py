@@ -106,16 +106,11 @@ async def list_bulletin_items(
     if community_backed:
         stmt = stmt.where(func.jsonb_array_length(BulletinItem.user_report_ids) > 0)
 
-    # Sort: by incident date when requested, otherwise hot-first then recency
-    if sort_by == 'occurred_at':
-        stmt = stmt.order_by(
-            desc(BulletinItem.occurred_at).nullslast(),
-        )
-    else:
-        stmt = stmt.order_by(
-            desc(BulletinItem.is_hot),
-            desc(BulletinItem.first_seen_at),
-        )
+    # Sort by incident date descending (nulls fall back to first_seen_at), unless hot_only override
+    stmt = stmt.order_by(
+        desc(BulletinItem.occurred_at).nullslast(),
+        desc(BulletinItem.first_seen_at),
+    )
 
     # Count total (for pagination UI)
     count_stmt = select(BulletinItem.id).where(BulletinItem.status == "active")

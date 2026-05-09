@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     .from('bulletin_items')
     .select('*', { count: 'exact' })
     .in('status', ['active', 'published'])
-    .order('first_seen_at', { ascending: false });
+    .order('occurred_at', { ascending: false, nullsFirst: false });
 
   if (avCompany) query = query.eq('av_company', avCompany.toLowerCase());
   if (incidentType) query = query.eq('incident_type', incidentType.toLowerCase());
