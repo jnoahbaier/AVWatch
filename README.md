@@ -10,7 +10,7 @@ Live at [avwatch.org](https://www.avwatch.org)
 
 ## What It Does
 
-AVWatch is a single-page site with three core functions:
+AV Watch is a single-page site with three core functions:
 
 1. **Report** — A simple embedded form lets anyone submit an AV incident in under a minute. Geolocation auto-fills your location. Optional photo/video upload. No account required.
 

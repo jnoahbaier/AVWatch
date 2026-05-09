@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { SessionProvider } from './session-provider';
 
 export const metadata: Metadata = {
-  title: 'AVWatch Admin',
+  title: 'AV Watch Admin',
   robots: { index: false, follow: false }, // Don't index admin pages
 };
 

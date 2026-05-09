@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = 'AVWatch — Report autonomous vehicle incidents';
+export const alt = 'AV Watch — Report autonomous vehicle incidents';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -84,7 +84,7 @@ export default function OGImage() {
             marginBottom: '24px',
           }}
         >
-          AVWatch
+          AV Watch
         </div>
 
         {/* Sub-headline */}

@@ -7,10 +7,10 @@ import { Navbar } from '@/components/layout/Navbar';
 import { AnalyticsScript } from '@/components/AnalyticsScript';
 
 const SITE_URL = 'https://www.avwatch.org';
-const SITE_NAME = 'AVWatch';
-const TITLE = 'AVWatch — Report Autonomous Vehicle Incidents';
+const SITE_NAME = 'AV Watch';
+const TITLE = 'AV Watch — Report Autonomous Vehicle Incidents';
 const DESCRIPTION =
-  'Witnessed a Waymo, Zoox, or Tesla robotaxi behave dangerously? Report it on AVWatch — a free, community-driven platform tracking AV safety incidents in real time. Built by UC Berkeley researchers.';
+  'Witnessed a Waymo, Zoox, or Tesla robotaxi behave dangerously? Report it on AV Watch — a free, community-driven platform tracking AV safety incidents in real time. Built by UC Berkeley researchers.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
