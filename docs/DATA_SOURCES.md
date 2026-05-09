@@ -1,6 +1,6 @@
 # AV Watch — Data Sources
 
-AVWatch aggregates incident data from two sources: community user reports and Reddit.
+AV Watch aggregates incident data from two sources: community user reports and Reddit.
 
 ---
 
@@ -47,7 +47,7 @@ The original plan included ingestion pipelines for:
 - CA DMV autonomous vehicle collision/disengagement reports
 - CPUC quarterly reports
 
-These were descoped. Government data updates infrequently, requires complex parsing, and is not the most useful information for the community members AVWatch serves. Community reports and Reddit aggregation cover the same ground in near real-time.
+These were descoped. Government data updates infrequently, requires complex parsing, and is not the most useful information for the community members AV Watch serves. Community reports and Reddit aggregation cover the same ground in near real-time.
 
 ---
 

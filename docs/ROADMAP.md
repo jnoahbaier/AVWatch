@@ -6,7 +6,7 @@
 
 ## Architecture Constraints
 
-- **Single scrollable page** — AVWatch is one page at `/`. Navigation scrolls to sections. No separate routes.
+- **Single scrollable page** — AV Watch is one page at `/`. Navigation scrolls to sections. No separate routes.
 - The live site at avwatch.org is the reference: Hero → Report Form → About → Recent Incidents → News → Footer.
 - **No map page, no dashboard page** — the report form and bulletin board live embedded on the homepage.
 - No NHTSA / CA DMV / CPUC data pipelines — these were descoped. The platform focuses on community reports and Reddit aggregation.

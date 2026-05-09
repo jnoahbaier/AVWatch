@@ -1,5 +1,5 @@
 -- ============================================================================
--- Supabase Row Level Security (RLS) Policies for AVWatch
+-- Supabase Row Level Security (RLS) Policies for AV Watch
 -- ============================================================================
 -- Run this script in the Supabase SQL Editor (supabase.com → project → SQL editor).
 -- It is safe to re-run — all statements use IF NOT EXISTS or OR REPLACE.

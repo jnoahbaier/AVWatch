@@ -4,9 +4,9 @@
 
 ---
 
-## What AVWatch Is
+## What AV Watch Is
 
-AVWatch is a **single-page community platform** at [avwatch.org](https://www.avwatch.org) that makes it as easy as possible to report an autonomous vehicle incident, aggregates related reports from Reddit, and surfaces a lightweight AV news feed. It is built by the UC Berkeley School of Information team.
+AV Watch is a **single-page community platform** at [avwatch.org](https://www.avwatch.org) that makes it as easy as possible to report an autonomous vehicle incident, aggregates related reports from Reddit, and surfaces a lightweight AV news feed. It is built by the UC Berkeley School of Information team.
 
 The platform is intentionally lightweight. There is no map, no dashboard, no user accounts for the public, and no government data pipelines. The focus is:
 

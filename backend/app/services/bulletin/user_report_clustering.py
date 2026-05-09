@@ -180,7 +180,7 @@ async def _generate_and_store_narrative(
     report_lines = "\n".join(f"- {d}" for d in descriptions[:10])
 
     prompt = (
-        f"You are an analyst for AVWatch, a platform that tracks real-world autonomous vehicle incidents.\n"
+        f"You are an analyst for AV Watch, a platform that tracks real-world autonomous vehicle incidents.\n"
         f"{count} community members independently reported a {company} {incident_type} near {location}.\n\n"
         f"Their descriptions:\n{report_lines}\n\n"
         f"Write a neutral, factual 2–3 sentence summary of what likely happened based on these reports. "
@@ -523,7 +523,7 @@ class UserReportClusteringService:
 
         desc_lines = "\n".join(f"- {d}" for d in descriptions[:8])
         prompt = (
-            "You are an analyst for AVWatch, a platform that tracks autonomous vehicle incidents.\n"
+            "You are an analyst for AV Watch, a platform that tracks autonomous vehicle incidents.\n"
             "The following descriptions were independently submitted by different people "
             "within 500 meters and 2 hours of each other.\n\n"
             f"Descriptions:\n{desc_lines}\n\n"

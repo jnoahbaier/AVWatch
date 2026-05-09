@@ -47,7 +47,7 @@ export const metadata: Metadata = {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'AVWatch — Report autonomous vehicle incidents',
+        alt: 'AV Watch — Report autonomous vehicle incidents',
       },
     ],
   },

@@ -135,7 +135,7 @@ async def _check_is_shitpost(incident: Incident) -> tuple[bool, str]:
 
     text_part = {
         "text": (
-            "You are a content moderator for AVWatch, a public-interest platform that tracks "
+            "You are a content moderator for AV Watch, a public-interest platform that tracks "
             "real autonomous vehicle incidents in San Francisco.\n"
             "A user just submitted the following report. Decide if it is a genuine AV incident "
             "report or a shitpost / spam / clearly fabricated submission.\n\n"
@@ -251,7 +251,7 @@ async def _refine_summary(card: BulletinItem, new_description: str) -> Optional[
         return None
 
     prompt = (
-        "You are an analyst for AVWatch, a public-interest platform tracking autonomous vehicle incidents.\n"
+        "You are an analyst for AV Watch, a public-interest platform tracking autonomous vehicle incidents.\n"
         "An additional community report has been submitted for an already-documented incident.\n\n"
         f"Existing summary: {existing}\n\n"
         f"New report: \"{new_description}\"\n\n"
@@ -341,7 +341,7 @@ async def generate_card_for_report(incident_id: str, max_tokens: int = 1024) -> 
             )
 
             prompt = (
-                "You are an analyst for AVWatch, a public-interest platform that tracks real-world autonomous vehicle incidents.\n"
+                "You are an analyst for AV Watch, a public-interest platform that tracks real-world autonomous vehicle incidents.\n"
                 "A community member just submitted the following AV incident report:\n\n"
                 f"  AV Company: {_COMPANY_DISPLAY.get(company, company)}\n"
                 f"  Incident type: {_TYPE_DISPLAY.get(incident_type, incident_type)}\n"

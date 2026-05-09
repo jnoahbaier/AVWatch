@@ -1,5 +1,5 @@
 /**
- * Data Seeding Script for AVWatch
+ * Data Seeding Script for AV Watch
  * 
  * Fetches real AV incident data from NHTSA Standing General Order (SGO) CSV files
  * and populates the Supabase database with REAL geocoded coordinates.
@@ -725,7 +725,7 @@ async function setupDataSources() {
     {
       name: 'Community Reports',
       url: null,
-      description: 'Incidents reported by community members through the AVWatch platform',
+      description: 'Incidents reported by community members through the AV Watch platform',
       sync_frequency: null,
       is_active: true,
     },
@@ -1136,7 +1136,7 @@ async function logSync(sourceName: string, status: string, recordsProcessed: num
 // ============================================================================
 
 async function main() {
-  console.log('🚀 AVWatch Data Seeding Script (with Real GPS Coordinates)\n');
+  console.log('🚀 AV Watch Data Seeding Script (with Real GPS Coordinates)\n');
   console.log('═══════════════════════════════════════════════════════════════');
   console.log('Using REAL lat/lng from NHTSA data when available!\n');
   
@@ -1188,7 +1188,7 @@ async function main() {
   Object.entries(countBySource).forEach(([source, count]) => {
     console.log(`  • ${source}: ${count}`);
   });
-  console.log('\n✅ Done! Your AVWatch database is now populated with geocoded AV incident data.');
+  console.log('\n✅ Done! Your AV Watch database is now populated with geocoded AV incident data.');
 }
 
 main().catch(console.error);
