@@ -2075,7 +2075,7 @@ export default function Home() {
                 AV Watch is an independent, community-driven platform for
                 reporting and tracking autonomous vehicle incidents. We believe
                 transparency supports the safe and responsible deployment of
-                self-driving technologies.
+                self-driving technology.
               </p>
               <p className="text-white/90 text-lg leading-relaxed mt-4">
                 <a
