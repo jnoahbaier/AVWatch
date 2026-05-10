@@ -776,7 +776,7 @@ export default function Home() {
               </div>
 
               {/* Mobile CTA — only on small screens where form is below the fold */}
-              <div className="sm:hidden flex-1 flex items-center justify-center">
+              <div className="sm:hidden flex-1 flex items-center justify-center pb-28">
                 <button
                   type="button"
                   onClick={() => document.getElementById('report-form')?.scrollIntoView({ behavior: 'smooth' })}
