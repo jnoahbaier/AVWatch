@@ -377,7 +377,7 @@ export default function MapPage() {
                     incident_types: Object.keys(INCIDENT_TYPE_LABELS),
                   }))
                 }
-                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:rounded"
+                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:rounded-md"
               >
                 Select all
               </button>
@@ -417,7 +417,7 @@ export default function MapPage() {
                     companies: Object.keys(AV_COMPANY_LABELS),
                   }))
                 }
-                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:rounded"
+                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:rounded-md"
               >
                 Select all
               </button>
@@ -452,7 +452,7 @@ export default function MapPage() {
                     sources: Object.keys(DATA_SOURCE_LABELS),
                   }))
                 }
-                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:rounded"
+                className="text-xs text-green-600 hover:text-green-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:rounded-md"
               >
                 Select all
               </button>

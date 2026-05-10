@@ -71,7 +71,7 @@ function NewsHeadlineRow({ item }: { item: NewsItem }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-slate-50 sm:gap-4 sm:py-4"
+      className="group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition hover:bg-slate-50 sm:gap-4 sm:py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF]"
     >
       {/* Thumbnail */}
       <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg sm:h-14 sm:w-14 ${!item.image_url || imgFailed ? fallbackBg : 'bg-slate-100'}`}>
@@ -145,7 +145,7 @@ export function NewsHeadlines() {
       ) : error ? (
         <div className="py-8 text-center text-sm text-slate-500">
           Could not load news.{' '}
-          <button onClick={load} className="text-[#5B9DFF] underline">
+          <button onClick={load} className="text-[#5B9DFF] underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] rounded">
             Retry
           </button>
         </div>
@@ -164,7 +164,7 @@ export function NewsHeadlines() {
         <div className="mt-4 text-right">
           <a
             href="/news"
-            className="inline-flex items-center gap-1 text-sm font-medium text-[#5B9DFF] hover:text-blue-700 transition"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[#5B9DFF] hover:text-blue-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] rounded"
           >
             See more news
             <ArrowRight className="h-4 w-4" />

@@ -241,7 +241,7 @@ function FilterBar({
           <ChevronDown className={`h-3.5 w-3.5 transition-transform ${mobileOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
         </button>
         {activeCount > 0 && (
-          <button onClick={onClear} className="text-xs text-slate-500 hover:text-slate-700 transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded">
+          <button onClick={onClear} className="text-xs text-slate-500 hover:text-slate-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] focus-visible:rounded-md">
             Clear all
           </button>
         )}

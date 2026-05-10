@@ -60,7 +60,7 @@ export function NewsGrid({ limit = 100 }: { limit?: number }) {
         </p>
         <button
           onClick={() => refetch()}
-          className="flex items-center gap-1.5 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 transition"
+          className="flex items-center gap-1.5 rounded-lg bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
         >
           <RefreshCw className="h-4 w-4" />
           Try again
@@ -94,7 +94,7 @@ export function NewsGrid({ limit = 100 }: { limit?: number }) {
           <button
             onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             disabled={page === 1}
-            className="flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            className="flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF]"
           >
             <ChevronLeft className="h-4 w-4" />
             Prev
@@ -105,7 +105,7 @@ export function NewsGrid({ limit = 100 }: { limit?: number }) {
               <button
                 key={p}
                 onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                className={`w-9 h-9 rounded-lg text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] ${
                   p === page
                     ? 'bg-[#5B9DFF] text-white'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -119,7 +119,7 @@ export function NewsGrid({ limit = 100 }: { limit?: number }) {
           <button
             onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             disabled={page === totalPages}
-            className="flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            className="flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF]"
           >
             Next
             <ChevronRight className="h-4 w-4" />

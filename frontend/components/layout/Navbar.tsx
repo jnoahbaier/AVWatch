@@ -51,7 +51,7 @@ export function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
+                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] focus-visible:rounded-md"
                 >
                   {item.name}
                 </Link>
@@ -59,7 +59,7 @@ export function Navbar() {
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
+                  className="text-sm text-slate-500 hover:text-[#2C3E50] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] focus-visible:rounded-md"
                 >
                   {item.name}
                 </a>
@@ -79,7 +79,7 @@ export function Navbar() {
             aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-nav"
-            className="md:hidden p-3 -mr-1 text-slate-400 hover:text-[#2C3E50] transition focus:outline-none focus:ring-2 focus:ring-[#5B9DFF] focus:rounded"
+            className="md:hidden p-3 -mr-1 text-slate-400 hover:text-[#2C3E50] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF] focus-visible:rounded-md"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
@@ -96,7 +96,7 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="rounded-md px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#2C3E50] transition"
+                    className="rounded-md px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#2C3E50] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF]"
                   >
                     {item.name}
                   </Link>
@@ -105,7 +105,7 @@ export function Navbar() {
                     key={item.name}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="rounded-md px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#2C3E50] transition"
+                    className="rounded-md px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-[#2C3E50] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF]"
                   >
                     {item.name}
                   </a>
@@ -115,7 +115,7 @@ export function Navbar() {
                 <a
                   href="/#report"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block rounded-lg bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-2.5 text-center text-sm font-semibold text-white transition"
+                  className="block rounded-lg bg-[#5B9DFF] hover:bg-[#3A72D9] px-4 py-2.5 text-center text-sm font-semibold text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#5B9DFF]"
                 >
                   Report an Incident
                 </a>

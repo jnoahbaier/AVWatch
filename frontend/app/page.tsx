@@ -120,7 +120,7 @@ const INCIDENT_ICONS = {
   other: CircleHelp,
 };
 
-const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-400';
+const OPTIONAL_LABEL_CLASS = 'font-normal normal-case text-slate-500';
 const REPORTER_CONTEXT_OPTIONS = [
   { value: 'directly_involved', label: 'I was directly involved' },
   { value: 'bystander', label: 'I was a bystander' },
@@ -1388,7 +1388,7 @@ export default function Home() {
                     {/* Section 5: Optional details */}
                     <div className="p-6">
                       <details ref={optionalDetailsRef} className="group rounded-xl border border-slate-200 bg-slate-50/60">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#5B9DFF]">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
                               Contact information <span className={OPTIONAL_LABEL_CLASS}>(optional)</span>
@@ -1590,7 +1590,7 @@ export default function Home() {
                       id="df-company"
                       value={reportFilters.avCompany}
                       onChange={(e) => setReportFilters((p) => ({ ...p, avCompany: e.target.value }))}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
                     >
                       {FILTER_COMPANIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                     </select>
@@ -1607,7 +1607,7 @@ export default function Home() {
                       id="df-incident-type"
                       value={reportFilters.incidentType}
                       onChange={(e) => setReportFilters((p) => ({ ...p, incidentType: e.target.value }))}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
                     >
                       {FILTER_INCIDENT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                     </select>
@@ -1626,7 +1626,7 @@ export default function Home() {
                         aria-label="From date"
                         value={reportFilters.dateFrom}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
                       />
                       <span className="flex-1 px-3 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateFrom || 'From'}
@@ -1640,7 +1640,7 @@ export default function Home() {
                         aria-label="To date"
                         value={reportFilters.dateTo}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
                       />
                       <span className="flex-1 px-3 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateTo || 'To'}
@@ -1708,7 +1708,7 @@ export default function Home() {
                         aria-label="From date"
                         value={reportFilters.dateFrom}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateFrom: e.target.value }))}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
                       />
                       <span className="flex-1 px-3 py-2.5 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateFrom || 'From date'}
@@ -1722,7 +1722,7 @@ export default function Home() {
                         aria-label="To date"
                         value={reportFilters.dateTo}
                         onChange={(e) => setReportFilters((p) => ({ ...p, dateTo: e.target.value }))}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
                       />
                       <span className="flex-1 px-3 py-2.5 text-sm truncate pointer-events-none text-slate-400">
                         {reportFilters.dateTo || 'To date'}
@@ -2014,9 +2014,6 @@ export default function Home() {
                 {/* Every report is structured, geolocated, and routed to the California DMV&apos;s Autonomous Vehicles Program — the agency that issues permits and has the authority to suspend them. */}
                 {/* Substantiated crowdsourced reports add up. They ensure stakeholders understand public trust of autonomous vehicles. */}
                 AV Watch is the world’s first platform dedicated to autonomous vehicle incident reporting from anyone, anywhere. By bringing together the voices of our communities, we empower them to better understand what really happens on our roads. 
-              </p>
-              <p className="hidden lg:block">
-                AV Watch is built by a team of independent researchers at the UC Berkeley School of Information.
               </p>
             </div>
           </div>
