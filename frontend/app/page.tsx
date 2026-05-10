@@ -752,7 +752,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-6 lg:gap-16 items-start">
 
             {/* ── LEFT: copy + imagery ── */}
-            <div className="pt-4 flex flex-col min-h-dvh sm:min-h-0 lg:min-h-0">
+            <div className="pt-4 flex flex-col min-h-svh sm:min-h-0 lg:min-h-0">
                 <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
                   Witnessed an<br />
                   <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
@@ -765,15 +765,6 @@ export default function Home() {
                 {/* <p className="text-xl text-slate-600 mb-2 leading-relaxed">
                   Anonymously report what you saw, no account needed, and help make autonomous driving safer for everyone.
                 </p> */}
-
-              {/* Warning — mobile only, under subtitle */}
-              <div className="lg:hidden flex items-start gap-2.5 mb-3 rounded-xl border border-[#5B9DFF] bg-[#5B9DFF]/10 px-4 py-3">
-                <Info className="w-3.5 h-3.5 text-[#5B9DFF] shrink-0 mt-0.5" aria-hidden="true" />
-                <p className="text-sm text-[#2C3E50] leading-snug">
-                  If the incident requires immediate emergency response,{' '}
-                  <strong className="font-bold text-[#5B9DFF]">call 911</strong>
-                </p>
-              </div>
 
               {/* Mobile CTA — only on small screens where form is below the fold */}
               <div className="sm:hidden flex-1 flex items-center justify-center pb-28">
@@ -948,6 +939,13 @@ export default function Home() {
                         Report an Incident
                       </h2>
                       <p className="sr-only">Fields marked with an asterisk (*) are required.</p>
+                      <div className="sm:hidden flex items-start gap-2.5 mt-3 rounded-xl border border-[#5B9DFF] bg-[#5B9DFF]/10 px-4 py-3">
+                        <Info className="w-3.5 h-3.5 text-[#5B9DFF] shrink-0 mt-0.5" aria-hidden="true" />
+                        <p className="text-sm text-[#2C3E50] leading-snug">
+                          If the incident requires immediate emergency response,{' '}
+                          <strong className="font-bold text-[#5B9DFF]">call 911</strong>
+                        </p>
+                      </div>
                     </div>
 
                     {/* Section 1: What happened */}
