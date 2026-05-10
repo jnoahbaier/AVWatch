@@ -752,7 +752,7 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-6 lg:gap-16 items-start">
 
             {/* ── LEFT: copy + imagery ── */}
-            <div className="pt-4 flex flex-col min-h-[calc(100svh-7rem)] sm:min-h-0 lg:min-h-0">
+            <div className="pt-4 flex flex-col min-h-[calc(100dvh-7rem)] sm:min-h-0 lg:min-h-0">
                 <h1 className="text-5xl lg:text-6xl font-bold text-[#2C3E50] leading-[1.1] mb-5">
                   Witnessed an<br />
                   <span className="text-[#5B9DFF]">autonomous vehicle incident?</span>
@@ -2075,7 +2075,7 @@ export default function Home() {
                 AV Watch is an independent, community-driven platform for
                 reporting and tracking autonomous vehicle incidents. We believe
                 transparency supports the safe and responsible deployment of
-                self-driving technology.
+                self-driving technologies.
               </p>
               <p className="text-white/90 text-lg leading-relaxed mt-4">
                 <a
