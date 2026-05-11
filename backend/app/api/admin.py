@@ -283,9 +283,9 @@ async def admin_corroborate(
             status_code=404, detail=f"Incident {body.target_incident_id} not found"
         )
 
-    inc_a.corroborated_with_id = body.target_incident_id
+    inc_a.corroborated_with_id = body.target_incident_id  # type: ignore[assignment]
     inc_a.status = "corroborated"
-    inc_b.corroborated_with_id = incident_id
+    inc_b.corroborated_with_id = incident_id  # type: ignore[assignment]
     inc_b.status = "corroborated"
 
     await db.flush()

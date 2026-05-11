@@ -156,10 +156,10 @@ def _majority_value(values: list[Optional[str]], fallback: str) -> str:
     Falls back to the most common value overall, then to fallback.
     """
     vague = {"unknown", "other", None}
-    specific = [v for v in values if v not in vague]
+    specific: list[str] = [v for v in values if v not in vague]  # type: ignore[misc]
     if specific:
         return Counter(specific).most_common(1)[0][0]
-    all_vals = [v for v in values if v]
+    all_vals: list[str] = [v for v in values if v is not None]
     if all_vals:
         return Counter(all_vals).most_common(1)[0][0]
     return fallback
@@ -321,7 +321,7 @@ class UserReportClusteringService:
             for r, _ in cluster_reports:
                 r.status = "corroborated"
                 r.matched_bulletin_item_id = bulletin_item.id
-                consumed_ids.add(r.id)
+                consumed_ids.add(r.id)  # type: ignore[arg-type]
 
             boosted_count += 1
             logger.info(
