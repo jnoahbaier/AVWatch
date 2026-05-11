@@ -16,11 +16,11 @@ import os
 # Allow running as a module from the backend/ directory
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_  # noqa: E402
 
-from app.core.database import async_session_maker
-from app.models.incident import Incident
-from app.services.bulletin.individual_report_card import generate_card_for_report
+from app.core.database import async_session_maker  # noqa: E402
+from app.models.incident import Incident  # noqa: E402
+from app.services.bulletin.individual_report_card import generate_card_for_report  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
