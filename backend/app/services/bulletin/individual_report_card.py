@@ -296,11 +296,14 @@ async def _merge_into_existing_card(
     )
 
 
-async def generate_card_for_report(incident_id: str, max_tokens: int = 1024) -> None:
+async def generate_card_for_report(incident_id: str, max_tokens: int = 1024, skip_shitpost_check: bool = False) -> None:
     """
     Background task: create a single BulletinItem for one user-submitted report.
     Calls Gemini to generate a paraphrased, profanity-filtered narrative.
     Opens its own DB session so it runs safely after the request commits.
+
+    Set skip_shitpost_check=True when called for an already admin-validated report
+    to bypass the automatic quality gate.
     """
     async with async_session_maker() as db:
         try:
@@ -313,14 +316,15 @@ async def generate_card_for_report(incident_id: str, max_tokens: int = 1024) -> 
                 return
 
             # ── Shitpost / quality gate ──────────────────────────────────────
-            is_shitpost, sp_reason = await _check_is_shitpost(incident)
-            if is_shitpost:
-                incident.status = "rejected"
-                await db.commit()
-                logger.info(
-                    f"Report {incident_id} rejected as shitpost: {sp_reason}"
-                )
-                return
+            if not skip_shitpost_check:
+                is_shitpost, sp_reason = await _check_is_shitpost(incident)
+                if is_shitpost:
+                    incident.status = "rejected"
+                    await db.commit()
+                    logger.info(
+                        f"Report {incident_id} rejected as shitpost: {sp_reason}"
+                    )
+                    return
 
             company = incident.av_company or "unknown"
             incident_type = incident.incident_type or "other"
