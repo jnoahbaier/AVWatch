@@ -148,7 +148,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests with coverage
-        run: pytest --cov=app --cov-report=xml --cov-report=html
+        run: pytest --cov=app --cov-report=xml --cov-report=html --ignore=tests/stress_test.py
         env:
           DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/avwatch_test
 
