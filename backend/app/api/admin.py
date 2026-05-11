@@ -11,7 +11,7 @@ import re
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Header, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Header, Query
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -162,15 +162,17 @@ async def admin_list_incidents(
 async def admin_update_status(
     incident_id: UUID,
     body: StatusUpdate,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
     """
     Validate, discard, or reset an incident report.
 
     status values:
-      - "verified"   → validates the report (makes it public/featured)
-      - "rejected"   → discards it from public view
-      - "unverified" → resets to default pending state
+      - "verified"   → validates the report; creates a bulletin card if one doesn't exist,
+                       or restores a previously archived card
+      - "rejected"   → discards the report; archives its linked bulletin card
+      - "unverified" → resets to default pending state (card untouched)
     """
     allowed = {"verified", "rejected", "unverified", "corroborated"}
     if body.status not in allowed:
@@ -184,6 +186,34 @@ async def admin_update_status(
     incident.status = body.status
     if body.admin_note is not None:
         incident.admin_note = body.admin_note
+
+    # ── Couple bulletin card to incident status ────────────────────────────
+    if body.status == "rejected":
+        # Archive the linked bulletin card so it disappears from the public site
+        if incident.matched_bulletin_item_id:
+            card_result = await db.execute(
+                select(BulletinItem).where(BulletinItem.id == incident.matched_bulletin_item_id)
+            )
+            card = card_result.scalar_one_or_none()
+            if card:
+                card.status = "archived"
+
+    elif body.status == "verified":
+        if incident.matched_bulletin_item_id is None:
+            # No card yet (e.g. shitpost check rejected it) — generate one now,
+            # bypassing the quality gate since an admin explicitly validated this report
+            from app.services.bulletin.individual_report_card import generate_card_for_report
+            background_tasks.add_task(
+                generate_card_for_report, str(incident.id), skip_shitpost_check=True
+            )
+        else:
+            # Card exists but may have been archived — restore it
+            card_result = await db.execute(
+                select(BulletinItem).where(BulletinItem.id == incident.matched_bulletin_item_id)
+            )
+            card = card_result.scalar_one_or_none()
+            if card and card.status == "archived":
+                card.status = "active"
 
     # Optionally block the reporter's IP when discarding
     if body.block_ip and body.status == "rejected" and incident.reporter_ip_hash:

@@ -62,7 +62,7 @@ async def main() -> None:
             f"({inc.av_company}, {inc.incident_type}, {inc.address or 'no address'})"
         )
         try:
-            await generate_card_for_report(str(inc.id))
+            await generate_card_for_report(str(inc.id), skip_shitpost_check=True)
             success += 1
             logger.info(f"  ✓ Card created for {inc.id}")
         except Exception as exc:

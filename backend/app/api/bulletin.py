@@ -13,7 +13,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select, desc, func, nullslast
+from sqlalchemy import select, desc, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -107,8 +107,7 @@ async def list_bulletin_items(
         stmt = stmt.where(func.jsonb_array_length(BulletinItem.user_report_ids) > 0)
 
     stmt = stmt.order_by(
-        nullslast(desc(BulletinItem.occurred_at)),
-        desc(BulletinItem.first_seen_at),
+        desc(func.coalesce(BulletinItem.occurred_at, BulletinItem.first_seen_at)),
     )
 
     # Count total (for pagination UI)
