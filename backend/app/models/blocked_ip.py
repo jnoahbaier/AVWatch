@@ -22,7 +22,9 @@ class BlockedIP(Base):
     )
 
     # SHA-256 hash of the IP — raw IPs are never stored
-    ip_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    ip_hash: Mapped[str] = mapped_column(
+        String(64), unique=True, nullable=False, index=True
+    )
 
     reason: Mapped[str] = mapped_column(
         Text, nullable=False, default="Blocked by admin"

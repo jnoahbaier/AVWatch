@@ -11,7 +11,16 @@ from uuid import UUID
 
 import re
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, UploadFile, File
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+    File,
+)
 from geoalchemy2 import WKTElement
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
@@ -49,6 +58,7 @@ def _check_rate_limit(ip_hash: str) -> None:
 
     _submission_times[ip_hash].append(now)
 
+
 router = APIRouter()
 
 _POINT_RE = re.compile(r"POINT\(([^\s]+)\s+([^\s]+)\)")
@@ -75,7 +85,13 @@ class LocationInput(BaseModel):
 
 class IncidentCreate(BaseModel):
     incident_type: Literal[
-        "collision", "accessibility", "near_miss", "sudden_behavior", "blockage", "vandalism", "other"
+        "collision",
+        "accessibility",
+        "near_miss",
+        "sudden_behavior",
+        "blockage",
+        "vandalism",
+        "other",
     ] = Field(..., description="Type of incident")
     av_company: Literal["waymo", "cruise", "zoox", "tesla", "other", "unknown"] = Field(
         default="unknown", description="AV company involved"
@@ -130,8 +146,10 @@ async def create_incident(
     # Behind Railway's proxy the real IP is in X-Forwarded-For; fall back to
     # request.client.host so local dev still works without the header.
     forwarded_for = request.headers.get("x-forwarded-for")
-    client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (
-        request.client.host if request.client else "unknown"
+    client_ip = (
+        forwarded_for.split(",")[0].strip()
+        if forwarded_for
+        else (request.client.host if request.client else "unknown")
     )
     ip_hash = hashlib.sha256(client_ip.encode()).hexdigest()
 

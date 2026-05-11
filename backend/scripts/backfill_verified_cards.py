@@ -36,13 +36,17 @@ async def main() -> None:
     logger.info("Fetching verified reports with no bulletin card…")
 
     async with async_session_maker() as db:
-        stmt = select(Incident).where(
-            and_(
-                Incident.status == "verified",
-                Incident.source == "user_report",
-                Incident.matched_bulletin_item_id.is_(None),
+        stmt = (
+            select(Incident)
+            .where(
+                and_(
+                    Incident.status == "verified",
+                    Incident.source == "user_report",
+                    Incident.matched_bulletin_item_id.is_(None),
+                )
             )
-        ).order_by(Incident.reported_at.asc())
+            .order_by(Incident.reported_at.asc())
+        )
 
         result = await db.execute(stmt)
         incidents = list(result.scalars().all())
@@ -72,9 +76,7 @@ async def main() -> None:
         if i < len(incidents):
             await asyncio.sleep(DELAY_BETWEEN_REPORTS)
 
-    logger.info(
-        f"\nDone. {success} card(s) created, {failed} failed."
-    )
+    logger.info(f"\nDone. {success} card(s) created, {failed} failed.")
 
 
 if __name__ == "__main__":

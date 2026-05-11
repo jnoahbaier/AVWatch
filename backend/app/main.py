@@ -26,6 +26,7 @@ async def _run_bulletin_pipeline():
     """Scheduled task: run the bulletin board intelligence pipeline."""
     try:
         from app.services.bulletin.pipeline import BulletinPipeline
+
         pipeline = BulletinPipeline()
         stats = await pipeline.run()
         logger.info(f"Scheduled bulletin pipeline completed: {stats}")
@@ -36,7 +37,10 @@ async def _run_bulletin_pipeline():
 async def _run_user_report_clustering():
     """Scheduled task: cluster user-submitted reports into bulletin items."""
     try:
-        from app.services.bulletin.user_report_clustering import run_user_report_clustering
+        from app.services.bulletin.user_report_clustering import (
+            run_user_report_clustering,
+        )
+
         stats = await run_user_report_clustering()
         logger.info(f"User report clustering completed: {stats}")
     except Exception as exc:
@@ -76,7 +80,9 @@ async def lifespan(_app: FastAPI):
         print("Bulletin pipeline scheduler started (runs every hour).")
         print("User report clustering scheduler started (runs every 30 minutes).")
     else:
-        print("WARNING: GEMINI_API_KEY not set — bulletin pipeline scheduler not started.")
+        print(
+            "WARNING: GEMINI_API_KEY not set — bulletin pipeline scheduler not started."
+        )
 
     print(f"Starting {settings.APP_NAME} API...")
     yield

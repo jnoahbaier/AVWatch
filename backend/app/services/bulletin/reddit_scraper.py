@@ -57,6 +57,7 @@ _ATOM_NS = "http://www.w3.org/2005/Atom"
 @dataclass
 class RawRedditPost:
     """A raw Reddit post before AI processing."""
+
     external_id: str
     subreddit: str
     title: str
@@ -125,7 +126,11 @@ class RedditScraper:
 
     async def _refresh_token_if_needed(self, client: httpx.AsyncClient) -> None:
         now = datetime.now(tz=timezone.utc)
-        if self._access_token and self._token_expires_at and now < self._token_expires_at:
+        if (
+            self._access_token
+            and self._token_expires_at
+            and now < self._token_expires_at
+        ):
             return
 
         credentials = f"{settings.REDDIT_CLIENT_ID}:{settings.REDDIT_CLIENT_SECRET}"
@@ -163,7 +168,8 @@ class RedditScraper:
         response.raise_for_status()
         posts_data = response.json().get("data", {}).get("children", [])
         return [
-            p for p in (
+            p
+            for p in (
                 self._parse_json_post(child.get("data", {}), subreddit)
                 for child in posts_data
             )
@@ -186,7 +192,8 @@ class RedditScraper:
         response.raise_for_status()
         posts_data = response.json().get("data", {}).get("children", [])
         return [
-            p for p in (
+            p
+            for p in (
                 self._parse_json_post(child.get("data", {}), subreddit)
                 for child in posts_data
             )
@@ -223,7 +230,9 @@ class RedditScraper:
                     raw_id = entry.findtext("atom:id", default="", namespaces=ns)
                     post_id = raw_id.split("_")[-1] if "_" in raw_id else raw_id
 
-                    title = entry.findtext("atom:title", default="", namespaces=ns).strip()
+                    title = entry.findtext(
+                        "atom:title", default="", namespaces=ns
+                    ).strip()
 
                     # Link href
                     link_el = entry.find("atom:link", ns)
@@ -237,38 +246,47 @@ class RedditScraper:
                     ).strip()
                     # Strip HTML tags simply
                     import re
+
                     body = re.sub(r"<[^>]+>", " ", body).strip()
                     body = re.sub(r"\s+", " ", body)[:3000]
 
                     # Author
                     author_el = entry.find("atom:author/atom:name", ns)
-                    author = author_el.text.strip() if author_el is not None and author_el.text else "[deleted]"
+                    author = (
+                        author_el.text.strip()
+                        if author_el is not None and author_el.text
+                        else "[deleted]"
+                    )
 
                     # Timestamp
                     updated = entry.findtext("atom:updated", default="", namespaces=ns)
                     try:
-                        posted_at = datetime.fromisoformat(updated.replace("Z", "+00:00"))
+                        posted_at = datetime.fromisoformat(
+                            updated.replace("Z", "+00:00")
+                        )
                     except Exception:
                         posted_at = datetime.now(tz=timezone.utc)
 
                     if not post_id or not title:
                         continue
 
-                    posts.append(RawRedditPost(
-                        external_id=f"reddit_{post_id}",
-                        subreddit=subreddit,
-                        title=title[:500],
-                        body=body,
-                        url=url,
-                        author=author,
-                        upvotes=0,      # Not available in RSS
-                        comments=0,     # Not available in RSS
-                        crossposts=0,
-                        upvote_ratio=0.5,
-                        posted_at=posted_at,
-                        media_urls=[],
-                        thumbnail_url=None,
-                    ))
+                    posts.append(
+                        RawRedditPost(
+                            external_id=f"reddit_{post_id}",
+                            subreddit=subreddit,
+                            title=title[:500],
+                            body=body,
+                            url=url,
+                            author=author,
+                            upvotes=0,  # Not available in RSS
+                            comments=0,  # Not available in RSS
+                            crossposts=0,
+                            upvote_ratio=0.5,
+                            posted_at=posted_at,
+                            media_urls=[],
+                            thumbnail_url=None,
+                        )
+                    )
                 except Exception as exc:
                     logger.warning(f"Failed to parse RSS entry: {exc}")
         except ET.ParseError as exc:
@@ -286,7 +304,11 @@ class RedditScraper:
                 return None
 
             permalink = post.get("permalink", "")
-            url = f"https://www.reddit.com{permalink}" if permalink else post.get("url", "")
+            url = (
+                f"https://www.reddit.com{permalink}"
+                if permalink
+                else post.get("url", "")
+            )
 
             body = post.get("selftext", "") or ""
             if body in ("[deleted]", "[removed]"):
@@ -298,11 +320,22 @@ class RedditScraper:
 
             media_urls = []
             thumbnail = post.get("thumbnail", "")
-            if thumbnail and thumbnail not in ("self", "default", "nsfw", "spoiler", ""):
+            if thumbnail and thumbnail not in (
+                "self",
+                "default",
+                "nsfw",
+                "spoiler",
+                "",
+            ):
                 media_urls.append(thumbnail)
             preview_images = post.get("preview", {}).get("images", [])
             if preview_images:
-                high_res = preview_images[0].get("source", {}).get("url", "").replace("&amp;", "&")
+                high_res = (
+                    preview_images[0]
+                    .get("source", {})
+                    .get("url", "")
+                    .replace("&amp;", "&")
+                )
                 if high_res:
                     media_urls = [high_res]
 

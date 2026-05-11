@@ -90,7 +90,9 @@ async def admin_list_incidents(
     status: Optional[str] = None,
     incident_type: Optional[str] = None,
     av_company: Optional[str] = None,
-    sort_by: str = Query("reported_at", regex="^(reported_at|occurred_at|incident_type|status)$"),
+    sort_by: str = Query(
+        "reported_at", regex="^(reported_at|occurred_at|incident_type|status)$"
+    ),
     sort_dir: str = Query("desc", regex="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db),
 ):
@@ -144,7 +146,9 @@ async def admin_list_incidents(
             "contact_name": inc.contact_name,
             "contact_email": inc.contact_email,
             "admin_note": inc.admin_note,
-            "corroborated_with_id": str(inc.corroborated_with_id) if inc.corroborated_with_id else None,
+            "corroborated_with_id": str(inc.corroborated_with_id)
+            if inc.corroborated_with_id
+            else None,
         }
         for inc, wkt in rows
     ]
@@ -192,7 +196,9 @@ async def admin_update_status(
         # Archive the linked bulletin card so it disappears from the public site
         if incident.matched_bulletin_item_id:
             card_result = await db.execute(
-                select(BulletinItem).where(BulletinItem.id == incident.matched_bulletin_item_id)
+                select(BulletinItem).where(
+                    BulletinItem.id == incident.matched_bulletin_item_id
+                )
             )
             card = card_result.scalar_one_or_none()
             if card:
@@ -202,14 +208,19 @@ async def admin_update_status(
         if incident.matched_bulletin_item_id is None:
             # No card yet (e.g. shitpost check rejected it) — generate one now,
             # bypassing the quality gate since an admin explicitly validated this report
-            from app.services.bulletin.individual_report_card import generate_card_for_report
+            from app.services.bulletin.individual_report_card import (
+                generate_card_for_report,
+            )
+
             background_tasks.add_task(
                 generate_card_for_report, str(incident.id), skip_shitpost_check=True
             )
         else:
             # Card exists but may have been archived — restore it
             card_result = await db.execute(
-                select(BulletinItem).where(BulletinItem.id == incident.matched_bulletin_item_id)
+                select(BulletinItem).where(
+                    BulletinItem.id == incident.matched_bulletin_item_id
+                )
             )
             card = card_result.scalar_one_or_none()
             if card and card.status == "archived":
@@ -218,22 +229,32 @@ async def admin_update_status(
     # Optionally block the reporter's IP when discarding
     if body.block_ip and body.status == "rejected" and incident.reporter_ip_hash:
         if not body.blocked_by:
-            raise HTTPException(status_code=400, detail="blocked_by is required when block_ip=True")
+            raise HTTPException(
+                status_code=400, detail="blocked_by is required when block_ip=True"
+            )
         existing = await db.execute(
             select(BlockedIP).where(BlockedIP.ip_hash == incident.reporter_ip_hash)
         )
         if not existing.scalar_one_or_none():
-            db.add(BlockedIP(
-                ip_hash=incident.reporter_ip_hash,
-                reason=body.admin_note or "Blocked via report discard",
-                blocked_by=body.blocked_by,
-            ))
+            db.add(
+                BlockedIP(
+                    ip_hash=incident.reporter_ip_hash,
+                    reason=body.admin_note or "Blocked via report discard",
+                    blocked_by=body.blocked_by,
+                )
+            )
 
     await db.flush()
-    return {"id": str(incident.id), "status": incident.status, "admin_note": incident.admin_note}
+    return {
+        "id": str(incident.id),
+        "status": incident.status,
+        "admin_note": incident.admin_note,
+    }
 
 
-@router.post("/incidents/{incident_id}/corroborate", dependencies=[Depends(require_admin)])
+@router.post(
+    "/incidents/{incident_id}/corroborate", dependencies=[Depends(require_admin)]
+)
 async def admin_corroborate(
     incident_id: UUID,
     body: CorroborateRequest,
@@ -244,21 +265,27 @@ async def admin_corroborate(
     Sets corroborated_with_id on both reports and updates status to 'corroborated'.
     """
     if incident_id == body.target_incident_id:
-        raise HTTPException(status_code=400, detail="Cannot corroborate an incident with itself")
+        raise HTTPException(
+            status_code=400, detail="Cannot corroborate an incident with itself"
+        )
 
     res_a = await db.execute(select(Incident).where(Incident.id == incident_id))
-    res_b = await db.execute(select(Incident).where(Incident.id == body.target_incident_id))
+    res_b = await db.execute(
+        select(Incident).where(Incident.id == body.target_incident_id)
+    )
     inc_a = res_a.scalar_one_or_none()
     inc_b = res_b.scalar_one_or_none()
 
     if not inc_a:
         raise HTTPException(status_code=404, detail=f"Incident {incident_id} not found")
     if not inc_b:
-        raise HTTPException(status_code=404, detail=f"Incident {body.target_incident_id} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Incident {body.target_incident_id} not found"
+        )
 
-    inc_a.corroborated_with_id = body.target_incident_id
+    inc_a.corroborated_with_id = body.target_incident_id  # type: ignore[assignment]
     inc_a.status = "corroborated"
-    inc_b.corroborated_with_id = incident_id
+    inc_b.corroborated_with_id = incident_id  # type: ignore[assignment]
     inc_b.status = "corroborated"
 
     await db.flush()
@@ -310,10 +337,14 @@ async def admin_list_blocked_ips(db: AsyncSession = Depends(get_db)):
 @router.post("/blocked-ips", dependencies=[Depends(require_admin)])
 async def admin_block_ip(body: BlockIPRequest, db: AsyncSession = Depends(get_db)):
     """Block an IP hash directly."""
-    existing = await db.execute(select(BlockedIP).where(BlockedIP.ip_hash == body.ip_hash))
+    existing = await db.execute(
+        select(BlockedIP).where(BlockedIP.ip_hash == body.ip_hash)
+    )
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="IP hash already blocked")
-    db.add(BlockedIP(ip_hash=body.ip_hash, reason=body.reason, blocked_by=body.blocked_by))
+    db.add(
+        BlockedIP(ip_hash=body.ip_hash, reason=body.reason, blocked_by=body.blocked_by)
+    )
     await db.flush()
     return {"message": "IP blocked", "ip_hash": body.ip_hash}
 
@@ -351,13 +382,17 @@ async def admin_allowlist_check(email: str, db: AsyncSession = Depends(get_db)):
 @router.get("/allowlist", dependencies=[Depends(require_admin)])
 async def admin_list_allowlist(db: AsyncSession = Depends(get_db)):
     """List all emails on the admin allowlist."""
-    result = await db.execute(select(AdminAllowlist).order_by(AdminAllowlist.added_at.asc()))
+    result = await db.execute(
+        select(AdminAllowlist).order_by(AdminAllowlist.added_at.asc())
+    )
     entries = result.scalars().all()
     return [{"email": e.email, "added_at": e.added_at.isoformat()} for e in entries]
 
 
 @router.post("/allowlist", dependencies=[Depends(require_admin)])
-async def admin_add_allowlist(body: AllowlistAddRequest, db: AsyncSession = Depends(get_db)):
+async def admin_add_allowlist(
+    body: AllowlistAddRequest, db: AsyncSession = Depends(get_db)
+):
     """Add an email to the admin allowlist."""
     existing = await db.execute(
         select(AdminAllowlist).where(AdminAllowlist.email == body.email)
@@ -408,7 +443,11 @@ async def admin_list_bulletin(
     stmt = select(BulletinItem)
     for f in filters:
         stmt = stmt.where(f)
-    stmt = stmt.order_by(BulletinItem.first_seen_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    stmt = (
+        stmt.order_by(BulletinItem.first_seen_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     rows = (await db.execute(stmt)).scalars().all()
 
     items = [
@@ -454,7 +493,9 @@ async def admin_delete_bulletin(card_id: UUID, db: AsyncSession = Depends(get_db
     report_ids = card.user_report_ids or []
     for rid in report_ids:
         try:
-            inc_result = await db.execute(select(Incident).where(Incident.id == UUID(rid)))
+            inc_result = await db.execute(
+                select(Incident).where(Incident.id == UUID(rid))
+            )
             inc = inc_result.scalar_one_or_none()
             if inc:
                 inc.matched_bulletin_item_id = None
@@ -476,26 +517,37 @@ async def admin_delete_bulletin(card_id: UUID, db: AsyncSession = Depends(get_db
 async def admin_stats(db: AsyncSession = Depends(get_db)):
     """Summary statistics for the admin dashboard."""
     total = (await db.execute(select(func.count(Incident.id)))).scalar_one()
-    pending = (await db.execute(
-        select(func.count(Incident.id)).where(Incident.status == "unverified")
-    )).scalar_one()
-    verified = (await db.execute(
-        select(func.count(Incident.id)).where(Incident.status == "verified")
-    )).scalar_one()
-    rejected = (await db.execute(
-        select(func.count(Incident.id)).where(Incident.status == "rejected")
-    )).scalar_one()
-    corroborated = (await db.execute(
-        select(func.count(Incident.id)).where(Incident.status == "corroborated")
-    )).scalar_one()
+    pending = (
+        await db.execute(
+            select(func.count(Incident.id)).where(Incident.status == "unverified")
+        )
+    ).scalar_one()
+    verified = (
+        await db.execute(
+            select(func.count(Incident.id)).where(Incident.status == "verified")
+        )
+    ).scalar_one()
+    rejected = (
+        await db.execute(
+            select(func.count(Incident.id)).where(Incident.status == "rejected")
+        )
+    ).scalar_one()
+    corroborated = (
+        await db.execute(
+            select(func.count(Incident.id)).where(Incident.status == "corroborated")
+        )
+    ).scalar_one()
     blocked_ips = (await db.execute(select(func.count(BlockedIP.id)))).scalar_one()
 
     # Reports this week
     from datetime import timedelta
+
     week_ago = datetime.utcnow() - timedelta(days=7)
-    this_week = (await db.execute(
-        select(func.count(Incident.id)).where(Incident.reported_at >= week_ago)
-    )).scalar_one()
+    this_week = (
+        await db.execute(
+            select(func.count(Incident.id)).where(Incident.reported_at >= week_ago)
+        )
+    ).scalar_one()
 
     return {
         "total": total,

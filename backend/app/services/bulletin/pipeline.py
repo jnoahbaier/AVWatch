@@ -35,9 +35,9 @@ HOT_THRESHOLD = 0.6
 
 # Weights for computing heat score from engagement metrics
 UPVOTE_WEIGHT = 1.0
-COMMENT_WEIGHT = 2.0       # Comments signal active discussion
-CROSSPOST_WEIGHT = 3.0     # Crossposts signal it spread beyond the original sub
-RATIO_WEIGHT = 0.5         # Upvote ratio bonus (quality signal)
+COMMENT_WEIGHT = 2.0  # Comments signal active discussion
+CROSSPOST_WEIGHT = 3.0  # Crossposts signal it spread beyond the original sub
+RATIO_WEIGHT = 0.5  # Upvote ratio bonus (quality signal)
 
 # Cap used for normalization — a post hitting these numbers gets score ~1.0
 UPVOTE_CAP = 500
@@ -55,7 +55,9 @@ DEDUP_TIME_WINDOW_HOURS = 48
 MIN_UPVOTES_TO_STORE = 10
 
 
-def compute_heat_score(upvotes: int, comments: int, crossposts: int, ratio: float) -> float:
+def compute_heat_score(
+    upvotes: int, comments: int, crossposts: int, ratio: float
+) -> float:
     """
     Compute a normalized heat score (0.0–1.0) from engagement metrics.
     Uses a soft-cap approach so viral posts don't dwarf everything else.
@@ -190,11 +192,19 @@ class BulletinPipeline:
             is_hot=is_hot,
             is_relevant=is_relevant,
             relevance_reason=gemini_result.relevance_reason if gemini_result else None,
-            extracted_company=gemini_result.extracted_company if gemini_result else None,
-            extracted_incident_type=gemini_result.extracted_incident_type if gemini_result else None,
-            extracted_location=gemini_result.extracted_location if gemini_result else None,
+            extracted_company=gemini_result.extracted_company
+            if gemini_result
+            else None,
+            extracted_incident_type=gemini_result.extracted_incident_type
+            if gemini_result
+            else None,
+            extracted_location=gemini_result.extracted_location
+            if gemini_result
+            else None,
             extracted_title=gemini_result.extracted_title if gemini_result else None,
-            extracted_summary=gemini_result.extracted_summary if gemini_result else None,
+            extracted_summary=gemini_result.extracted_summary
+            if gemini_result
+            else None,
         )
 
         db.add(signal)
@@ -203,9 +213,7 @@ class BulletinPipeline:
         )
         return signal
 
-    async def _cluster_signal(
-        self, db: AsyncSession, signal: SocialSignal
-    ) -> bool:
+    async def _cluster_signal(self, db: AsyncSession, signal: SocialSignal) -> bool:
         """
         Try to find an existing BulletinItem this signal belongs to.
         If found, update it. If not, create a new one.
@@ -227,7 +235,9 @@ class BulletinPipeline:
             # Only upgrade the source URL if the new signal has significantly more
             # upvotes than the current best (2x). This keeps the first/most-relevant
             # post as the canonical link rather than drifting to unrelated posts.
-            avg_upvotes_per_signal = existing.total_upvotes // max(existing.signal_count, 1)
+            avg_upvotes_per_signal = existing.total_upvotes // max(
+                existing.signal_count, 1
+            )
             if signal.upvotes > avg_upvotes_per_signal * 2:
                 existing.source_url = signal.url
                 existing.source_subreddit = signal.subreddit
@@ -306,7 +316,10 @@ class BulletinPipeline:
             return None
 
         # "other" is too vague — different incidents all land here, so never cluster them
-        if not signal.extracted_incident_type or signal.extracted_incident_type == "other":
+        if (
+            not signal.extracted_incident_type
+            or signal.extracted_incident_type == "other"
+        ):
             return None
 
         # Also don't cluster if company is unknown — too risky
@@ -316,16 +329,22 @@ class BulletinPipeline:
         time_lower = signal.posted_at - timedelta(hours=DEDUP_TIME_WINDOW_HOURS)
         time_upper = signal.posted_at + timedelta(hours=DEDUP_TIME_WINDOW_HOURS)
 
-        stmt = select(BulletinItem).where(
-            and_(
-                BulletinItem.status == "active",
-                BulletinItem.source_platform == "reddit",  # never merge into community cards
-                BulletinItem.av_company == signal.extracted_company,
-                BulletinItem.incident_type == signal.extracted_incident_type,
-                BulletinItem.occurred_at >= time_lower,
-                BulletinItem.occurred_at <= time_upper,
+        stmt = (
+            select(BulletinItem)
+            .where(
+                and_(
+                    BulletinItem.status == "active",
+                    BulletinItem.source_platform
+                    == "reddit",  # never merge into community cards
+                    BulletinItem.av_company == signal.extracted_company,
+                    BulletinItem.incident_type == signal.extracted_incident_type,
+                    BulletinItem.occurred_at >= time_lower,
+                    BulletinItem.occurred_at <= time_upper,
+                )
             )
-        ).order_by(BulletinItem.signal_count.desc()).limit(1)
+            .order_by(BulletinItem.signal_count.desc())
+            .limit(1)
+        )
 
         result = await db.execute(stmt)
         return result.scalar_one_or_none()

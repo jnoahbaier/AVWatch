@@ -28,7 +28,9 @@ from typing import Any
 
 import httpx
 
-BASE_URL = os.getenv("BASE_URL", "https://avwatch-production.up.railway.app").rstrip("/")
+BASE_URL = os.getenv("BASE_URL", "https://avwatch-production.up.railway.app").rstrip(
+    "/"
+)
 
 # ---------------------------------------------------------------------------
 # Colour helpers
@@ -40,14 +42,18 @@ CYAN = "\033[96m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
 
+
 def ok(msg: str) -> None:
     print(f"  {GREEN}✓{RESET} {msg}")
+
 
 def fail(msg: str) -> None:
     print(f"  {RED}✗{RESET} {msg}")
 
+
 def warn(msg: str) -> None:
     print(f"  {YELLOW}⚠{RESET} {msg}")
+
 
 def section(title: str) -> None:
     print(f"\n{BOLD}{CYAN}{'─'*60}{RESET}")
@@ -64,14 +70,14 @@ def percentile(data: list[float], p: int) -> float:
     return statistics.quantiles(sorted(data), n=100)[p - 1]
 
 
-async def timed_get(
-    client: httpx.AsyncClient, url: str, results: list[dict]
-) -> None:
+async def timed_get(client: httpx.AsyncClient, url: str, results: list[dict]) -> None:
     t0 = time.perf_counter()
     try:
         r = await client.get(url, timeout=15)
         elapsed = (time.perf_counter() - t0) * 1000
-        results.append({"ms": elapsed, "status": r.status_code, "ok": r.status_code < 400})
+        results.append(
+            {"ms": elapsed, "status": r.status_code, "ok": r.status_code < 400}
+        )
     except Exception as e:
         elapsed = (time.perf_counter() - t0) * 1000
         results.append({"ms": elapsed, "status": 0, "ok": False, "error": str(e)})
@@ -139,8 +145,7 @@ async def test_read_flood(client: httpx.AsyncClient) -> None:
     async def user_session() -> None:
         for _ in range(5):
             tasks = [
-                timed_get(client, f"{BASE_URL}{ep}", results[ep])
-                for ep in endpoints
+                timed_get(client, f"{BASE_URL}{ep}", results[ep]) for ep in endpoints
             ]
             await asyncio.gather(*tasks)
             await asyncio.sleep(0.05)  # tiny pause between rounds
@@ -199,7 +204,9 @@ async def test_rate_limiting(client: httpx.AsyncClient) -> None:
     if hits_429 >= 1:
         ok(f"Rate limiter fired correctly ({hits_429} × 429)")
     else:
-        warn("No 429 seen — possibly already rate-limited from a prior run, or limit not triggering")
+        warn(
+            "No 429 seen — possibly already rate-limited from a prior run, or limit not triggering"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +233,10 @@ async def test_edge_cases(client: httpx.AsyncClient) -> None:
         ),
         (
             "Latitude out of range",
-            {**VALID_PAYLOAD, "location": {**VALID_PAYLOAD["location"], "latitude": 999}},
+            {
+                **VALID_PAYLOAD,
+                "location": {**VALID_PAYLOAD["location"], "latitude": 999},
+            },
             422,
         ),
         (
