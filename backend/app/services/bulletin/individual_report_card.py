@@ -69,17 +69,16 @@ async def _call_gemini(prompt: str, max_tokens: int = 600) -> Optional[str]:
                 params={"key": settings.GEMINI_API_KEY},
                 json={
                     "contents": [{"parts": [{"text": prompt}]}],
-                    "generationConfig": {"temperature": 0.2, "maxOutputTokens": max_tokens},
+                    "generationConfig": {
+                        "temperature": 0.2,
+                        "maxOutputTokens": max_tokens,
+                    },
                 },
                 headers={"Content-Type": "application/json"},
             )
             resp.raise_for_status()
             data = resp.json()
-            parts = (
-                data.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [])
-            )
+            parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
             # gemini-2.5-flash is a thinking model: parts[0] may be the "thought"
             # block and parts[1] the actual response. Skip thought parts.
             for part in parts:
@@ -98,7 +97,9 @@ def _parse_gemini_json(raw: str) -> Optional[dict]:
     if not raw:
         return None
     if raw.startswith("```"):
-        raw = "\n".join(line for line in raw.split("\n") if not line.startswith("```")).strip()
+        raw = "\n".join(
+            line for line in raw.split("\n") if not line.startswith("```")
+        ).strip()
     brace = raw.find("{")
     if brace >= 0:
         raw = raw[brace:]
@@ -200,14 +201,18 @@ async def _check_is_shitpost(incident: Incident) -> tuple[bool, str]:
                             return is_sp, reason
             return False, "could not parse gemini response"
     except Exception as exc:
-        logger.warning(f"Shitpost check API call failed: {exc} — defaulting to not-shitpost")
+        logger.warning(
+            f"Shitpost check API call failed: {exc} — defaulting to not-shitpost"
+        )
         return False, f"api error: {exc}"
 
 
 DEDUP_WINDOW_HOURS = 4  # how far back to look for a matching card
 
 
-async def _find_matching_card(incident: Incident, db: AsyncSession) -> Optional[BulletinItem]:
+async def _find_matching_card(
+    incident: Incident, db: AsyncSession
+) -> Optional[BulletinItem]:
     """
     Return an existing community bulletin card that likely describes the same event:
     same AV company, occurred_at within DEDUP_WINDOW_HOURS, and same city.
@@ -236,7 +241,9 @@ async def _find_matching_card(incident: Incident, db: AsyncSession) -> Optional[
     # Narrow by city if we have one
     city = (incident.city or "").lower().strip()
     if city and candidates:
-        candidates = [c for c in candidates if c.location_text and city in c.location_text.lower()]
+        candidates = [
+            c for c in candidates if c.location_text and city in c.location_text.lower()
+        ]
 
     return candidates[0] if candidates else None
 
@@ -254,7 +261,7 @@ async def _refine_summary(card: BulletinItem, new_description: str) -> Optional[
         "You are an analyst for AV Watch, a public-interest platform tracking autonomous vehicle incidents.\n"
         "An additional community report has been submitted for an already-documented incident.\n\n"
         f"Existing summary: {existing}\n\n"
-        f"New report: \"{new_description}\"\n\n"
+        f'New report: "{new_description}"\n\n'
         "Write a refined 3–5 sentence neutral summary incorporating both accounts. "
         "Paraphrase — do NOT quote reporters verbatim. Remove all personal details, "
         "profanity, and slurs. Output ONLY the summary text, no titles or JSON."
@@ -296,7 +303,9 @@ async def _merge_into_existing_card(
     )
 
 
-async def generate_card_for_report(incident_id: str, max_tokens: int = 1024, skip_shitpost_check: bool = False) -> None:
+async def generate_card_for_report(
+    incident_id: str, max_tokens: int = 1024, skip_shitpost_check: bool = False
+) -> None:
     """
     Background task: create a single BulletinItem for one user-submitted report.
     Calls Gemini to generate a paraphrased, profanity-filtered narrative.
@@ -312,7 +321,9 @@ async def generate_card_for_report(incident_id: str, max_tokens: int = 1024, ski
             )
             incident = result.scalar_one_or_none()
             if not incident:
-                logger.warning(f"generate_card_for_report: incident {incident_id} not found")
+                logger.warning(
+                    f"generate_card_for_report: incident {incident_id} not found"
+                )
                 return
 
             # ── Shitpost / quality gate ──────────────────────────────────────
@@ -422,6 +433,7 @@ async def generate_card_for_report(incident_id: str, max_tokens: int = 1024, ski
 
         except Exception as exc:
             logger.error(
-                f"generate_card_for_report failed for {incident_id}: {exc}", exc_info=True
+                f"generate_card_for_report failed for {incident_id}: {exc}",
+                exc_info=True,
             )
             await db.rollback()

@@ -26,15 +26,24 @@ GEMINI_API_URL = (
 )
 
 # AV companies we track
-KNOWN_COMPANIES = ["waymo", "zoox", "cruise", "tesla", "nuro", "aurora", "motional", "unknown"]
+KNOWN_COMPANIES = [
+    "waymo",
+    "zoox",
+    "cruise",
+    "tesla",
+    "nuro",
+    "aurora",
+    "motional",
+    "unknown",
+]
 
 # Incident types matching our schema (keep in sync with frontend utils.ts and DB enum)
 KNOWN_INCIDENT_TYPES = [
-    "collision",        # AV involved in a crash
+    "collision",  # AV involved in a crash
     "sudden_behavior",  # Erratic, unexpected AV movement or near-miss
-    "blockage",         # AV blocked traffic or emergency vehicles
-    "vandalism",        # AV was vandalized or physically obstructed by a human
-    "other",            # Specific AV incident that doesn't fit above categories (e.g. police stop, passenger stranding)
+    "blockage",  # AV blocked traffic or emergency vehicles
+    "vandalism",  # AV was vandalized or physically obstructed by a human
+    "other",  # Specific AV incident that doesn't fit above categories (e.g. police stop, passenger stranding)
 ]
 
 # The classification prompt sent to Gemini for each post
@@ -102,6 +111,7 @@ Do not include any text outside the JSON object."""
 @dataclass
 class GeminiResult:
     """The result of processing one Reddit post through Gemini."""
+
     is_relevant: bool
     relevance_reason: str
     extracted_company: Optional[str]
@@ -150,13 +160,9 @@ class GeminiPipeline:
                     GEMINI_API_URL,
                     params={"key": self.api_key},
                     json={
-                        "contents": [
-                            {
-                                "parts": [{"text": prompt}]
-                            }
-                        ],
+                        "contents": [{"parts": [{"text": prompt}]}],
                         "generationConfig": {
-                            "temperature": 0.1,       # Low temp = deterministic, factual
+                            "temperature": 0.1,  # Low temp = deterministic, factual
                             "maxOutputTokens": 2048,  # Gemini 2.5 uses thinking tokens before output
                         },
                     },
@@ -199,8 +205,7 @@ class GeminiPipeline:
             if text.startswith("```"):
                 lines = text.split("\n")
                 text = "\n".join(
-                    line for line in lines
-                    if not line.startswith("```")
+                    line for line in lines if not line.startswith("```")
                 ).strip()
 
             # Gemini 2.5 sometimes prefixes with prose like "Here is the JSON:"
@@ -212,7 +217,7 @@ class GeminiPipeline:
             # Also handle trailing prose after the closing brace
             brace_end = text.rfind("}")
             if brace_end != -1:
-                text = text[:brace_end + 1]
+                text = text[: brace_end + 1]
 
             if not text:
                 logger.warning(f"Empty Gemini response for post {post.external_id}")
@@ -237,7 +242,9 @@ class GeminiPipeline:
                 is_relevant=bool(parsed.get("is_relevant", False)),
                 relevance_reason=str(parsed.get("relevance_reason", ""))[:500],
                 extracted_company=company if company != "null" else None,
-                extracted_incident_type=incident_type if incident_type != "null" else None,
+                extracted_incident_type=incident_type
+                if incident_type != "null"
+                else None,
                 extracted_location=parsed.get("extracted_location") or None,
                 extracted_title=parsed.get("extracted_title") or None,
                 extracted_summary=parsed.get("extracted_summary") or None,

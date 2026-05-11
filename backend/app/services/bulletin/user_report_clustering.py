@@ -34,10 +34,10 @@ from app.models.incident import Incident
 logger = logging.getLogger(__name__)
 
 # ── Tuneable constants ────────────────────────────────────────────────────────
-MIN_CLUSTER_SIZE = 3          # distinct IPs needed to create a new bulletin item
-MIN_REPORTS_TO_BOOST = 2      # distinct IPs needed to boost an existing Reddit item
-TIME_WINDOW_HOURS = 2         # reports within this window = same incident
-LOOK_BACK_HOURS = 48          # how far back to scan for unmatched reports
+MIN_CLUSTER_SIZE = 3  # distinct IPs needed to create a new bulletin item
+MIN_REPORTS_TO_BOOST = 2  # distinct IPs needed to boost an existing Reddit item
+TIME_WINDOW_HOURS = 2  # reports within this window = same incident
+LOOK_BACK_HOURS = 48  # how far back to scan for unmatched reports
 LOCATION_RADIUS_METERS = 500  # reports within this radius = same location
 
 # Companies too vague to cluster meaningfully for Pass A (Reddit boosting)
@@ -48,13 +48,17 @@ SKIP_TYPES_PASS_A = {"other"}
 
 # ── Geo helpers ───────────────────────────────────────────────────────────────
 
+
 def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Return approximate distance in metres between two lat/lon points."""
     R = 6_371_000
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlam = math.radians(lon2 - lon1)
-    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+    a = (
+        math.sin(dphi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(dlam / 2) ** 2
+    )
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
@@ -85,6 +89,7 @@ def _parse_location(location) -> Optional[tuple[float, float]]:
     Handles both WKBElement (binary hex) and WKT strings.
     """
     import struct
+
     try:
         # GeoAlchemy2 WKBElement — decode hex WKB
         hex_str = str(location)
@@ -92,14 +97,15 @@ def _parse_location(location) -> Optional[tuple[float, float]]:
         # WKB point: 1 byte order + 4 byte type + 8 byte lon + 8 byte lat
         byte_order = raw[0]  # 1 = little-endian
         if byte_order == 1:
-            lon, lat = struct.unpack_from('<dd', raw, 5)
+            lon, lat = struct.unpack_from("<dd", raw, 5)
         else:
-            lon, lat = struct.unpack_from('>dd', raw, 5)
+            lon, lat = struct.unpack_from(">dd", raw, 5)
         return float(lat), float(lon)
     except Exception:
         pass
     # Fallback: WKT string "POINT(lon lat)"
     import re
+
     m = re.match(r"POINT\(([^\s]+)\s+([^\s]+)\)", str(location) or "")
     if m:
         return float(m.group(2)), float(m.group(1))
@@ -161,6 +167,7 @@ def _majority_value(values: list[Optional[str]], fallback: str) -> str:
 
 # ── Pre-generation of AI narrative ───────────────────────────────────────────
 
+
 async def _generate_and_store_narrative(
     item: BulletinItem,
     descriptions: list[str],
@@ -213,10 +220,13 @@ async def _generate_and_store_narrative(
                 item.summary = text
                 logger.info(f"Pre-generated narrative for bulletin item {item.id}")
     except Exception as exc:
-        logger.warning(f"Narrative pre-generation failed for {item.id}: {exc} — keeping template summary")
+        logger.warning(
+            f"Narrative pre-generation failed for {item.id}: {exc} — keeping template summary"
+        )
 
 
 # ── Core clustering logic ─────────────────────────────────────────────────────
+
 
 class UserReportClusteringService:
     """Clusters user-submitted incident reports and promotes them to the bulletin board."""
@@ -276,7 +286,8 @@ class UserReportClusteringService:
         # Pass A still groups by company+type since Reddit items have known company/type.
         # Exclude vague company/type from this pass only.
         eligible = [
-            (r, c) for r, c in reports_with_coords
+            (r, c)
+            for r, c in reports_with_coords
             if r.av_company not in SKIP_COMPANIES_PASS_A
             and r.incident_type not in SKIP_TYPES_PASS_A
         ]
@@ -293,12 +304,16 @@ class UserReportClusteringService:
                 continue
 
             existing = set(bulletin_item.user_report_ids or [])
-            new_ids = [str(r.id) for r, _ in cluster_reports if str(r.id) not in existing]
+            new_ids = [
+                str(r.id) for r, _ in cluster_reports if str(r.id) not in existing
+            ]
             if not new_ids:
                 continue
 
             bulletin_item.user_report_ids = list(existing) + new_ids
-            bulletin_item.signal_count = (bulletin_item.signal_count or 0) + len(new_ids)
+            bulletin_item.signal_count = (bulletin_item.signal_count or 0) + len(
+                new_ids
+            )
 
             if len(bulletin_item.user_report_ids) >= 5:
                 bulletin_item.is_hot = True
@@ -328,16 +343,20 @@ class UserReportClusteringService:
         earliest = min(times) - timedelta(hours=TIME_WINDOW_HOURS)
         latest = max(times) + timedelta(hours=TIME_WINDOW_HOURS)
 
-        stmt = select(BulletinItem).where(
-            and_(
-                BulletinItem.av_company == company,
-                BulletinItem.incident_type == incident_type,
-                BulletinItem.status == "active",
-                BulletinItem.source_platform == "reddit",
-                BulletinItem.occurred_at >= earliest,
-                BulletinItem.occurred_at <= latest,
+        stmt = (
+            select(BulletinItem)
+            .where(
+                and_(
+                    BulletinItem.av_company == company,
+                    BulletinItem.incident_type == incident_type,
+                    BulletinItem.status == "active",
+                    BulletinItem.source_platform == "reddit",
+                    BulletinItem.occurred_at >= earliest,
+                    BulletinItem.occurred_at <= latest,
+                )
             )
-        ).limit(1)
+            .limit(1)
+        )
         result = await db.execute(stmt)
         return result.scalars().first()
 
@@ -445,10 +464,16 @@ class UserReportClusteringService:
                 placed = False
                 for cluster in clusters:
                     cluster_times = [c[0].occurred_at for c in cluster]
-                    if abs((r.occurred_at - cluster_times[0]).total_seconds()) > TIME_WINDOW_HOURS * 3600:
+                    if (
+                        abs((r.occurred_at - cluster_times[0]).total_seconds())
+                        > TIME_WINDOW_HOURS * 3600
+                    ):
                         continue
                     clat, clon = _centroid([c[1] for c in cluster])
-                    if _haversine_m(coords[0], coords[1], clat, clon) <= LOCATION_RADIUS_METERS:
+                    if (
+                        _haversine_m(coords[0], coords[1], clat, clon)
+                        <= LOCATION_RADIUS_METERS
+                    ):
                         cluster.append((r, coords))
                         placed = True
                         break
@@ -485,10 +510,16 @@ class UserReportClusteringService:
             placed = False
             for cluster in clusters:
                 cluster_times = [c[0].occurred_at for c in cluster]
-                if abs((r.occurred_at - cluster_times[0]).total_seconds()) > TIME_WINDOW_HOURS * 3600:
+                if (
+                    abs((r.occurred_at - cluster_times[0]).total_seconds())
+                    > TIME_WINDOW_HOURS * 3600
+                ):
                     continue
                 clat, clon = _centroid([c[1] for c in cluster])
-                if _haversine_m(coords[0], coords[1], clat, clon) <= LOCATION_RADIUS_METERS:
+                if (
+                    _haversine_m(coords[0], coords[1], clat, clon)
+                    <= LOCATION_RADIUS_METERS
+                ):
                     cluster.append((r, coords))
                     placed = True
                     break
@@ -540,7 +571,10 @@ class UserReportClusteringService:
                     params={"key": settings.GEMINI_API_KEY},
                     json={
                         "contents": [{"parts": [{"text": prompt}]}],
-                        "generationConfig": {"temperature": 0.1, "maxOutputTokens": 256},
+                        "generationConfig": {
+                            "temperature": 0.1,
+                            "maxOutputTokens": 256,
+                        },
                     },
                     headers={"Content-Type": "application/json"},
                 )
@@ -570,11 +604,14 @@ class UserReportClusteringService:
                 return result
 
         except Exception as exc:
-            logger.warning(f"Semantic similarity check failed: {exc} — defaulting to True")
+            logger.warning(
+                f"Semantic similarity check failed: {exc} — defaulting to True"
+            )
             return True
 
 
 # ── Entry point called by scheduler ──────────────────────────────────────────
+
 
 async def run_user_report_clustering() -> dict:
     """Standalone coroutine wired into APScheduler."""

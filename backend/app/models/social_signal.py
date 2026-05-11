@@ -45,7 +45,9 @@ class SocialSignal(Base):
     body: Mapped[Optional[str]] = mapped_column(Text)
     url: Mapped[str] = mapped_column(Text, nullable=False)
     author: Mapped[Optional[str]] = mapped_column(String(100))
-    media_urls: Mapped[List] = mapped_column(JSONB, default=list)  # image/video thumbnails
+    media_urls: Mapped[List] = mapped_column(
+        JSONB, default=list
+    )  # image/video thumbnails
 
     # Engagement metrics (snapshot at scrape time)
     upvotes: Mapped[int] = mapped_column(Integer, default=0)
@@ -54,7 +56,9 @@ class SocialSignal(Base):
     upvote_ratio: Mapped[Optional[float]] = mapped_column(Float)
 
     # Timing
-    posted_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), index=True)
+    posted_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), index=True
+    )
     scraped_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -62,14 +66,26 @@ class SocialSignal(Base):
     # AI processing results (filled in by Gemini pipeline)
     is_relevant: Mapped[Optional[bool]] = mapped_column(Boolean, default=None)
     # None = not yet processed, True = relevant AV incident, False = not relevant
-    relevance_reason: Mapped[Optional[str]] = mapped_column(Text)  # Gemini's short explanation
+    relevance_reason: Mapped[Optional[str]] = mapped_column(
+        Text
+    )  # Gemini's short explanation
 
     # Structured extraction from Gemini
-    extracted_company: Mapped[Optional[str]] = mapped_column(String(50))   # waymo, zoox, tesla...
-    extracted_incident_type: Mapped[Optional[str]] = mapped_column(String(50))  # collision, near_miss...
-    extracted_location: Mapped[Optional[str]] = mapped_column(Text)  # free text, e.g. "Castro District, SF"
-    extracted_title: Mapped[Optional[str]] = mapped_column(String(120))  # short punchy headline ≤8 words
-    extracted_summary: Mapped[Optional[str]] = mapped_column(Text)  # one sentence ≤20 words
+    extracted_company: Mapped[Optional[str]] = mapped_column(
+        String(50)
+    )  # waymo, zoox, tesla...
+    extracted_incident_type: Mapped[Optional[str]] = mapped_column(
+        String(50)
+    )  # collision, near_miss...
+    extracted_location: Mapped[Optional[str]] = mapped_column(
+        Text
+    )  # free text, e.g. "Castro District, SF"
+    extracted_title: Mapped[Optional[str]] = mapped_column(
+        String(120)
+    )  # short punchy headline ≤8 words
+    extracted_summary: Mapped[Optional[str]] = mapped_column(
+        Text
+    )  # one sentence ≤20 words
 
     # Heat score (0.0–1.0) computed from engagement
     heat_score: Mapped[float] = mapped_column(Float, default=0.0)

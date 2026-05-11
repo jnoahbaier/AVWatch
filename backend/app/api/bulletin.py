@@ -26,6 +26,7 @@ router = APIRouter()
 
 # ── Response schemas ──────────────────────────────────────────────────────
 
+
 class BulletinItemResponse(BaseModel):
     id: str
     title: str
@@ -59,6 +60,7 @@ class BulletinListResponse(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────
 
+
 @router.get("/", response_model=BulletinListResponse)
 async def list_bulletin_items(
     limit: int = Query(default=20, ge=1, le=50),
@@ -78,10 +80,7 @@ async def list_bulletin_items(
     Return paginated bulletin board items, newest first.
     Hot items are sorted before regular items within the same page.
     """
-    stmt = (
-        select(BulletinItem)
-        .where(BulletinItem.status == "active")
-    )
+    stmt = select(BulletinItem).where(BulletinItem.status == "active")
 
     if hot_only:
         stmt = stmt.where(BulletinItem.is_hot == True)  # noqa: E712
@@ -93,12 +92,18 @@ async def list_bulletin_items(
         stmt = stmt.where(BulletinItem.location_text.ilike(f"%{location}%"))
     if date_from:
         try:
-            stmt = stmt.where(BulletinItem.first_seen_at >= datetime.combine(date.fromisoformat(date_from), dtime.min))
+            stmt = stmt.where(
+                BulletinItem.first_seen_at
+                >= datetime.combine(date.fromisoformat(date_from), dtime.min)
+            )
         except ValueError:
             pass
     if date_to:
         try:
-            stmt = stmt.where(BulletinItem.first_seen_at <= datetime.combine(date.fromisoformat(date_to), dtime.max))
+            stmt = stmt.where(
+                BulletinItem.first_seen_at
+                <= datetime.combine(date.fromisoformat(date_to), dtime.max)
+            )
         except ValueError:
             pass
     if source_platform:
@@ -117,23 +122,35 @@ async def list_bulletin_items(
     if av_company:
         count_stmt = count_stmt.where(BulletinItem.av_company == av_company.lower())
     if incident_type:
-        count_stmt = count_stmt.where(BulletinItem.incident_type == incident_type.lower())
+        count_stmt = count_stmt.where(
+            BulletinItem.incident_type == incident_type.lower()
+        )
     if location:
         count_stmt = count_stmt.where(BulletinItem.location_text.ilike(f"%{location}%"))
     if date_from:
         try:
-            count_stmt = count_stmt.where(BulletinItem.first_seen_at >= datetime.combine(date.fromisoformat(date_from), dtime.min))
+            count_stmt = count_stmt.where(
+                BulletinItem.first_seen_at
+                >= datetime.combine(date.fromisoformat(date_from), dtime.min)
+            )
         except ValueError:
             pass
     if date_to:
         try:
-            count_stmt = count_stmt.where(BulletinItem.first_seen_at <= datetime.combine(date.fromisoformat(date_to), dtime.max))
+            count_stmt = count_stmt.where(
+                BulletinItem.first_seen_at
+                <= datetime.combine(date.fromisoformat(date_to), dtime.max)
+            )
         except ValueError:
             pass
     if source_platform:
-        count_stmt = count_stmt.where(BulletinItem.source_platform == source_platform.lower())
+        count_stmt = count_stmt.where(
+            BulletinItem.source_platform == source_platform.lower()
+        )
     if community_backed:
-        count_stmt = count_stmt.where(func.jsonb_array_length(BulletinItem.user_report_ids) > 0)
+        count_stmt = count_stmt.where(
+            func.jsonb_array_length(BulletinItem.user_report_ids) > 0
+        )
 
     total_result = await db.execute(count_stmt)
     total = len(total_result.fetchall())
@@ -156,9 +173,7 @@ async def get_bulletin_item(
     db: AsyncSession = Depends(get_db),
 ):
     """Return a single bulletin item by ID."""
-    result = await db.execute(
-        select(BulletinItem).where(BulletinItem.id == item_id)
-    )
+    result = await db.execute(select(BulletinItem).where(BulletinItem.id == item_id))
     item = result.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Bulletin item not found")
@@ -189,6 +204,7 @@ async def trigger_scan():
     In production this runs automatically every hour via the scheduler.
     """
     from app.services.bulletin.pipeline import BulletinPipeline
+
     pipeline = BulletinPipeline()
     stats = await pipeline.run()
     return {"status": "ok", "stats": stats}
@@ -201,11 +217,13 @@ async def trigger_user_clustering():
     In production this runs automatically every 30 minutes via the scheduler.
     """
     from app.services.bulletin.user_report_clustering import run_user_report_clustering
+
     stats = await run_user_report_clustering()
     return {"status": "ok", "stats": stats}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────
+
 
 def _serialize(item: BulletinItem) -> BulletinItemResponse:
     return BulletinItemResponse(
