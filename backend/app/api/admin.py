@@ -431,7 +431,7 @@ async def admin_list_bulletin(
     db: AsyncSession = Depends(get_db),
 ):
     """List all bulletin cards for admin review."""
-    filters = []
+    filters = [BulletinItem.status != "archived"]
     if source_platform:
         filters.append(BulletinItem.source_platform == source_platform.lower())
 
