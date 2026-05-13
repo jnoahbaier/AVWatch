@@ -295,7 +295,6 @@ async def _merge_into_existing_card(
             card.summary = refined
 
     incident.matched_bulletin_item_id = card.id
-    incident.status = "corroborated"
     await db.flush()
     logger.info(
         f"Merged report {incident.id} into existing card {card.id} "
@@ -424,7 +423,6 @@ async def generate_card_for_report(
             await db.flush()
 
             incident.matched_bulletin_item_id = bulletin_item.id
-            incident.status = "corroborated"
 
             await db.commit()
             logger.info(
