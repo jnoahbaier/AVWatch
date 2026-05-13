@@ -324,6 +324,7 @@ export default function Home() {
   const reporterSectionRef = useRef<HTMLDivElement>(null);
   const optionalDetailsRef = useRef<HTMLDetailsElement>(null);
   const certRef = useRef<HTMLLabelElement>(null);
+  const successSectionRef = useRef<HTMLDivElement>(null);
   const dateTimeInputRef = useRef<HTMLInputElement | null>(null);
   const [carInView, setCarInView] = useState(false);
   const [locationMethod, setLocationMethod] = useState<'gps' | 'address' | 'map'>('gps');
@@ -639,7 +640,9 @@ export default function Home() {
       });
 
       setIsSuccess(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        successSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
     } catch (error) {
       setSubmitError(
         error instanceof Error
@@ -828,7 +831,7 @@ export default function Home() {
             <div id="report-form" className="md:sticky md:top-24 scroll-mt-20">
               {isSuccess ? (
                 /* Success state */
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                <div ref={successSectionRef} className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                   {/* Header */}
                   <div className="bg-[#5B9DFF] px-8 py-8 text-center">
                     <div className="mx-auto w-14 h-14 bg-white/20 rounded-full flex items-center justify-center mb-4">
