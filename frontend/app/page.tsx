@@ -641,7 +641,10 @@ export default function Home() {
 
       setIsSuccess(true);
       setTimeout(() => {
-        successSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (successSectionRef.current) {
+          const top = successSectionRef.current.getBoundingClientRect().top + window.scrollY - 80;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
       }, 50);
     } catch (error) {
       setSubmitError(
