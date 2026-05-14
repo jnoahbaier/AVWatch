@@ -360,7 +360,7 @@ export default function BulletinPage() {
             <p className="mt-2 text-slate-500 text-sm max-w-xl">
               {filters.sourcePlatform === 'community'
                 ? 'Incidents submitted directly by AV Watch users.'
-                : 'Incidents aggregated from Reddit communities. Updated hourly.'}
+                : 'Incidents aggregated from external sources. Updated hourly.'}
             </p>
           </div>
 
@@ -386,7 +386,7 @@ export default function BulletinPage() {
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              Reddit
+              External Source
             </button>
           </div>
         </div>
