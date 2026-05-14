@@ -1530,7 +1530,7 @@ export default function Home() {
               <p className="text-slate-500">
                 {reportFilters.sourcePlatform === 'community'
                   ? 'Incidents submitted directly by AV Watch users.'
-                  : 'Incidents aggregated from Reddit communities.'}
+                  : 'Incidents aggregated from external sources.'}
               </p>
             </div>
 
@@ -1556,7 +1556,7 @@ export default function Home() {
                     : 'text-slate-600 hover:text-slate-800'
                 }`}
               >
-                Reddit
+                External Sources
               </button>
             </div>
           </div>
@@ -1820,7 +1820,7 @@ export default function Home() {
                 ? 'No reports match these filters.'
                 : reportFilters.sourcePlatform === 'community'
                 ? 'No community reports yet — be the first to submit one above!'
-                : 'No Reddit reports yet. Check back soon.'}
+                : 'No external reports yet. Check back soon.'}
             </p>
           ) : (
             <>

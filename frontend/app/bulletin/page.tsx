@@ -52,7 +52,7 @@ const INCIDENT_TYPES = [
 const SOURCES = [
   { value: '', label: 'All sources' },
   { value: 'community', label: 'Community' },
-  { value: 'reddit', label: 'Reddit' },
+  { value: 'reddit', label: 'External Sources' },
 ];
 
 interface BulletinResponse {
