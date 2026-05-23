@@ -47,12 +47,13 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    # AWS S3 / MinIO
+    # AWS S3 / Cloudflare R2
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_S3_BUCKET: str = "avwatch-media"
     AWS_S3_ENDPOINT_URL: str | None = None
-    AWS_S3_REGION: str = "us-east-1"
+    AWS_S3_REGION: str = "auto"
+    R2_PUBLIC_URL: str = ""  # e.g. https://pub-XXXX.r2.dev
 
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]

@@ -63,6 +63,33 @@ router = APIRouter()
 
 _POINT_RE = re.compile(r"POINT\(([^\s]+)\s+([^\s]+)\)")
 
+# ---------------------------------------------------------------------------
+# Synchronous test/spam keyword pre-filter — runs before DB write so these
+# phrases never flash on the public feed even briefly.
+# ---------------------------------------------------------------------------
+_TEST_PATTERNS = re.compile(
+    r"""
+    ^\s*test\s*$                    # description is just "test" or "testing"
+    | ^\s*testing\s*$
+    | \bjust\s+(for\s+)?testing\b   # "just testing" / "just for testing"
+    | \bthis\s+is\s+(just\s+)?a\s+test\b
+    | \btest\s+report\b
+    | \bavwatch\s+test\b            # "avwatch test" / "internal avwatch test"
+    | \badmin\s+test\b
+    | \binternal\s+test\b
+    | ^\s*testing\s+\d+\s*$         # "testing 123"
+    | ^\s*asdf\s*$                  # classic keyboard smash patterns
+    | ^\s*hello\s*$
+    | ^\s*foo\s*$
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+
+
+def _is_obvious_test(description: str | None) -> bool:
+    """Return True if the description matches known test/spam patterns."""
+    return bool(_TEST_PATTERNS.search(description or ""))
+
 
 def _parse_wkt(wkt: str) -> tuple[float, float]:
     """Parse 'POINT(lng lat)' → (lat, lng)."""
@@ -165,6 +192,7 @@ async def create_incident(
         f"POINT({incident.location.longitude} {incident.location.latitude})",
         srid=4326,
     )
+    is_test = _is_obvious_test(incident.description)
     incident_obj = Incident(
         incident_type=incident.incident_type,
         av_company=incident.av_company,
@@ -179,13 +207,15 @@ async def create_incident(
         media_urls=incident.media_urls or [],
         source="user_report",
         reporter_ip_hash=ip_hash,
+        status="rejected" if is_test else "unverified",
     )
     db.add(incident_obj)
     await db.flush()
     await db.commit()  # commit now so the background task can find this incident by ID
 
-    # Immediately create a bulletin card for this report (Gemini runs async)
-    background_tasks.add_task(generate_card_for_report, str(incident_obj.id))
+    if not is_test:
+        # Immediately create a bulletin card for this report (Gemini runs async)
+        background_tasks.add_task(generate_card_for_report, str(incident_obj.id))
 
     return {
         "message": "Incident reported successfully",

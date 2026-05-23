@@ -186,13 +186,13 @@ export async function getDataSources() {
 }
 
 // ---------------------------------------------------------------------------
-// Media upload — files go directly from browser → Supabase Storage (CDN),
-// bypassing the Railway backend entirely. Returns public URLs.
+// Media upload — browser requests a presigned PUT URL from our backend, then
+// uploads directly to Cloudflare R2. File bytes never pass through Next.js.
 // ---------------------------------------------------------------------------
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'];
-const IMAGE_SIZE_LIMIT = 10 * 1024 * 1024;  // 10 MB
-const VIDEO_SIZE_LIMIT = 50 * 1024 * 1024;  // 50 MB
+const IMAGE_SIZE_LIMIT = 25 * 1024 * 1024;   // 25 MB
+const VIDEO_SIZE_LIMIT = 500 * 1024 * 1024;  // 500 MB
 
 export async function uploadIncidentMedia(files: File[]): Promise<string[]> {
   const urls: string[] = [];
@@ -207,22 +207,31 @@ export async function uploadIncidentMedia(files: File[]): Promise<string[]> {
 
     const sizeLimit = isVideo ? VIDEO_SIZE_LIMIT : IMAGE_SIZE_LIMIT;
     if (file.size > sizeLimit) {
-      const limitLabel = isVideo ? '50 MB' : '10 MB';
+      const limitLabel = isVideo ? '500 MB' : '25 MB';
       throw new Error(`${file.name} exceeds the ${limitLabel} limit.`);
     }
 
-    // Unique path: timestamp + random slug + original extension
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
-    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    // Step 1: get a short-lived presigned PUT URL from our backend
+    const presignRes = await fetch('/api/media/presign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: file.name, content_type: file.type }),
+    });
+    if (!presignRes.ok) {
+      const err = await presignRes.json().catch(() => ({})) as { detail?: string };
+      throw new Error(`Could not prepare upload for ${file.name}: ${err.detail ?? presignRes.statusText}`);
+    }
+    const { upload_url, public_url } = await presignRes.json() as { upload_url: string; public_url: string };
 
-    const { error } = await supabase.storage
-      .from('incident-media')
-      .upload(path, file, { contentType: file.type, upsert: false });
+    // Step 2: upload directly from the browser to R2
+    const uploadRes = await fetch(upload_url, {
+      method: 'PUT',
+      headers: { 'Content-Type': file.type },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error(`Upload failed for ${file.name} (${uploadRes.status})`);
 
-    if (error) throw new Error(`Upload failed for ${file.name}: ${error.message}`);
-
-    const { data } = supabase.storage.from('incident-media').getPublicUrl(path);
-    urls.push(data.publicUrl);
+    urls.push(public_url);
   }
 
   return urls;
