@@ -23,6 +23,9 @@ aiohttp==3.9.1
 # Background Task Scheduling (pipeline runs every hour)
 apscheduler==3.10.4
 
+# Cloud Storage (Cloudflare R2 / S3-compatible)
+boto3==1.34.14
+
 # HTML parsing (data sources)
 beautifulsoup4==4.12.3
 lxml==5.1.0
