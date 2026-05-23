@@ -38,7 +38,9 @@ def presign_upload(body: PresignRequest):
         raise HTTPException(status_code=503, detail="Media storage is not configured.")
 
     if body.content_type not in ALLOWED_TYPES:
-        raise HTTPException(status_code=400, detail=f"Unsupported file type: {body.content_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported file type: {body.content_type}"
+        )
 
     safe_name = _SAFE_FILENAME.sub("_", body.filename)[:100]
     key = f"{uuid.uuid4().hex}_{safe_name}"

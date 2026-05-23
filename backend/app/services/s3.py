@@ -10,9 +10,16 @@ from botocore.config import Config
 from app.core.config import settings
 
 ALLOWED_TYPES = {
-    "image/jpeg", "image/png", "image/webp", "image/gif",
-    "image/heic", "image/heif",
-    "video/mp4", "video/quicktime", "video/webm", "video/x-m4v",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/heic",
+    "image/heif",
+    "video/mp4",
+    "video/quicktime",
+    "video/webm",
+    "video/x-m4v",
 }
 
 
@@ -27,7 +34,9 @@ def _client():
     )
 
 
-def generate_presigned_upload(key: str, content_type: str, expires_in: int = 300) -> str:
+def generate_presigned_upload(
+    key: str, content_type: str, expires_in: int = 300
+) -> str:
     """Return a presigned PUT URL valid for `expires_in` seconds."""
     return _client().generate_presigned_url(
         "put_object",
