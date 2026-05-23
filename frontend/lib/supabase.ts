@@ -192,7 +192,7 @@ export async function getDataSources() {
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm', 'video/x-m4v'];
 const IMAGE_SIZE_LIMIT = 25 * 1024 * 1024;   // 25 MB
-const VIDEO_SIZE_LIMIT = 500 * 1024 * 1024;  // 500 MB
+const VIDEO_SIZE_LIMIT = 200 * 1024 * 1024;  // 200 MB
 
 export async function uploadIncidentMedia(files: File[]): Promise<string[]> {
   const urls: string[] = [];
@@ -207,7 +207,7 @@ export async function uploadIncidentMedia(files: File[]): Promise<string[]> {
 
     const sizeLimit = isVideo ? VIDEO_SIZE_LIMIT : IMAGE_SIZE_LIMIT;
     if (file.size > sizeLimit) {
-      const limitLabel = isVideo ? '500 MB' : '25 MB';
+      const limitLabel = isVideo ? '200 MB' : '25 MB';
       throw new Error(`${file.name} exceeds the ${limitLabel} limit.`);
     }
 

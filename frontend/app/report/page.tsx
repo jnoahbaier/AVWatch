@@ -314,7 +314,7 @@ export default function ReportPage() {
                 <p className="text-sm text-slate-400">
                   Add photos or video <span className="text-slate-300">(optional)</span>
                 </p>
-                <p className="text-xs text-slate-300 mt-0.5">PNG, JPG, MP4, MOV · up to 10 files · photos 25 MB · videos 500 MB</p>
+                <p className="text-xs text-slate-300 mt-0.5">PNG, JPG, MP4, MOV · photos 25 MB · videos 200 MB</p>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -322,20 +322,22 @@ export default function ReportPage() {
                   accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,video/mp4,video/quicktime,video/webm"
                   className="hidden"
                   onChange={(e) => {
-                    const files = Array.from(e.target.files || []).slice(0, 10);
-                    const oversized = files.find((f) => {
+                    const incoming = Array.from(e.target.files || []);
+                    const combined = [...selectedFiles, ...incoming];
+                    const capped = combined.slice(0, 5);
+                    const oversized = capped.find((f) => {
                       const isVideo = f.type.startsWith('video/');
-                      return f.size > (isVideo ? 500 * 1024 * 1024 : 25 * 1024 * 1024);
+                      return f.size > (isVideo ? 200 * 1024 * 1024 : 25 * 1024 * 1024);
                     });
                     if (oversized) {
                       const isVideo = oversized.type.startsWith('video/');
                       setSubmitError(
-                        `"${oversized.name}" is too large. ${isVideo ? 'Videos' : 'Photos'} must be under ${isVideo ? '500 MB' : '25 MB'}.`
+                        `"${oversized.name}" is too large. ${isVideo ? 'Videos' : 'Photos'} must be under ${isVideo ? '200 MB' : '25 MB'}.`
                       );
                       return;
                     }
                     setSubmitError(null);
-                    setSelectedFiles(files);
+                    setSelectedFiles(capped);
                   }}
                 />
               </div>
@@ -361,6 +363,11 @@ export default function ReportPage() {
                       </button>
                     </li>
                   ))}
+                  {selectedFiles.length >= 5 && (
+                    <li className="text-xs text-amber-500 dark:text-amber-400 text-center pt-1">
+                      Max media reached (5 files)
+                    </li>
+                  )}
                 </ul>
               )}
             </div>
