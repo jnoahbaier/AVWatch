@@ -47,10 +47,10 @@ const LocationMapPicker = dynamic(
   { ssr: false }
 );
 
-// Use FastAPI backend directly (same as /bulletin page) to support all filters including source_platform.
-// Falls back to the Next.js Supabase proxy if the env var is not set.
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-const BULLETIN_API = BACKEND_URL ? `${BACKEND_URL}/api/bulletin` : '/api/bulletin';
+// Reports are read straight from Supabase via the Next.js route (app/api/bulletin)
+// instead of the Render backend, so the public page never waits on a cold-start boot.
+// The route mirrors the backend's filters and ordering exactly (see app/api/bulletin/route.ts).
+const BULLETIN_API = '/api/bulletin';
 const REPORTS_PAGE = 6;
 
 interface ReportFilters {

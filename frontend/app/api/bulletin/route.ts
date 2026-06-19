@@ -26,8 +26,12 @@ export async function GET(req: NextRequest) {
   let query = supabase
     .from('bulletin_items')
     .select('*', { count: 'exact' })
-    .in('status', ['active', 'published'])
-    .order('occurred_at', { ascending: false, nullsFirst: false });
+    // Match the FastAPI backend exactly: only "active" items, newest first by
+    // occurred_at, falling back to first_seen_at (mirrors the backend's
+    // coalesce(occurred_at, first_seen_at) ordering).
+    .eq('status', 'active')
+    .order('occurred_at', { ascending: false, nullsFirst: false })
+    .order('first_seen_at', { ascending: false, nullsFirst: false });
 
   if (avCompany) query = query.eq('av_company', avCompany.toLowerCase());
   if (incidentType) query = query.eq('incident_type', incidentType.toLowerCase());
