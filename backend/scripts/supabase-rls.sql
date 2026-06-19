@@ -149,3 +149,50 @@ ALTER TABLE blocked_ips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_allowlist ENABLE ROW LEVEL SECURITY;
 
 -- No policies for anon or authenticated. Service role only.
+
+
+-- ----------------------------------------------------------------------------
+-- Catch-all sweep: enable RLS on every base table in `public` that doesn't
+-- already have it. This is why the advisor email kept coming back — the
+-- explicit list above misses any table not written by hand, including tables
+-- added by future migrations. A table with RLS enabled but no policy is
+-- default-deny (locked down), which is the safe state for anything internal.
+-- Extension-owned tables (e.g. PostGIS's spatial_ref_sys) are skipped here
+-- because we don't own them; they're handled separately below.
+-- ----------------------------------------------------------------------------
+
+DO $$
+DECLARE
+  t record;
+BEGIN
+  FOR t IN
+    SELECT c.relname
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relkind = 'r'              -- ordinary tables only (not views/matviews)
+      AND c.relrowsecurity = false     -- RLS not yet enabled
+      AND NOT EXISTS (                 -- skip tables owned by an extension
+        SELECT 1 FROM pg_depend d
+        WHERE d.objid = c.oid AND d.deptype = 'e'
+      )
+  LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;', t.relname);
+    RAISE NOTICE 'Enabled RLS on public.%', t.relname;
+  END LOOP;
+END $$;
+
+
+-- ----------------------------------------------------------------------------
+-- spatial_ref_sys (PostGIS)
+-- This table lives in `public` and is owned by the PostGIS extension, so
+-- ALTER TABLE ... ENABLE ROW LEVEL SECURITY fails with "must be owner".
+-- It is THE table the advisor keeps flagging once PostGIS is enabled.
+-- It contains only static reference data (coordinate system definitions),
+-- so it is not actually sensitive — but to silence the advisor and remove
+-- API exposure, revoke access from the anon/authenticated API roles.
+-- If your role lacks privileges to run these, dismiss the lint for this
+-- table in the Supabase dashboard (Advisors → the finding → "Ignore").
+-- ----------------------------------------------------------------------------
+
+REVOKE ALL ON TABLE public.spatial_ref_sys FROM anon, authenticated;
