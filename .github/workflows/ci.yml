@@ -153,7 +153,7 @@ jobs:
           DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/avwatch_test
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: backend/coverage.xml
           flags: backend
