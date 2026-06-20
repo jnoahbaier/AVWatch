@@ -44,7 +44,7 @@ celery==5.3.6
 apscheduler==3.10.4
 
 # Monitoring & Logging
-sentry-sdk[fastapi]==1.39.1
+sentry-sdk[fastapi]==2.54.0
 structlog==24.1.0
 
 # Testing
